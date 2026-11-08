@@ -2108,7 +2108,7 @@ func _run_all() -> void:
 		row_rects9.append(rr9c)
 	var end_rect9: Rect2 = (m9.find_child("EndTurnBtn", true, false) as Control).get_global_rect()
 	var sig_rect9: Rect2 = (m9.find_child("HeroPowerBtn", true, false) as Control).get_global_rect()
-	var hand_rect9: Rect2 = (m9.find_child("HandZone", true, false) as Control).get_global_rect()
+	var hand_rect9: Rect2 = _hand_cards_rect(m9)
 	var badge_ok9: bool = true
 	for br9b in badge_rects9:
 		for rr9b in row_rects9:
@@ -2147,7 +2147,7 @@ func _run_all() -> void:
 		row_rects9b.append(rr9e)
 	var end_rect9b: Rect2 = (m9.find_child("EndTurnBtn", true, false) as Control).get_global_rect()
 	var sig_rect9b: Rect2 = (m9.find_child("HeroPowerBtn", true, false) as Control).get_global_rect()
-	var hand_rect9b: Rect2 = (m9.find_child("HandZone", true, false) as Control).get_global_rect()
+	var hand_rect9b: Rect2 = _hand_cards_rect(m9)
 	var badge_ok9b: bool = true
 	for br9f in badge_rects9b:
 		for rr9f in row_rects9b:
@@ -2320,7 +2320,7 @@ func _run_all() -> void:
 		var end_rect15: Rect2 = (m15.find_child("EndTurnBtn", true, false) as Control).get_global_rect()
 		var sig_rect15: Rect2 = (m15.find_child("HeroPowerBtn", true, false) as Control).get_global_rect()
 		var sigpill_rect15: Rect2 = (m15.find_child("SigPill", true, false) as Control).get_global_rect()
-		var hand_rect15: Rect2 = (m15.find_child("HandZone", true, false) as Control).get_global_rect()
+		var hand_rect15: Rect2 = _hand_cards_rect(m15)
 		var panels_ok15: bool = true
 		for pr15 in panel_rects15:
 			for rr10b in row_rects15:
@@ -2841,8 +2841,11 @@ func _run_all() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var hb_t: HeroBadge = mt._hero_badges[0]
-	_check("step2: each Boss panel has its deck's mana counter", hb_t != null and hb_t.counter != null and hb_t.counter.deck == "grunk" and (mt._hero_badges[1] as HeroBadge).counter.deck == "agatha")
-	_check("step2: the counter shows the mana", hb_t.counter.max_mana == int(mt._gs.players[0]["max_mana"]) and hb_t.counter.mana == int(mt._gs.players[0]["mana"]))
+	_check("boss card: plain mana numbers, no themed counter", hb_t != null and hb_t.counter == null and hb_t.class_id == "grunk" and (mt._hero_badges[1] as HeroBadge).class_id == "agatha")
+	_check("boss card: shows the mana as 3/6", hb_t._mana_label.text == "%d/%d" % [int(mt._gs.players[0]["mana"]), int(mt._gs.players[0]["max_mana"])])
+	var mine_r: Rect2 = (mt._hero_badges[mt._view()] as Control).get_global_rect()
+	var foe_r: Rect2 = (mt._hero_badges[1 - mt._view()] as Control).get_global_rect()
+	_check("boss card: tall and skinny, mine low on the left, theirs high", mine_r.size.y > mine_r.size.x * 1.6 and mine_r.position.y > foe_r.end.y and mine_r.end.y <= 720.0 and foe_r.position.y >= 40.0)
 	for _pf in 120:
 		if mt._board_3d.preload_pending() == 0:
 			break
@@ -2967,6 +2970,16 @@ func _test_online_3d() -> void:
 	_check("online: the new player can act", not other._ai_turn)
 	var hh: String = NetMatch.public_state_hash(NetMatch.snapshot_from_state(host._net_match._gs, 0))
 	_check("online: host and guest agree on the board", hh == NetMatch.public_state_hash(_mirror_snapshot(guest._gs)) and hh == NetMatch.public_state_hash(_mirror_snapshot(host._gs)))
+	# Emotes travel: the sender's Boss and the receiver's view of it both
+	# show the bubble.
+	other._emote_ready_at = 0
+	other._send_emote("hey")
+	t0 = Time.get_ticks_msec()
+	while me.find_child("Bubble%d" % other._human_idx, false, false) == null and Time.get_ticks_msec() - t0 < 5000:
+		await get_tree().process_frame
+	var mine_b: Node = other.find_child("Bubble%d" % other._human_idx, false, false)
+	var theirs_b: Node = me.find_child("Bubble%d" % other._human_idx, false, false)
+	_check("online: an emote shows on both screens as the Boss's own line", mine_b is SpeechBubble and theirs_b is SpeechBubble and (theirs_b as SpeechBubble)._label.text == Emotes.line(str(other._gs.players[other._human_idx]["class"]), "hey"))
 	# Version mismatch is refused with a clear message.
 	var why: Array = []
 	guest._net_match.failed.connect(func(r: String) -> void: why.append(r))
@@ -2977,6 +2990,20 @@ func _test_online_3d() -> void:
 	host.queue_free()
 	guest.queue_free()
 	await get_tree().process_frame
+
+
+# The area the hand's cards actually cover (the HandZone container itself
+# spans the full width).
+func _hand_cards_rect(m: Node) -> Rect2:
+	var hz: Control = m.find_child("HandZone", true, false) as Control
+	var r := Rect2()
+	var first: bool = true
+	for c in hz.get_children():
+		if c is Control and str(c.name).begins_with("HandCard"):
+			var cr: Rect2 = (c as Control).get_global_rect()
+			r = cr if first else r.merge(cr)
+			first = false
+	return hz.get_global_rect() if first else r
 
 
 func _mirror_snapshot(gs: GameState) -> Dictionary:

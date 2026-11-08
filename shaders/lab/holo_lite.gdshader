@@ -17,6 +17,9 @@ uniform float flicker = 0.03;
 uniform float brightness = 1.12;
 uniform float self_light = 0.14;   // a little of the painted color glows, so models read in dark arenas
 uniform float flash = 0.0;          // white hit flash
+uniform float saturation = 1.0;     // >1 makes the painted colors pop off the floor
+uniform float contrast = 1.0;
+uniform float rim_white = 0.0;      // 0 = rim in the class color, 1 = white rim
 uniform float voxel = 0.075;        // cube size for digitize effects
 uniform float build_y = 1000.0;     // summon: only voxels below this world height exist
 uniform float dissolve = 0.0;       // death: cubes blink out
@@ -37,7 +40,10 @@ void vertex() {
 }
 
 void fragment() {
-	vec3 base = texture(albedo_tex, UV).rgb * brightness;
+	vec3 base = texture(albedo_tex, UV).rgb;
+	float lum = dot(base, vec3(0.299, 0.587, 0.114));
+	base = mix(vec3(lum), base, saturation);
+	base = clamp((base - 0.5) * contrast + 0.5, 0.0, 1.0) * brightness;
 	float scan = 1.0 - scan_strength + scan_strength * sin(world_pos.y * 90.0 - TIME * 6.0);
 	float flick = 1.0 - flicker + flicker * hash(vec2(floor(TIME * 24.0), 1.0));
 	ALBEDO = mix(base * scan * flick, vec3(1.0), flash);
@@ -53,7 +59,7 @@ void fragment() {
 		ROUGHNESS = 0.7;
 	}
 	float rim = pow(1.0 - clamp(abs(dot(NORMAL, VIEW)), 0.0, 1.0), 3.0);
-	vec3 emit = tint.rgb * rim * rim_strength;
+	vec3 emit = mix(tint.rgb, vec3(1.0), rim_white) * rim * rim_strength;
 	// Voxel space: summon builds the figure bottom-up in cubes, death
 	// blinks random cubes out (same as the full hologram).
 	vec3 cell = floor(world_pos / voxel);

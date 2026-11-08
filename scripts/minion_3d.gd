@@ -124,6 +124,11 @@ func _build_model(minion: Dictionary) -> void:
 	unit = HoloUnit.new()
 	unit.name = "Model"
 	unit.setup(model_id, "model", HoloUnit.Style.MODEL, 1.0, col, pad_color if pad_color.a > 0.0 else col)
+	unit.face_enemy = true
+	unit.pop = OS.get_environment("EVERDECK_NO_POP") == ""
+	var ny: String = OS.get_environment("EVERDECK_NEAR_YAW")
+	if ny != "":
+		unit.near_yaw = deg_to_rad(float(ny))
 	add_child(unit)
 	unit.home = Vector3(float(uid % 7) * 1.3, 0, 0)  # de-syncs the idle loops
 	var flat := Vector3(1.0, 0.25, 1.0)

@@ -37,6 +37,20 @@ func _ready() -> void:
 	gs.players[foe]["mana"] = 4
 	gs.players[foe]["max_mana"] = 6
 	m._refresh_match()
+	if OS.get_environment("SHOT_EMOTE") != "":
+		await _frames(40)
+		m._show_emote_menu()
+		await _frames(6)
+		await _shot("emote_menu")
+		m._dismiss_emote_menu()
+		m._send_emote("bring")
+		m._show_emote(foe, "whoops")
+		await _frames(14)
+		await _shot("emote_mine")
+		await _frames(6)
+		await _shot("emote_both")
+		get_tree().quit()
+		return
 	if OS.get_environment("SHOT_MOVIE") != "":
 		await _movie(gs, me, foe)
 		get_tree().quit()

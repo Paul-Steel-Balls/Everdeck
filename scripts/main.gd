@@ -73,7 +73,6 @@ var _building_player: int = 0
 var _build_deck: Array = []
 var _pool_cards: Array = []
 var _pending: Dictionary = {}  # {"kind": "card", "hand_idx": int} / {"kind": "attack", "board_idx": int} / {"kind": "hero_power"}
-var _emote_label: Label = null
 var _game_logged: bool = false
 
 # Deckbuild refs (in-place refresh preserves scroll — no full rebuild).
@@ -235,8 +234,8 @@ func _process(delta: float) -> void:
 		locked_flag = "_animating"
 	elif _inspect_overlay != null:
 		locked_flag = "_inspect_overlay"
-	elif _emote_menu != null:
-		locked_flag = "_emote_menu"
+	# (The emote picker is not a lock: any tap off its buttons closes it,
+	# and a player may take their time choosing.)
 	elif _magnify_overlay != null:
 		locked_flag = "_magnify_overlay"
 	if locked_flag != "":
@@ -330,7 +329,6 @@ func _clear() -> void:
 	_arrow = null
 	_arrowhead = null
 	_magnify_overlay = null
-	_emote_label = null
 	_pool_center = null
 	_pool_grid = null
 	_deck_strip = null
@@ -386,7 +384,6 @@ func _clear_overlay() -> void:
 	_magnify_overlay = null
 	_inspect_overlay = null
 	_emote_menu = null
-	_emote_label = null
 	_pool_center = null
 	_pick_layer = null
 	_history_column = null
@@ -1153,6 +1150,7 @@ func _on_online_match_started(my_idx: int) -> void:
 	_awaiting_sync = false
 	_net_match.sync_applied.connect(_on_online_sync_entry)
 	_net_match.action_rejected.connect(_on_online_rejected)
+	_net_match.emote_received.connect(func(id: String) -> void: _show_emote(1 - _view(), id))
 	_net_match.opponent_disconnected.connect(_on_online_opponent_gone)
 	if _net_match.mirror != null and _net_match.mirror.players.size() == 2:
 		_begin_online_board()
@@ -1513,7 +1511,9 @@ func _build_history_column() -> void:
 	var col := HistoryColumn.new()
 	col.name = "HistoryColumn"
 	col.setup(Callable(self, "_on_history_entry_tapped"), _view())
-	col.position = Vector2(HistoryColumn.COL_X, HistoryColumn.COL_Y)
+	# The left edge belongs to the Boss cards now; history runs down the
+	# right edge, above END TURN.
+	col.position = Vector2(_canvas_width() - HistoryColumn.ENTRY_W - HistoryColumn.COL_X, HistoryColumn.COL_Y)
 	add_child(col)
 	col.set_entries(_history)
 	_history_column = col
@@ -1716,11 +1716,6 @@ func _refresh_match() -> void:
 	_arrowhead.z_index = 101
 	add_child(_arrowhead)
 
-	# Emote popup label (created on demand).
-	_emote_label = CardView.label("", 44, CardView.GOLD_TEXT)
-	_emote_label.position = Vector2(340, 300)
-	_emote_label.visible = false
-	add_child(_emote_label)
 
 	# Sync the 3D board to the state (adds/updates/removes minions by uid,
 	# flips sides when the active player changed). Never rebuilds it.
@@ -2939,39 +2934,38 @@ func _show_emote_menu() -> void:
 	overlay.z_index = 250
 	_full_rect(overlay)
 	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", CardView.panel_style(Color(0.10, 0.09, 0.14, 0.98), 14))
-	panel.anchor_left = 0.5
-	panel.anchor_right = 0.5
-	panel.anchor_top = 1.0
-	panel.anchor_bottom = 1.0
-	panel.offset_left = -170
-	panel.offset_right = 170
-	panel.offset_top = -440
-	panel.offset_bottom = -170
-	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 8)
-	v.add_child(CardView.label("Send an emote:", 22, CardView.GOLD_TEXT))
-	var emote_names := ["Nicely done", "Whoops", "Whoa!", "Bring it"]
-	for ei in emote_names.size():
-		var eb := CardView.button(emote_names[ei], 20, 300, 52, CardView.EMOTE_COLORS[ei])
-		eb.pressed.connect(_on_emote_menu_picked.bind(emote_names[ei]))
-		v.add_child(eb)
-	panel.add_child(v)
-	overlay.add_child(panel)
-	overlay.gui_input.connect(_on_emote_menu_gui_input)
-	# Sprint 1a.3 (softlock audit): the panel (not the dim area — this
-	# menu has no dim bg) goes IGNORE; the four emote Buttons keep STOP
-	# so they stay tappable. Taps outside the buttons fall through to
-	# the overlay root and dismiss.
-	_modal_descendants_ignore(overlay)
 	add_child(overlay)
+	# Six plaques in two columns either side of your Boss.
+	var me: int = _view()
+	var c: Vector2 = _boss_head_canvas(me) + Vector2(0, 40)
+	for ei in Emotes.IDS.size():
+		var id: String = Emotes.IDS[ei]
+		var eb := EmotePill.new()
+		eb.name = "Emote_" + id
+		eb.label_text = str(Emotes.LABELS[id])
+		var col: int = ei % 2
+		var row: int = ei / 2
+		var x: float = c.x + (-EmotePill.W - 70.0 - row * 14.0 if col == 0 else 70.0 + row * 14.0)
+		var y: float = c.y - 70.0 + row * (EmotePill.H + 8.0)
+		eb.position = Vector2(x, y)
+		eb.pressed.connect(_on_emote_menu_picked.bind(id))
+		overlay.add_child(eb)
+		eb.scale = Vector2(0.6, 0.6)
+		eb.modulate.a = 0.0
+		var tw := eb.create_tween()
+		tw.tween_interval(ei * 0.025)
+		tw.tween_property(eb, "modulate:a", 1.0, 0.08)
+		tw.parallel().tween_property(eb, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	overlay.gui_input.connect(_on_emote_menu_gui_input)
+	# Sprint 1a.3 (softlock audit): only the buttons STOP; a tap anywhere
+	# else falls through to the overlay root and dismisses.
+	_modal_descendants_ignore(overlay)
 	_emote_menu = overlay
 
 
-func _on_emote_menu_picked(text: String) -> void:
+func _on_emote_menu_picked(id: String) -> void:
 	_dismiss_emote_menu()
-	_on_emote(text)
+	_send_emote(id)
 
 
 func _on_emote_menu_gui_input(event: InputEvent) -> void:
@@ -3204,14 +3198,72 @@ func _on_end_turn() -> void:
 	_after_end_turn()
 
 
-func _on_emote(text: String) -> void:
-	if _emote_label == null:
+# Your emote: your Boss says it (and acts it), and online it goes to the
+# other player. A short cooldown stops spamming.
+var _emote_ready_at: int = 0
+
+func _send_emote(id: String) -> void:
+	if Time.get_ticks_msec() < _emote_ready_at or _gs == null:
 		return
-	_emote_label.text = "Player %d: %s" % [_gs.active + 1, text]
-	_emote_label.visible = true
-	await get_tree().create_timer(2.0).timeout
-	if _emote_label != null:
-		_emote_label.visible = false
+	_emote_ready_at = Time.get_ticks_msec() + 1800
+	_show_emote(_view(), id)
+	if _online3d and _net_match != null:
+		_net_match.send_emote(id)
+	elif _vs_ai and id == "hey":
+		# The computer greets you back.
+		get_tree().create_timer(1.3).timeout.connect(func() -> void:
+			if _gs != null and _screen == Screen.MATCH:
+				_show_emote(1 - _view(), "hey"))
+
+
+# A Boss emote: a speech bubble beside the Boss's head, and the Boss acts.
+func _show_emote(p: int, id: String) -> void:
+	if _gs == null or p < 0 or p > 1:
+		return
+	var cls: String = str(_gs.players[p]["class"])
+	var old: Node = find_child("Bubble%d" % p, false, false)
+	if old != null:
+		old.queue_free()
+	# The same comic bubble as the title screen, in the Boss's color,
+	# beside the Boss's head (clear of the Crew rows), tail pointing at it.
+	var b := SpeechBubble.new()
+	b.name = "Bubble%d" % p
+	b.z_index = 120
+	add_child(b)
+	b.set_line(Emotes.line(cls, id), UIKit.CLASS_COLOR.get(cls, Color(1.0, 0.75, 0.35)))
+	var head: Vector2 = _boss_head_canvas(p)
+	var vs: Vector2 = get_viewport_rect().size
+	var pos := head + Vector2(58, -b.size.y * 0.5 + 26)
+	pos.x = clampf(pos.x, 170.0, vs.x - b.size.x - 210.0)
+	pos.y = clampf(pos.y, 10.0, vs.y - b.size.y - 10.0)
+	b.position = pos
+	b.set_target(head)
+	b.scale = Vector2(0.3, 0.3)
+	b.modulate.a = 0.0
+	var tw := b.create_tween()
+	tw.tween_property(b, "modulate:a", 1.0, 0.08)
+	tw.parallel().tween_property(b, "scale", Vector2.ONE, 0.32).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_interval(2.6)
+	tw.tween_property(b, "modulate:a", 0.0, 0.35)
+	tw.tween_callback(b.queue_free)
+	if _board_3d != null:
+		var u: HoloUnit = _board_3d.boss_unit(p)
+		if u != null:
+			u.emote_act(id)
+
+
+# Canvas position of a Boss's head (the speech bubble's tail points here).
+func _boss_head_canvas(p: int) -> Vector2:
+	if _board_3d != null:
+		var u: HoloUnit = _board_3d.boss_unit(p)
+		if u != null and u.is_inside_tree():
+			var h: float = HoloUnit.MODEL_HEIGHT * u.global_transform.basis.get_scale().y * 0.92
+			var c2t: Transform2D = get_viewport().get_canvas_transform().affine_inverse()
+			return c2t * _board_3d.screen_pos(u.global_position + Vector3(0, h, 0))
+	var hb: Variant = _hero_badges[p] if p >= 0 and p < _hero_badges.size() else null
+	if hb != null and is_instance_valid(hb):
+		return (hb as Control).get_global_rect().get_center()
+	return Vector2(640, 360)
 
 
 # --- Match log (user://match_log.jsonl, one JSON object per line) ---

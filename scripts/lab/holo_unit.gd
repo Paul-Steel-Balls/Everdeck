@@ -13,6 +13,7 @@ enum Style { CARD, FIGURE, BUST, MODEL }
 
 const HOLO_SHADER := preload("res://shaders/lab/holo.gdshader")
 const LITE_SHADER := preload("res://shaders/lab/holo_lite.gdshader")
+const OUTLINE_SHADER := preload("res://shaders/lab/holo_outline.gdshader")
 const MODEL_HEIGHT := 1.55  # tallest a model stands (before the unit's scale)
 const MODEL_WIDTH := 1.2   # widest it may be, so neighbours don't overlap
 
@@ -32,6 +33,16 @@ var act_lean: float = 0.0     # forward lean (radians, about the feet)
 var act_hop: float = 0.0      # extra height
 var act_step: Vector3 = Vector3.ZERO  # small step toward something
 var idle_sway: float = 0.16   # how far the idle look-around turns (radians)
+# Crew on the board face the other side of the table: units in the near
+# half (z > 0) turn by NEAR_YAW, far ones keep facing the camera (which is
+# the near side). Eased, so a stolen unit turns round as it changes rows.
+var face_enemy: bool = false
+var pop: bool = false            # set before _ready: outline + richer color
+const POP_SATURATION := 1.2
+const POP_CONTRAST := 1.08
+var near_yaw: float = PI
+var _base_yaw: float = 0.0
+var _yaw_set: bool = false
 
 var _vis: Node3D        # everything that moves/tilts with the unit
 var _mats: Array = []   # holo materials (for flash / dissolve / fade)
@@ -83,9 +94,13 @@ func _process(delta: float) -> void:
 			# Breathing and a slow look-around facing the camera, blended with
 			# any acting offsets.
 			var sway: float = sin(_t * 0.6 + home.x * 1.7) * idle_sway
+			if face_enemy and is_inside_tree():
+				var want: float = near_yaw if global_position.z > 0.0 else 0.0
+				_base_yaw = want if not _yaw_set else lerp_angle(_base_yaw, want, minf(1.0, delta * 5.0))
+				_yaw_set = true
 			_vis.position = act_step + Vector3(0, sin(_t * 2.0 + home.x) * 0.02 + 0.02 + act_hop, 0)
 			_vis.scale = Vector3(1.0, 1.0 + sin(_t * 2.6 + home.x) * 0.012, 1.0)
-			_vis.rotation = Vector3(act_lean, lerp_angle(sway, act_turn, act_w) + sway * act_w, 0)
+			_vis.rotation = Vector3(act_lean, lerp_angle(_base_yaw + sway, act_turn, act_w) + sway * act_w, 0)
 		Style.BUST:
 			var b: Node3D = _vis.get_node_or_null("Bust")
 			if b != null:
@@ -192,6 +207,18 @@ func _lite(src: Material) -> ShaderMaterial:
 			m.set_shader_parameter("orm_tex", orm)
 			m.set_shader_parameter("use_orm", true)
 	_mats.append(m)
+	if pop:
+		# Crew on the battlefield: richer colors, a brighter rim and a thin
+		# ink outline so they stand out from the arena floor.
+		m.set_shader_parameter("saturation", POP_SATURATION)
+		m.set_shader_parameter("contrast", POP_CONTRAST)
+		m.set_shader_parameter("rim_white", 0.45)
+		m.set_shader_parameter("rim_strength", 0.7)
+		var o := ShaderMaterial.new()
+		o.shader = OUTLINE_SHADER
+		o.set_shader_parameter("line_color", color.darkened(0.88))
+		m.next_pass = o
+		_mats.append(o)
 	return m
 
 func _build_card() -> void:
@@ -648,3 +675,43 @@ func ranged(to: Vector3) -> void:
 		tw3.parallel().tween_property(_arm, "rotation:x", 0.0, 0.2)
 	await tw3.finished
 	busy = false
+
+
+# Emotes: the Boss acts out what it says (hop, nod, bow, startle,
+# wobble, lunge), using the same acting offsets as attacks.
+func emote_act(id: String) -> void:
+	if busy:
+		return
+	var tw := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	match id:
+		"hey":
+			for i in 2:
+				tw.tween_property(self, "act_hop", 0.22, 0.13).set_ease(Tween.EASE_OUT)
+				tw.tween_property(self, "act_hop", 0.0, 0.13).set_ease(Tween.EASE_IN)
+		"nice":
+			for i in 2:
+				tw.tween_property(self, "act_lean", deg_to_rad(14), 0.14)
+				tw.tween_property(self, "act_lean", 0.0, 0.16)
+		"thanks":
+			tw.tween_property(self, "act_lean", deg_to_rad(28), 0.32)
+			tw.tween_interval(0.35)
+			tw.tween_property(self, "act_lean", 0.0, 0.35)
+		"whoa":
+			tw.tween_property(self, "act_lean", deg_to_rad(-16), 0.1).set_ease(Tween.EASE_OUT)
+			tw.parallel().tween_property(self, "act_hop", 0.3, 0.1).set_ease(Tween.EASE_OUT)
+			tw.tween_property(self, "act_hop", 0.0, 0.18).set_ease(Tween.EASE_IN)
+			tw.tween_interval(0.25)
+			tw.tween_property(self, "act_lean", 0.0, 0.3)
+		"whoops":
+			act_turn = _base_yaw
+			tw.tween_property(self, "act_w", 1.0, 0.05)
+			for a in [0.35, -0.35, 0.22, -0.12, 0.0]:
+				tw.tween_property(self, "act_turn", _base_yaw + float(a), 0.11)
+			tw.tween_property(self, "act_w", 0.0, 0.1)
+		"bring":
+			var fwd := Vector3(0, 0, 0.22).rotated(Vector3.UP, _base_yaw)
+			tw.tween_property(self, "act_lean", deg_to_rad(18), 0.16).set_ease(Tween.EASE_OUT)
+			tw.parallel().tween_property(self, "act_step", fwd, 0.16).set_ease(Tween.EASE_OUT)
+			tw.tween_interval(0.5)
+			tw.tween_property(self, "act_lean", 0.0, 0.3)
+			tw.parallel().tween_property(self, "act_step", Vector3.ZERO, 0.3)

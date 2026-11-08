@@ -65,10 +65,16 @@ func _tail_side_right() -> bool:
 	return _to_local(target).x > size.x
 
 
+func _tail_side_left() -> bool:
+	return _to_local(target).x < 0.0
+
+
 func _tail_base() -> Vector2:
 	var local_t: Vector2 = _to_local(target)
 	if _tail_side_right():
 		return Vector2(size.x, clamp(local_t.y, RADIUS + 14.0, size.y - RADIUS - 6.0))
+	if _tail_side_left():
+		return Vector2(0.0, clamp(local_t.y, RADIUS + 6.0, size.y - RADIUS - 6.0))
 	return Vector2(clamp(local_t.x, RADIUS + 18.0, size.x - RADIUS - 18.0), size.y)
 
 
@@ -86,6 +92,8 @@ func _tail_points(grow: float) -> PackedVector2Array:
 	var w: float = 13.0 + grow
 	if _tail_side_right():
 		return PackedVector2Array([base + Vector2(-6, -w), tip, base + Vector2(-6, w)])
+	if _tail_side_left():
+		return PackedVector2Array([base + Vector2(6, -w), tip, base + Vector2(6, w)])
 	return PackedVector2Array([base + Vector2(-w, -6), tip, base + Vector2(w, -6)])
 
 

@@ -16,7 +16,7 @@ const MAX_ENTRIES: int = 8
 const ENTRY_W: float = 30.0
 const ENTRY_H: float = 26.0
 const COL_X: float = 12.0
-const COL_Y: float = 189.0
+const COL_Y: float = 66.0   # top of the right-edge strip (ends above END TURN)
 
 const KIND_LETTER: Dictionary = {"played": "P", "attack": "A", "signature": "S"}
 

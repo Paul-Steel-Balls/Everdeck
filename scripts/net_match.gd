@@ -33,6 +33,7 @@ signal sync_applied(events: Array)
 signal action_rejected(reason: String)
 signal opponent_disconnected
 signal failed(reason: String)
+signal emote_received(id: String)
 
 # Both players must run the same build: the version rides on the deck
 # commitment, and a mismatch stops the handshake with a clear message.
@@ -121,6 +122,12 @@ func submit_action(act: Dictionary) -> void:
 		net.send_game(m)
 
 
+# Emotes ride the game channel; they never touch the game state.
+func send_emote(id: String) -> void:
+	if _started and net != null:
+		net.send_game({"t": "emote", "id": id})
+
+
 func leave() -> void:
 	net.close()
 
@@ -190,6 +197,9 @@ func _on_game_message(msg: Dictionary) -> void:
 		"act":
 			if role == "host" and _started:
 				_host_apply(1 - my_idx, msg)
+		"emote":
+			if _started and str(msg.get("id", "")) in Emotes.IDS:
+				emote_received.emit(str(msg.get("id", "")))
 		"reject":
 			action_rejected.emit(str(msg.get("reason", "Action rejected by host.")))
 		"reject_setup":
