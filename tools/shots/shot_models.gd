@@ -45,9 +45,13 @@ func _ready() -> void:
 	var cam := Camera3D.new()
 	cam.fov = 40
 	add_child(cam)
-	var dist: float = max(cols * sx, rows * sz) * 1.15
-	cam.position = Vector3(0, dist * 0.7, dist * 0.62)
-	cam.look_at(Vector3(0, 0.6, 0.3))
+	# Orthographic, so every row is the same size and nothing falls off
+	# the bottom however many rows there are.
+	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
+	cam.size = max(rows * sz * 0.8 + 1.6, (cols * sx) * 0.625 + 0.6)
+	cam.position = Vector3(0, 30.0, 26.0)
+	cam.look_at(Vector3(0, 0.6, 0.5))
+	cam.far = 200.0
 	cam.current = true
 	for k in 60:
 		await get_tree().process_frame
