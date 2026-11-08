@@ -13,6 +13,9 @@ class_name CardFrame
 enum Look { GILDED, HOLO }
 
 const BASE_W := 250.0
+const GOLD_TEX := preload("res://art/ui/gold.png")
+const WOOD_TEX := preload("res://art/ui/wood.png")
+const PARCH_TEX := preload("res://art/ui/parchment.png")
 const ASPECT := 1.45   # height / width
 
 var card: Dictionary = {}
@@ -127,7 +130,7 @@ func _rules_bbcode() -> String:
 func _text_rect() -> Rect2:
 	var k: float = _k()
 	if look == Look.GILDED:
-		return Rect2(Vector2(26, 222) * k, Vector2(198, 108) * k)
+		return Rect2(Vector2(30, 222) * k, Vector2(190, 106) * k)
 	return Rect2(Vector2(22, 222) * k, Vector2(206, 110) * k)
 
 
@@ -209,6 +212,106 @@ func _art(dst: Rect2, mask: PackedVector2Array) -> void:
 	draw_colored_polygon(mask, Color.WHITE, uvs, _tex)
 
 
+# Live numbers (a Crew member on the board): damaged health red-pink,
+# anything above the printed value green.
+func _stat_col(stat: String) -> Color:
+	var v: int = int(card.get(stat, 0))
+	if stat == "health" and v < int(card.get("max_health", v)):
+		return Color(1.0, 0.55, 0.55)
+	if v > int(card.get("base_" + stat, v)):
+		return Color(0.5, 1.0, 0.5)
+	return Color.WHITE
+
+
+# A polygon filled with a material texture (gold / wood / parchment).
+# UVs come from card space, so the grain stays put as shapes overlap;
+# `fit` maps the texture onto one rect instead (the parchment plate).
+func _tex_poly(p: PackedVector2Array, tex: Texture2D, mod: Color, uv_scale: float = 1.0, fit: Rect2 = Rect2()) -> void:
+	if p.size() < 3:
+		return
+	var uvs := PackedVector2Array()
+	for v in p:
+		if fit.size.x > 0.0:
+			uvs.append((v - fit.position) / fit.size)
+		else:
+			uvs.append(v / size.y * uv_scale)
+	draw_colored_polygon(p, mod, uvs, tex)
+
+
+# The parts of a polygon between two heights (for bevel light / shade).
+func _band(p: PackedVector2Array, y0: float, y1: float) -> Array:
+	var r := PackedVector2Array([Vector2(-10, y0), Vector2(size.x + 10, y0), Vector2(size.x + 10, y1), Vector2(-10, y1)])
+	return Geometry2D.intersect_polygons(p, r)
+
+
+# A bright line along the upper edges and a dark one along the lower,
+# so a gold shape reads as raised metal.
+func _edge_light(p: PackedVector2Array, w: float) -> void:
+	var c := Vector2.ZERO
+	for v in p:
+		c += v
+	c /= p.size()
+	for i in p.size():
+		var a: Vector2 = p[i]
+		var b: Vector2 = p[(i + 1) % p.size()]
+		var n := (b - a).orthogonal().normalized()
+		if n.dot(c - (a + b) * 0.5) < 0.0:
+			n = -n
+		var lit: float = n.dot(Vector2(0.45, 0.9))  # light from the top-left
+		var col: Color = Color(1, 0.97, 0.82, 0.75 * clampf(lit, 0.0, 1.0)) if lit > 0.0 else Color(0.18, 0.09, 0.02, 0.55 * clampf(-lit, 0.0, 1.0))
+		draw_line(a + n * w * 0.6, b + n * w * 0.6, col, w, true)
+
+
+# Soft shadow just inside a shape's edge (it sits below what's around it).
+func _inner_shadow(p: PackedVector2Array, w: float) -> void:
+	var c := Vector2.ZERO
+	for v in p:
+		c += v
+	c /= p.size()
+	for j in 3:
+		var f: float = 1.0 - j / 3.0
+		var q := PackedVector2Array()
+		for v in p:
+			q.append(v + (c - v).normalized() * w * (j + 0.5) / 3.0)
+		q.append(q[0])
+		draw_polyline(q, Color(0, 0, 0, 0.22 * f), w / 3.0 + 0.5, true)
+
+
+func _round_rect_poly(r: Rect2, rad: float) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	var cs := [r.position + Vector2(rad, rad), Vector2(r.end.x - rad, r.position.y + rad), r.end - Vector2(rad, rad), Vector2(r.position.x + rad, r.end.y - rad)]
+	for ci in 4:
+		for i in 7:
+			var a: float = PI + ci * PI * 0.5 + PI * 0.5 * i / 6.0
+			pts.append(cs[ci] + Vector2(cos(a), sin(a)) * rad)
+	return pts
+
+
+# A glowing rune stud set into the wood: a gold diamond with a lit core.
+func _rune(c: Vector2, glow: Color) -> void:
+	var k: float = _k()
+	draw_circle(c, 6.0 * k, Color(glow.r, glow.g, glow.b, 0.18))
+	var r: float = 3.6 * k
+	var d := PackedVector2Array([c + Vector2(0, -r), c + Vector2(r * 0.7, 0), c + Vector2(0, r), c + Vector2(-r * 0.7, 0)])
+	draw_colored_polygon(_scaled(d, c, 1.35), Color(0.2, 0.1, 0.03))
+	_tex_poly(d, GOLD_TEX, Color(1.2, 1.1, 0.95))
+	draw_circle(c, 1.3 * k, glow.lightened(0.5))
+
+
+# A small gold inlay curl with a soft magical glow. dir 1 = left corner.
+func _flourish(at: Vector2, dir: float, glow: Color) -> void:
+	var k: float = _k()
+	var pts := PackedVector2Array()
+	for i in 18:
+		var t: float = i / 17.0
+		var a: float = t * TAU * 0.85
+		var r: float = (11.0 - 7.0 * t) * k
+		pts.append(at + Vector2(dir * (6.0 * k + cos(a) * r), -sin(a) * r - t * 10.0 * k))
+	draw_polyline(pts, Color(glow.r, glow.g, glow.b, 0.25), 5.0 * k, true)
+	draw_polyline(pts, Color(0.22, 0.12, 0.03, 0.9), 2.6 * k, true)
+	draw_polyline(pts, Color(1.0, 0.82, 0.4), 1.4 * k, true)
+
+
 func _ink(poly: PackedVector2Array, w: float) -> void:
 	var p := poly.duplicate()
 	p.append(poly[0])
@@ -275,7 +378,7 @@ func _scaled(p: PackedVector2Array, c: Vector2, f: float) -> PackedVector2Array:
 
 
 # A cut gem with a number: rim, body, top facet highlight.
-func _num_gem(c: Vector2, r: float, sides: int, rot: float, body: Color, rim: Color, n: String, fs: int) -> void:
+func _num_gem(c: Vector2, r: float, sides: int, rot: float, body: Color, rim: Color, n: String, fs: int, num_col: Color = Color.WHITE) -> void:
 	var g := _gem_poly(c, r, sides, rot)
 	draw_colored_polygon(_scaled(g, c + Vector2(0, 3) * _k(), 1.08), Color(0, 0, 0, 0.45))
 	draw_colored_polygon(_scaled(g, c, 1.22), UIKit.INK)
@@ -289,7 +392,8 @@ func _num_gem(c: Vector2, r: float, sides: int, rot: float, body: Color, rim: Co
 			hi.append(v)
 	if hi.size() >= 3:
 		draw_colored_polygon(_scaled(g, c + Vector2(0, -r * 0.18), 0.6), body.lightened(0.28))
-	_text(_font, Vector2(c.x - r, c.y + fs * 0.38), n, fs, Color.WHITE, int(7 * _k()), r * 2.0)
+	draw_circle(c + Vector2(-r * 0.42, -r * 0.48), r * 0.13, Color(1, 1, 1, 0.85))
+	_text(_font, Vector2(c.x - r, c.y + fs * 0.38), n, fs, num_col, int(7 * _k()), r * 2.0)
 
 
 # --- GILDED ---
@@ -303,50 +407,66 @@ func _draw_gilded() -> void:
 	var gold_d: Color = UIKit.GOLD_DEEP.darkened(0.3)
 	var full := Rect2(Vector2.ZERO, size)
 	var crew: bool = _is_crew()
-	# Body + frame.
+	# Shadow under the card.
 	var sh := _chamfer(full.grow(-1), 16 * k)
 	for i in sh.size():
-		sh[i] += Vector2(0, 6) * k
-	draw_colored_polygon(sh, Color(0, 0, 0, 0.5))
-	draw_colored_polygon(_chamfer(full, 16 * k), gold_d)
-	draw_colored_polygon(_chamfer(full.grow(-2.5 * k), 15 * k), gold)
-	var up := PackedVector2Array()
-	for v in _chamfer(full.grow(-2.5 * k), 15 * k):
-		up.append(Vector2(v.x, minf(v.y, H * 0.4)))
-	draw_colored_polygon(up, gold.lightened(0.3))
-	draw_colored_polygon(_chamfer(full.grow(-6 * k), 13 * k), gold_d)
-	# Inner body: the class color, dark, with a lighter centre.
-	var inner := _chamfer(full.grow(-8 * k), 12 * k)
-	draw_colored_polygon(inner, col.darkened(0.72))
-	# Thin ink lines on the gilding (outer edge and inner edge) so the
-	# gold pops off anything behind it.
+		sh[i] += Vector2(0, 7) * k
+	draw_colored_polygon(sh, Color(0, 0, 0, 0.55))
+	# Gold frame, lit from the top-left: a dark outer rim, the gold body
+	# with a bright upper bevel and a shaded lower half, a specular line
+	# along the top edge, and a dark groove where it meets the wood.
+	var rim := _chamfer(full, 16 * k)
+	var body := _chamfer(full.grow(-2.2 * k), 15 * k)
+	_tex_poly(rim, GOLD_TEX, Color(0.5, 0.42, 0.34))
+	_tex_poly(body, GOLD_TEX, Color(1.0, 0.97, 0.92))
+	for part in _band(body, -1.0, H * 0.3):
+		_tex_poly(part, GOLD_TEX, Color(1.32, 1.26, 1.1))
+	for part in _band(body, H * 0.62, H + 1.0):
+		_tex_poly(part, GOLD_TEX, Color(0.78, 0.7, 0.62))
+	_edge_light(body, 1.4 * k)
+	var groove := _chamfer(full.grow(-6.5 * k), 13 * k)
+	_tex_poly(groove, GOLD_TEX, Color(0.42, 0.33, 0.24))
+	# Wood body, faintly stained with the class color, sunk below the gold
+	# (an inner shadow along its edge).
+	var inner := _chamfer(full.grow(-8.5 * k), 12 * k)
+	_tex_poly(inner, WOOD_TEX, Color(1, 1, 1).lerp(col.lightened(0.2), 0.22), 1.6)
+	_inner_shadow(inner, 7.0 * k)
+	# Thin ink lines on the gilding so the gold pops off anything behind.
 	_ink(_chamfer(full.grow(-0.5 * k), 16 * k), 1.6 * k)
-	_ink(inner, 1.4 * k)
-	draw_colored_polygon(_chamfer(full.grow(-20 * k), 8 * k), col.darkened(0.6))
-	# Art window: arched for Crew, cut corners for Tricks.
-	var aw := Rect2(Vector2(18, 18) * k, Vector2(W - 36 * k, 190 * k))
+	_ink(inner, 1.2 * k)
+	# Magic in the wood: a faint class-colored glow just inside the gold,
+	# and glowing rune studs down both sides.
+	var glow_c: Color = col.lightened(0.35)
+	for j in 3:
+		var q := PackedVector2Array()
+		var cc := Vector2(W, H) * 0.5
+		for v in inner:
+			q.append(v + (cc - v).normalized() * (2.0 + j * 2.0) * k)
+		q.append(q[0])
+		draw_polyline(q, Color(glow_c.r, glow_c.g, glow_c.b, 0.16 - j * 0.045), 2.2 * k, true)
+	for side in [14.5 * k, W - 14.5 * k]:
+		for yy in [70.0, 118.0, 166.0]:
+			_rune(Vector2(side, yy * k), glow_c)
+	# Art window: arched for Crew, cut corners for Tricks; a raised gold
+	# ring around it.
+	var aw := Rect2(Vector2(22, 19) * k, Vector2(W - 44 * k, 189 * k))
 	var mask: PackedVector2Array = _poly_round_top(aw, aw.size.x * 0.5, 18) if crew else _chamfer(aw, 18 * k)
-	var outer: PackedVector2Array = _poly_round_top(aw.grow(4 * k), aw.size.x * 0.5 + 4 * k, 18) if crew else _chamfer(aw.grow(4 * k), 20 * k)
-	draw_colored_polygon(outer, gold_d)
-	draw_colored_polygon(_poly_round_top(aw.grow(2.5 * k), aw.size.x * 0.5 + 2.5 * k, 18) if crew else _chamfer(aw.grow(2.5 * k), 19 * k), gold)
+	var outer: PackedVector2Array = _poly_round_top(aw.grow(4.5 * k), aw.size.x * 0.5 + 4.5 * k, 18) if crew else _chamfer(aw.grow(4.5 * k), 20 * k)
+	var ring: PackedVector2Array = _poly_round_top(aw.grow(3 * k), aw.size.x * 0.5 + 3 * k, 18) if crew else _chamfer(aw.grow(3 * k), 19 * k)
+	_tex_poly(outer, GOLD_TEX, Color(0.45, 0.36, 0.28))
+	_tex_poly(ring, GOLD_TEX, Color(1.15, 1.1, 1.0))
+	_edge_light(ring, 1.2 * k)
 	_art(aw, mask)
+	_inner_shadow(mask, 6.0 * k)
 	_ink(outer, 1.4 * k)
 	_ink(mask, 1.2 * k)
-	# Text plate: parchment.
-	var tr := Rect2(Vector2(20, 214) * k, Vector2(W - 40 * k, 126 * k))
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.93, 0.87, 0.74)
-	sb.set_corner_radius_all(int(10 * k))
-	sb.border_color = gold_d
-	sb.set_border_width_all(int(maxf(2.0, 2.5 * k)))
-	draw_style_box(sb, tr)
-	var ink_sb := StyleBoxFlat.new()
-	ink_sb.draw_center = false
-	ink_sb.set_corner_radius_all(int(11 * k))
-	ink_sb.border_color = UIKit.INK
-	ink_sb.set_border_width_all(maxi(1, int(1.3 * k)))
-	draw_style_box(ink_sb, tr.grow(1.0 * k))
-	draw_rect(Rect2(tr.position + Vector2(4, 4) * k, Vector2(tr.size.x - 8 * k, tr.size.y * 0.35)), Color(1, 1, 1, 0.18))
+	# Text plate: parchment, in a thin gold bezel.
+	var tr := Rect2(Vector2(24, 214) * k, Vector2(W - 48 * k, 124 * k))
+	var plate := _round_rect_poly(tr, 10 * k)
+	_tex_poly(_round_rect_poly(tr.grow(2.5 * k), 12 * k), GOLD_TEX, Color(0.7, 0.6, 0.48))
+	_tex_poly(plate, PARCH_TEX, Color.WHITE, 1.0, tr)
+	_inner_shadow(plate, 5.0 * k)
+	_ink(_round_rect_poly(tr.grow(3.5 * k), 13 * k), 1.3 * k)
 	# Name ribbon across the bottom of the art.
 	var ry: float = 188 * k
 	var rib := Rect2(Vector2(6 * k, ry), Vector2(W - 12 * k, 34 * k))
@@ -388,8 +508,8 @@ func _draw_gilded() -> void:
 	# (red, bottom-right).
 	_num_gem(Vector2(22, 24) * k, 24 * k, 6, -PI / 2, Color(0.15, 0.42, 0.95), Color(0.75, 0.88, 1.0), str(int(card.get("cost", 0))), int(30 * k))
 	if crew:
-		_num_gem(Vector2(24 * k, H - 26 * k), 23 * k, 4, -PI / 2, Color(0.95, 0.6, 0.1), gold, str(int(card.get("attack", 0))), int(28 * k))
-		_num_gem(Vector2(W - 24 * k, H - 26 * k), 23 * k, 8, -PI / 8, Color(0.82, 0.12, 0.16), gold, str(int(card.get("health", 0))), int(28 * k))
+		_num_gem(Vector2(24 * k, H - 26 * k), 23 * k, 4, -PI / 2, Color(0.95, 0.6, 0.1), gold, str(int(card.get("attack", 0))), int(28 * k), _stat_col("attack"))
+		_num_gem(Vector2(W - 24 * k, H - 26 * k), 23 * k, 8, -PI / 8, Color(0.82, 0.12, 0.16), gold, str(int(card.get("health", 0))), int(28 * k), _stat_col("health"))
 
 
 # --- HOLO ---

@@ -26,10 +26,11 @@ func _ready() -> void:
 	var gs: GameState = m._gs
 	gs.players[me]["board"] = []
 	gs.players[foe]["board"] = []
-	for cid in _crew(hc, 5):
-		gs.players[me]["board"].append(_minion(gs, cid, true))
-	for cid in _crew(oc, 5):
-		gs.players[foe]["board"].append(_minion(gs, cid, false))
+	var nb: int = int(OS.get_environment("SHOT_N")) if OS.get_environment("SHOT_N") != "" else 5
+	for i in nb:
+		gs.players[me]["board"].append(_minion(gs, _crew(hc, 7)[i % _crew(hc, 7).size()], true))
+	for i in nb:
+		gs.players[foe]["board"].append(_minion(gs, _crew(oc, 7)[i % _crew(oc, 7).size()], false))
 	gs.players[me]["board"][1]["attack"] = 9
 	gs.players[me]["hand"] = [_crew(hc, 7)[6]]
 	if OS.get_environment("SHOT_FULLHAND") != "":
@@ -44,6 +45,20 @@ func _ready() -> void:
 	gs.players[foe]["mana"] = 4
 	gs.players[foe]["max_mana"] = 6
 	m._refresh_match()
+	if OS.get_environment("SHOT_HOVER") != "":
+		await _frames(40)
+		gs.players[foe]["board"][1]["health"] = 1
+		m._refresh_match()
+		await _frames(4)
+		m._show_hover_card(int(gs.players[foe]["board"][1]["uid"]), foe)
+		await _frames(10)
+		await _shot("hover_enemy")
+		m._clear_hover_card()
+		m._show_hover_card(int(gs.players[me]["board"][5]["uid"]), me)
+		await _frames(10)
+		await _shot("hover_mine")
+		get_tree().quit()
+		return
 	if OS.get_environment("SHOT_ARROW") != "":
 		await _frames(40)
 		var a := TargetArrow.new()

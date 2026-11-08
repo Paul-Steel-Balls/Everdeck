@@ -187,6 +187,7 @@ func _process(delta: float) -> void:
 		_center_deckbuild_grid()
 		_deckbuild_fling_step(delta)
 	_tick_turn_clock(delta)
+	_tick_hover_card()
 	# Long-press -> inspect (Sprint 1a.2; touch primary path). Not while
 	# animating.
 	if _animating or _ai_turn:
@@ -1594,33 +1595,20 @@ func _refresh_match() -> void:
 	# Sprint 1c: the top-left log line is gone (it ran over the light wood
 	# rim and was unreadable). The action history column below replaces it.
 
-	# "YOUR TURN" marker, top-center — on a dark translucent pill
-	# (gold on light wood was unreadable). Sprint 1a.3.
-	var turn_pill := PanelContainer.new()
-	turn_pill.name = "TurnPill"
-	var pill_sb := StyleBoxFlat.new()
-	pill_sb.bg_color = Color(0.05, 0.04, 0.08, 0.72)
-	pill_sb.corner_radius_top_left = 18
-	pill_sb.corner_radius_top_right = 18
-	pill_sb.corner_radius_bottom_left = 18
-	pill_sb.corner_radius_bottom_right = 18
-	pill_sb.content_margin_left = 24
-	pill_sb.content_margin_right = 24
-	pill_sb.content_margin_top = 6
-	pill_sb.content_margin_bottom = 6
-	turn_pill.add_theme_stylebox_override("panel", pill_sb)
-	turn_pill.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var turn_text: String = "YOUR TURN \u2014 Player %d" % (active + 1)
+	# Turn plaque, top-center: a gold-edged ribbon in the display font
+	# (lit violet on your turn, dim steel on theirs).
+	var turn_text: String = "YOUR TURN \u2014 PLAYER %d" % (active + 1)
+	var my_turn: bool = true
 	if _vs_ai:
-		turn_text = "YOUR TURN" if _gs.active == _human_idx else "COMPUTER'S TURN"
+		my_turn = _gs.active == _human_idx
+		turn_text = "YOUR TURN" if my_turn else "COMPUTER'S TURN"
 	elif _online3d:
-		turn_text = "YOUR TURN" if _gs.active == _human_idx else "OPPONENT'S TURN"
-	var turn_l := CardView.label(turn_text, 24, CardView.GOLD_TEXT)
-	turn_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	turn_l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	turn_pill.add_child(turn_l)
-	turn_pill.position = Vector2(vw / 2 - 170, 10)
-	turn_pill.size = Vector2(340, 44)
+		my_turn = _gs.active == _human_idx
+		turn_text = "YOUR TURN" if my_turn else "OPPONENT'S TURN"
+	var turn_pill := TurnBanner.new()
+	turn_pill.name = "TurnPill"
+	turn_pill.setup(turn_text, my_turn, 22)
+	turn_pill.position = Vector2(vw / 2 - turn_pill.size.x / 2, 8)
 	add_child(turn_pill)
 
 	# Sprint 1c: action history column (replaces the unreadable top-left
@@ -1962,16 +1950,19 @@ func _play_your_turn_banner() -> void:
 		banner_text = "COMPUTER'S TURN"
 	elif _online3d and _gs != null and _gs.active != _human_idx:
 		banner_text = "OPPONENT'S TURN"
-	var banner := CardView.label(banner_text, 56, CardView.GOLD_TEXT)
+	var banner := TurnBanner.new()
 	banner.name = "YourTurnBanner"
-	banner.position = Vector2(-600, 330)
+	banner.setup(banner_text, banner_text == "YOUR TURN", 54)
+	var vw2: float = _canvas_width()
+	var mid_x: float = vw2 * 0.5 - banner.size.x * 0.5
+	banner.position = Vector2(-banner.size.x - 40.0, 300)
 	banner.z_index = 150
 	add_child(banner)
 	var dur: float = AnimDirector.BANNER_TIME
 	var tw := create_tween()
-	tw.tween_property(banner, "position:x", 340.0, dur * 0.35).set_ease(Tween.EASE_OUT)
-	tw.tween_property(banner, "position:x", 340.0, dur * 0.3)
-	tw.tween_property(banner, "position:x", 1400.0, dur * 0.35).set_ease(Tween.EASE_IN)
+	tw.tween_property(banner, "position:x", mid_x, dur * 0.35).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	tw.tween_property(banner, "position:x", mid_x + 12.0, dur * 0.3)
+	tw.tween_property(banner, "position:x", vw2 + 40.0, dur * 0.35).set_ease(Tween.EASE_IN)
 	await tw.finished
 	banner.queue_free()
 
@@ -2861,8 +2852,9 @@ func _inspect_data_for_minion(minion: Dictionary) -> Dictionary:
 	d["attack"] = int(minion.get("attack", d["attack"]))
 	d["health"] = int(minion.get("health", d["health"]))
 	d["max_health"] = int(minion.get("max_health", d["max_health"]))
+	d["taunt"] = bool(minion.get("taunt", false))
 	if bool(minion.get("sick", false)) and not bool(minion.get("can_attack", false)):
-		d["text"] = (str(d["text"]) + "\n\n" if str(d["text"]) != "" else "") + "Warming up. Can attack next turn."
+		d["status"] = "Warming up. Can attack next turn."
 	return d
 
 
@@ -2926,6 +2918,9 @@ func _show_inspect_for_target(tgt: Dictionary) -> void:
 
 func _show_inspect(data: Dictionary) -> void:
 	if data.is_empty() or _inspect_overlay != null:
+		return
+	if not bool(data.get("is_hero", false)) and not bool(data.get("is_power", false)) and str(data.get("detail_line", "")) == "":
+		_show_card_inspect(data)
 		return
 	_hide_arrow()
 	_clear_highlights()
@@ -3027,6 +3022,150 @@ func _show_inspect(data: Dictionary) -> void:
 	_modal_descendants_ignore(overlay)
 	add_child(overlay)
 	_inspect_overlay = overlay
+
+
+# --- Hover a Crew member on the board: after a moment its card pops up
+# beside it (no click needed), and goes away when the mouse moves off. ---
+const HOVER_CARD_MS: int = 800
+var _hover_uid: int = -1
+var _hover_since: int = 0
+var _hover_card: Control = null
+
+
+func _tick_hover_card() -> void:
+	var busy: bool = _screen != Screen.MATCH or _board_3d == null or _gs == null or not _press.is_empty() \
+		or not _drag.is_empty() or _inspect_overlay != null or _emote_menu != null \
+		or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+	var uid: int = -1
+	var owner_p: int = -1
+	if not busy:
+		var hit: Dictionary = _board_3d.pick(get_viewport().get_canvas_transform() * get_global_mouse_position())
+		if str(hit.get("kind", "")) == "minion":
+			uid = int(hit.get("uid", -1))
+			owner_p = int(hit.get("player", -1))
+	if uid != _hover_uid:
+		_clear_hover_card()
+		_hover_uid = uid
+		_hover_since = Time.get_ticks_msec()
+		return
+	if uid >= 0 and _hover_card == null and Time.get_ticks_msec() - _hover_since >= HOVER_CARD_MS:
+		_show_hover_card(uid, owner_p)
+
+
+func _clear_hover_card() -> void:
+	if _hover_card != null and is_instance_valid(_hover_card):
+		_hover_card.queue_free()
+	_hover_card = null
+
+
+func _show_hover_card(uid: int, p: int) -> void:
+	if p < 0 or p > 1:
+		return
+	var minion: Dictionary = {}
+	for m in _gs.players[p]["board"]:
+		if _gs.uid_for(m) == uid:
+			minion = m
+	if minion.is_empty():
+		return
+	var data: Dictionary = _inspect_data_for_minion(minion)
+	if data.is_empty():
+		return
+	var res: Dictionary = _board_3d.minion_position(uid)
+	if not bool(res.get("found", false)):
+		return
+	var sp: Vector2 = get_viewport().get_canvas_transform().affine_inverse() * _board_3d.screen_pos(res["position"])
+	var cw: float = 230.0
+	var ch: float = cw * CardFrame.ASPECT
+	var box := VBoxContainer.new()
+	box.name = "HoverCard"
+	box.z_index = 200
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_theme_constant_override("separation", 4)
+	box.add_child(CardView.make_card_button(_live_card(data), int(cw), int(ch)))
+	_inspect_extras(box, data, 16)
+	add_child(box)
+	# Purely a picture: nothing in it takes the mouse.
+	for n in box.find_children("*", "Control", true, false):
+		(n as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var vw: float = _canvas_width()
+	var x: float = sp.x + 80.0 if sp.x < vw * 0.5 else sp.x - 80.0 - cw
+	box.position = Vector2(x, clampf(sp.y - ch * 0.5, 10.0, 720.0 - ch - 60.0))
+	box.size.x = cw
+	box.modulate.a = 0.0
+	box.create_tween().tween_property(box, "modulate:a", 1.0, 0.12)
+	_hover_card = box
+
+
+# A card or Crew member: the same gilded card as in your hand (current
+# attack / health, damaged health in red, buffs in green), with its
+# status and keyword help underneath.
+func _show_card_inspect(data: Dictionary) -> void:
+	_hide_arrow()
+	_clear_highlights()
+	var overlay := Control.new()
+	overlay.name = "InspectOverlay"
+	overlay.z_index = 300
+	_full_rect(overlay)
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	var bg := ColorRect.new()
+	bg.color = Color(0, 0, 0, 0.55)
+	_full_rect(bg)
+	overlay.add_child(bg)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 8)
+	v.alignment = BoxContainer.ALIGNMENT_CENTER
+	_full_rect(v)
+	var cw := HBoxContainer.new()
+	cw.alignment = BoxContainer.ALIGNMENT_CENTER
+	cw.add_child(CardView.make_card_button(_live_card(data), 320, 464))
+	v.add_child(cw)
+	_inspect_extras(v, data, 20)
+	overlay.add_child(v)
+	overlay.gui_input.connect(_on_inspect_gui_input)
+	_modal_descendants_ignore(overlay)
+	add_child(overlay)
+	_inspect_overlay = overlay
+
+
+# The card dictionary with the live numbers from inspect data.
+func _live_card(data: Dictionary) -> Dictionary:
+	var c: Dictionary = CardDB.get_card(str(data.get("card_id", ""))).duplicate()
+	if c.is_empty():
+		c = {"id": str(data.get("card_id", "")), "name": str(data.get("name", "")), "type": "minion", "cost": 0, "text": str(data.get("text", "")), "class": "neutral", "art": str(data.get("art_id", ""))}
+	c["attack"] = int(data.get("attack", c.get("attack", 0)))
+	c["health"] = int(data.get("health", c.get("health", 0)))
+	c["max_health"] = int(data.get("max_health", c["health"]))
+	c["base_attack"] = int(data.get("base_attack", c["attack"]))
+	c["base_health"] = int(data.get("base_health", c["health"]))
+	return c
+
+
+func _inspect_extras(v: VBoxContainer, data: Dictionary, fs: int) -> void:
+	var st: String = str(data.get("status", ""))
+	var kws: Array = data.get("keywords", [])
+	if st == "" and kws.is_empty():
+		return
+	# On a dark plate so it reads over the board.
+	var plate := PanelContainer.new()
+	plate.add_theme_stylebox_override("panel", CardView.panel_style(Color(0.06, 0.04, 0.1, 0.88), 10))
+	var inner := VBoxContainer.new()
+	inner.add_theme_constant_override("separation", 2)
+	plate.add_child(inner)
+	if st != "":
+		var sl := CardView.label(st, fs, Color(0.75, 0.85, 1.0))
+		sl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		sl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		inner.add_child(sl)
+	for kw in kws:
+		var kw_l := CardView.label("%s — %s" % [kw, KEYWORD_HELP.get(kw, "")], fs - 2, CardView.GOLD_TEXT)
+		kw_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		kw_l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		inner.add_child(kw_l)
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	plate.custom_minimum_size.x = 300.0 if fs >= 18 else 230.0
+	row.add_child(plate)
+	v.add_child(row)
 
 
 func _on_inspect_gui_input(event: InputEvent) -> void:

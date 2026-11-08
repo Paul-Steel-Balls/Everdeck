@@ -1620,25 +1620,12 @@ func _run_all() -> void:
 	await get_tree().process_frame
 	_check("inspect: long-press on enemy minion opens the panel", m3._inspect_overlay != null)
 	if m3._inspect_overlay != null:
-		var found_hp: bool = false
-		var hp_red: bool = false
-		var found_kw: bool = false
-		var stack: Array = [m3._inspect_overlay]
-		while not stack.is_empty():
-			var n: Node = stack.pop_back()
-			if n is Label:
-				var lt: String = (n as Label).text
-				if lt == "HP 1":
-					found_hp = true
-					# Damaged health shows red.
-					hp_red = (n as Label).get_theme_color("font_color").r > 0.8
-				if lt.begins_with("Bouncer"):
-					found_kw = true
-			for ch in n.get_children():
-				stack.append(ch)
-		_check("inspect: shows CURRENT health (1, damaged)", found_hp)
-		_check("inspect: damaged health is red", hp_red)
-		_check("inspect: shows the Bouncer keyword line", found_kw)
+		# The inspect is the gilded card itself, with the LIVE numbers.
+		var cf3: CardFrame = m3._inspect_overlay.find_child("Face", true, false) as CardFrame
+		_check("inspect: shows the Crew member as its card", cf3 != null)
+		_check("inspect: shows CURRENT health (1, damaged)", cf3 != null and int(cf3.card["health"]) == 1)
+		_check("inspect: damaged health is red", cf3 != null and cf3._stat_col("health").g < 0.8)
+		_check("inspect: shows the Bouncer keyword line", _has_label_with(m3._inspect_overlay, "Bouncer"))
 		m3._dismiss_inspect()
 	m3.queue_free()
 
@@ -2908,7 +2895,7 @@ func _run_all() -> void:
 	wmd["can_attack"] = true
 	wm.update_stats(wmd, true)
 	_check("step2: warming clears once it can attack", wm.unit == null or (not wm.warming and not wm._warm_ring.visible))
-	_check("step2: inspect says it's warming up", "Warming up" in str(mt._inspect_data_for_minion({"card_id": wmd["card_id"], "sick": true, "can_attack": false}).get("text", "")))
+	_check("step2: inspect says it's warming up", "Warming up" in str(mt._inspect_data_for_minion({"card_id": wmd["card_id"], "sick": true, "can_attack": false}).get("status", "")))
 	wm.queue_free()
 	_check("step2: turn clock starts at 90s", mt._turn_timer != null and absf(mt._turn_timer.left - 90.0) < 1.0 and not mt._turn_timer.warning())
 	mt._turn_timer.left = 14.0

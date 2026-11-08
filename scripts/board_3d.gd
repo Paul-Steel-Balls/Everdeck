@@ -29,14 +29,14 @@ class_name Board3D
 # Step 2 (the real battlefield): the lab's layout. Crew stand as 3D
 # models on a themed floating platform, Bosses at z = +/-4.9 with your
 # deck's set piece beside you, seen from a fixed camera.
-const TOKEN_SCALE: float = 1.22  # Crew nodes are scaled to this
+const TOKEN_SCALE: float = 1.55  # Crew nodes are scaled to this (was 1.22)
 # Visual footprint radius in world units (the summoning pad). The 2D stat
 # badges sit at +/-0.70r, so their outer edge lands on the footprint.
-const TOKEN_VISUAL_R: float = 0.72
+const TOKEN_VISUAL_R: float = 0.88
 # Slot spacing: footprint plus a small visible gap. Seven per row fit.
 const SLOT_SPACING: float = TOKEN_VISUAL_R * 2.0 + 0.06
-const MY_ROW_Z: float = 1.85
-const ENEMY_ROW_Z: float = -1.85
+const MY_ROW_Z: float = 2.0
+const ENEMY_ROW_Z: float = -2.0
 const CENTER_Z: float = 0.0
 const ROW_CENTER_X: float = 0.0
 const BOSS_SCALE: float = 1.75
