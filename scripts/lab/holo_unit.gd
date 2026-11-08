@@ -153,6 +153,21 @@ func _emitter(radius: float) -> void:
 	add_child(mi)
 
 
+# A soft dark pool under the model so it sits on the floor.
+func _contact_shadow(radius: float) -> void:
+	var q := PlaneMesh.new()
+	q.size = Vector2(radius * 2.6, radius * 2.2)
+	var m := ShaderMaterial.new()
+	m.shader = preload("res://shaders/lab/blob_shadow.gdshader")
+	var mi := MeshInstance3D.new()
+	mi.name = "ContactShadow"
+	mi.mesh = q
+	mi.material_override = m
+	mi.position = Vector3(0, 0.018, 0.05)
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(mi)
+
+
 func _cone(height: float, radius: float) -> void:
 	# Soft light cone rising from the pad.
 	var c := CylinderMesh.new()
@@ -176,6 +191,7 @@ func _build_model() -> bool:
 	var root: Node3D = ModelLib.instance(card_id)
 	if root == null:
 		return false
+	_contact_shadow(0.62)
 	_emitter(0.5)
 	var box: AABB = ModelLib.bounds(root)
 	var k: float = min(MODEL_HEIGHT / max(box.size.y, 0.01), MODEL_WIDTH / max(max(box.size.x, box.size.z), 0.01))

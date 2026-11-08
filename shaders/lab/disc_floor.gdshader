@@ -5,7 +5,7 @@ shader_type spatial;
 //   0 circuit traces (the original disc)   4 ship deck planks (high seas)
 //   1 cracked rock (quarry)                5 castle flagstones
 //   2 kitchen tiles + doily lace           6 casino felt diamonds
-//   3 star map + rune rings (library)
+//   3 star map + rune rings (library)    (6 = green baize card table)
 
 uniform vec4 near_col : source_color = vec4(1.0, 0.45, 0.1, 1.0);
 uniform vec4 far_col : source_color = vec4(0.1, 0.8, 0.78, 1.0);
@@ -113,7 +113,7 @@ void fragment() {
 		float lace = line_aa(sc, 0.06) + line_aa(r - radius * 0.8 - sin(ang * 24.0) * 0.18, 0.05) * 0.7;
 		lace += line_aa(sin(ang * 48.0) * r, 0.04) * smoothstep(radius * 0.78, radius * 0.82, r) * (1.0 - smoothstep(radius * 0.86, radius * 0.9, r)) * 0.6;
 		mat = mix(mat, vec3(0.8), clamp(lace, 0.0, 1.0) * 0.9);
-		mat *= 0.8;  // a tad darker so the Crew stand out
+		mat *= 0.72;  // darker so the Crew stand out
 		rings = 0.0;
 	} else if (pattern == 3) {
 		// Library: deep blue marble with gold star-map inlay.
@@ -154,13 +154,14 @@ void fragment() {
 		rough = 0.9;
 		rings = 0.0;
 	} else {
-		// Casino: rich red velvet with a soft sheen and a fine gold lattice.
+		// Casino: deep green baize (a card table) with a soft nap, a faint
+		// gold lattice and a gold pip border.
 		float n = fbm(p * 3.0);
-		mat = mix(vec3(0.28, 0.02, 0.05), vec3(0.5, 0.05, 0.09), n);
+		mat = mix(vec3(0.02, 0.16, 0.07), vec3(0.05, 0.3, 0.14), n);
 		float sheen = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 2.0);
-		mat += vec3(0.35, 0.05, 0.08) * sheen;
+		mat += vec3(0.04, 0.12, 0.06) * sheen;
 		vec2 dq = vec2(p.x + p.y, p.x - p.y) / 1.4;
-		float lat = grid_lines(dq, 0.02);
+		float lat = grid_lines(dq, 0.02) * 0.45;
 		float pip = 1.0 - smoothstep(0.08, 0.12 + fwidth(p.x), length(fract(vec2(ang * 7.64, r * 0.5)) - 0.5) * 2.0);
 		pip *= smoothstep(radius * 0.8, radius * 0.82, r) * (1.0 - smoothstep(radius * 0.9, radius * 0.92, r));
 		mat = mix(mat, vec3(0.85, 0.65, 0.25), clamp(lat * 0.7 + pip, 0.0, 1.0));
@@ -179,6 +180,12 @@ void fragment() {
 	} else {
 		// A light wash of each hero's color over their half of the real floor.
 		mat = mix(mat, mat * (side * 1.4 + 0.3), 0.22);
+		// Depth: broad light-and-dark patches, and a pool of light in the
+		// middle that falls off toward the edge (the models stand in it).
+		float big = fbm(p * 0.22 + 3.1);
+		mat *= 0.8 + 0.34 * big;
+		float pool = 1.0 - smoothstep(radius * 0.3, radius * 1.02, r);
+		mat *= mix(0.62, 1.04, pool);
 	}
 	// Seam between the halves: white-hot center fading to both colors.
 	float seam = 1.0 - smoothstep(0.0, 0.09, abs(p.y));
