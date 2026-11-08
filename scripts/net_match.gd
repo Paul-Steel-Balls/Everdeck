@@ -34,6 +34,10 @@ signal action_rejected(reason: String)
 signal opponent_disconnected
 signal failed(reason: String)
 
+# Both players must run the same build: the version rides on the deck
+# commitment, and a mismatch stops the handshake with a clear message.
+const PROTOCOL := "everdeck-pc-1"
+
 var net: NetClient = null
 var role: String = ""  # "host" or "guest"
 var my_idx: int = -1
@@ -53,6 +57,10 @@ var _peer_class: String = ""
 
 # Guest-only state.
 var _host_commit: String = ""
+
+
+static func build_version() -> String:
+	return "%s/%s" % [PROTOCOL, str(ProjectSettings.get_setting("application/config/version", "dev"))]
 
 
 static func deck_hash(deck: Array) -> String:
@@ -137,7 +145,7 @@ func _on_room_created(code: String) -> void:
 func _on_peer_joined() -> void:
 	# Host: exchange deck commitments.
 	status_changed.emit("Opponent connected — exchanging decks…")
-	net.send_game({"t": "commit", "hash": _my_commit})
+	net.send_game({"t": "commit", "hash": _my_commit, "ver": build_version()})
 
 
 func _on_peer_gone() -> void:
@@ -160,6 +168,12 @@ func _on_game_message(msg: Dictionary) -> void:
 	var t: String = str(msg.get("t", ""))
 	match t:
 		"commit":
+			var ver: String = str(msg.get("ver", "?"))
+			if ver != build_version():
+				var why: String = "Different game versions (yours %s, theirs %s). You both need the same build." % [build_version(), ver]
+				net.send_game({"t": "reject_setup", "reason": why})
+				failed.emit(why)
+				return
 			if role == "host":
 				_peer_commit = str(msg.get("hash", ""))
 			else:
@@ -185,7 +199,7 @@ func _on_game_message(msg: Dictionary) -> void:
 # Guest side of the handshake: on "joined", commit then reveal.
 func _on_joined(_code: String) -> void:
 	status_changed.emit("Joined — sending deck commitment…")
-	net.send_game({"t": "commit", "hash": _my_commit})
+	net.send_game({"t": "commit", "hash": _my_commit, "ver": build_version()})
 	net.send_game({"t": "reveal", "deck": _my_deck, "class": _my_class})
 	status_changed.emit("Deck sent — waiting for the host to start…")
 
@@ -259,6 +273,17 @@ func _host_apply(sender_idx: int, act: Dictionary) -> void:
 	if not ok:
 		_host_reject(sender_idx, "Illegal action.")
 		return
+	_broadcast_sync(_gs.take_events())
+
+
+# Host: the guest ran out their turn clock (plus a grace for lag): end
+# the turn for them.
+func host_force_end_turn() -> void:
+	if role != "host" or not _started or _gs == null or _gs.winner != -1:
+		return
+	if _gs.active == my_idx:
+		return
+	_gs.end_turn()
 	_broadcast_sync(_gs.take_events())
 
 

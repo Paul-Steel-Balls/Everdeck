@@ -105,6 +105,7 @@ func _modal_no_stop_kids(root: Control) -> bool:
 	return true
 
 func _run_all() -> void:
+	await _test_online_3d()
 	# --- cards.json loading (Phase 3) ---
 	_check("cards.json: 340 cards load", CardDB.CARDS.size() == 340)
 	var fields_ok: bool = true
@@ -2894,3 +2895,93 @@ func _has_label_with(root: Node, needle: String) -> bool:
 		for ch in n.get_children():
 			stack.append(ch)
 	return false
+
+
+# --- PC online play: two games in one process, host runs the built-in
+# relay, the guest joins by address; both play on the real 3D board. ---
+func _test_online_3d() -> void:
+	_check("online: game version stamped", NetMatch.build_version().begins_with("everdeck-pc-1/"))
+	var host: Control = load("res://main.tscn").instantiate()
+	var guest: Control = load("res://main.tscn").instantiate()
+	add_child(host)
+	add_child(guest)
+	await get_tree().process_frame
+	host._decks = [_valid_deck_for("grunk"), []]
+	host._classes = ["grunk", ""]
+	host._online = true
+	host._online_role = "host"
+	host._online_url = "ws://127.0.0.1:%d" % LocalRelay.PORT
+	host._start_online_connection()
+	for _i in 30:
+		await get_tree().process_frame
+	_check("online: host opened the built-in relay", host._local_relay != null and host._local_relay.is_listening())
+	guest._decks = [_valid_deck_for("agatha"), []]
+	guest._classes = ["agatha", ""]
+	guest._online = true
+	guest._online_role = "guest"
+	guest._online_code = ""
+	guest._online_url = "ws://127.0.0.1:%d" % LocalRelay.PORT
+	guest._start_online_connection()
+	var t0: int = Time.get_ticks_msec()
+	while (host._screen != host.Screen.MATCH or guest._screen != guest.Screen.MATCH) and Time.get_ticks_msec() - t0 < 15000:
+		await get_tree().process_frame
+	_check("online: both games reach the 3D match", host._screen == host.Screen.MATCH and guest._screen == guest.Screen.MATCH and host._board_3d != null and guest._board_3d != null)
+	if host._gs == null or guest._gs == null:
+		host.queue_free()
+		guest.queue_free()
+		return
+	_check("online: seats are opposite", host._human_idx == 1 - guest._human_idx)
+	_check("online: each side sees its own arena", host._board_3d._stage.theme == "grunk" and guest._board_3d._stage.theme == "agatha")
+	var guest_hidden_ok: bool = true
+	for cid in guest._gs.players[host._human_idx]["hand"]:
+		if str(cid) != "":
+			guest_hidden_ok = false
+	_check("online: the opponent's hand stays hidden", guest_hidden_ok)
+	# Whoever is up plays their cheapest playable card (or ends the turn).
+	var me: Control = host if host._gs.active == host._human_idx else guest
+	var other: Control = guest if me == host else host
+	var played: bool = false
+	host._net_match._gs.players[me._human_idx]["mana"] = 10
+	me._gs.players[me._human_idx]["mana"] = 10
+	for i in me._gs.players[me._human_idx]["hand"].size():
+		var card: Dictionary = CardDB.get_card(str(me._gs.players[me._human_idx]["hand"][i]))
+		if me._gs.can_play(me._human_idx, i) and str(card.get("type", "")) == "minion" and str(card.get("target", "none")) == "none":
+			played = me._do_play(i, {})
+			break
+	if played:
+		t0 = Time.get_ticks_msec()
+		while (me._gs.players[me._human_idx]["board"].size() == 0 or other._gs.players[me._human_idx]["board"].size() == 0 or me._animating or other._animating) and Time.get_ticks_msec() - t0 < 15000:
+			await get_tree().process_frame
+		_check("online: a played Crew member appears on both boards", me._gs.players[me._human_idx]["board"].size() == 1 and other._gs.players[me._human_idx]["board"].size() == 1 and other._board_3d.minion_node(int(other._gs.players[me._human_idx]["board"][0]["uid"])) != null)
+	_check("online: a Crew card was played", played)
+	var turn0: int = me._gs.turn_count
+	var guest_input_locked: bool = other._ai_turn
+	_check("online: the waiting player can't act", guest_input_locked)
+	me._on_end_turn()
+	t0 = Time.get_ticks_msec()
+	while (other._gs.active != other._human_idx or other._animating or me._animating) and Time.get_ticks_msec() - t0 < 15000:
+		await get_tree().process_frame
+	_check("online: END TURN passes the turn on both screens", other._gs.active == other._human_idx and me._gs.active == other._human_idx and other._gs.turn_count > turn0)
+	_check("online: the new player can act", not other._ai_turn)
+	var hh: String = NetMatch.public_state_hash(NetMatch.snapshot_from_state(host._net_match._gs, 0))
+	_check("online: host and guest agree on the board", hh == NetMatch.public_state_hash(_mirror_snapshot(guest._gs)) and hh == NetMatch.public_state_hash(_mirror_snapshot(host._gs)))
+	# Version mismatch is refused with a clear message.
+	var why: Array = []
+	guest._net_match.failed.connect(func(r: String) -> void: why.append(r))
+	guest._net_match._on_game_message({"t": "commit", "hash": "x", "ver": "everdeck-pc-1/0.0.1"})
+	_check("online: a different build is refused", not why.is_empty() and "versions" in str(why[0]))
+	guest._teardown_online()
+	host._teardown_online()
+	host.queue_free()
+	guest.queue_free()
+	await get_tree().process_frame
+
+
+func _mirror_snapshot(gs: GameState) -> Dictionary:
+	var players: Array = []
+	for p in 2:
+		var pl: Dictionary = gs.players[p]
+		players.append({"hp": pl["hp"], "mana": pl["mana"], "max_mana": pl["max_mana"], "fatigue": pl["fatigue"], "class": pl["class"],
+			"hero_power_used": pl["hero_power_used"], "cards_played_this_turn": pl["cards_played_this_turn"],
+			"hand_count": (pl["hand"] as Array).size(), "deck_count": (pl["deck"] as Array).size(), "board": pl["board"]})
+	return {"active": gs.active, "winner": gs.winner, "turn_count": gs.turn_count, "players": players}

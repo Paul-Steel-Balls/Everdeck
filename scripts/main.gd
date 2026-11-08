@@ -49,6 +49,15 @@ var _net_match: NetMatch = null
 var _online_match: OnlineMatch = null
 var _online_url_edit: LineEdit = null
 var _online_code_edit: LineEdit = null
+# PC online play: the match runs on the real 3D board. The host's game
+# also runs the relay (LocalRelay), so over Tailscale the guest connects
+# straight to the host. The board renders NetMatch's mirror GameState;
+# every action goes to the host as a request, and each sync (ours or the
+# opponent's) is animated through the same director as local play.
+var _online3d: bool = false
+var _awaiting_sync: bool = false
+var _local_relay: LocalRelay = null
+var _online_addr_edit: LineEdit = null
 var _online_status_label: Label = null
 var _online_room_label: Label = null
 var _decks: Array = [[], []]
@@ -306,6 +315,8 @@ func _clear() -> void:
 	# Screen change: free EVERYTHING, including the 3D board (allowed —
 	# _clear() only runs on screen changes, never mid-match).
 	for c in get_children():
+		if c == _net_match or c == _local_relay:
+			continue
 		c.queue_free()
 	_pending = {}
 	_press = {}
@@ -354,6 +365,8 @@ func _clear_overlay() -> void:
 		if c in _hero_badges:
 			continue
 		if c == _turn_timer:
+			continue
+		if c == _net_match or c == _local_relay:
 			continue
 		# Detach immediately (not just queue_free): _refresh_match can run
 		# twice without a frame in between, and a queued-but-still-child
@@ -468,7 +481,7 @@ func _music(key: String) -> void:
 # Whose side is drawn at the bottom: the human vs the computer; the
 # active player in the old pass-and-play mode.
 func _view() -> int:
-	if _vs_ai:
+	if _vs_ai or _online3d:
 		return _human_idx
 	return _gs.active if _gs != null else 0
 
@@ -995,65 +1008,93 @@ func _show_online_menu() -> void:
 	add_child(CardView.bg_rect(CardView.TITLE_BG))
 	var v := VBoxContainer.new()
 	_full_rect(v)
+	v.add_theme_constant_override("separation", 14)
 	v.add_spacer(true)
-	v.add_child(CardView.label("PLAY ONLINE", 48, CardView.GOLD_TEXT))
-	v.add_child(CardView.label("Relay address (run server/relay.py there):", 22))
-	var url_row := HBoxContainer.new()
-	url_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	_online_url_edit = LineEdit.new()
-	_online_url_edit.text = NetClient.RELAY_URL
-	_online_url_edit.custom_minimum_size = Vector2(560, 48)
-	_online_url_edit.alignment = HorizontalAlignment.HORIZONTAL_ALIGNMENT_CENTER
-	url_row.add_child(_online_url_edit)
-	v.add_child(url_row)
+	v.add_child(_center(CardView.label("PLAY ONLINE", 48, CardView.GOLD_TEXT)))
+	v.add_child(_center(CardView.label("Both PCs on the same Tailscale network. One hosts, the other joins.", 22)))
 	var host_btn := CardView.button("HOST A GAME", 32, 360, 72, CardView.BTN_END)
 	host_btn.pressed.connect(_on_online_host)
-	v.add_child(host_btn)
+	v.add_child(_center(host_btn))
+	v.add_child(_center(CardView.label("or join your friend's game:", 22)))
 	var join_row := HBoxContainer.new()
 	join_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	_online_code_edit = LineEdit.new()
-	_online_code_edit.placeholder_text = "ROOM CODE"
-	_online_code_edit.custom_minimum_size = Vector2(220, 56)
-	_online_code_edit.alignment = HorizontalAlignment.HORIZONTAL_ALIGNMENT_CENTER
-	join_row.add_child(_online_code_edit)
+	join_row.add_theme_constant_override("separation", 10)
+	_online_addr_edit = LineEdit.new()
+	_online_addr_edit.placeholder_text = "Host's Tailscale name or address"
+	_online_addr_edit.text = _load_last_host()
+	_online_addr_edit.custom_minimum_size = Vector2(460, 56)
+	_online_addr_edit.alignment = HorizontalAlignment.HORIZONTAL_ALIGNMENT_CENTER
+	join_row.add_child(_online_addr_edit)
 	var join_btn := CardView.button("JOIN", 28, 200, 56, CardView.BTN_BLUE)
 	join_btn.pressed.connect(_on_online_join)
 	join_row.add_child(join_btn)
 	v.add_child(join_row)
 	_online_status_label = CardView.label("", 22)
-	v.add_child(_online_status_label)
+	v.add_child(_center(_online_status_label))
 	var back := CardView.button("BACK", 24, 200, 56, CardView.BTN_BLUE)
 	back.pressed.connect(_show_title)
-	v.add_child(back)
+	v.add_child(_center(back))
 	v.add_spacer(true)
 	add_child(v)
 
 
+func _center(c: Control) -> Control:
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_child(c)
+	return row
+
+
 func _on_online_host() -> void:
-	_online_url = _online_url_edit.text.strip_edges()
-	if _online_url == "":
-		_online_url = NetClient.RELAY_URL
+	_online_url = "ws://127.0.0.1:%d" % LocalRelay.PORT
 	_online = true
 	_online_role = "host"
+	_online_code = ""
 	_selecting_player = 0
 	_classes = ["", ""]
 	_show_class_select()
 
 
 func _on_online_join() -> void:
-	var code: String = _online_code_edit.text.strip_edges().to_upper()
-	if code.length() < 4:
-		_online_status_label.text = "Enter the room code from your host first."
+	var addr: String = _online_addr_edit.text.strip_edges()
+	if addr == "":
+		_online_status_label.text = "Type the host's Tailscale name or address first."
 		return
-	_online_url = _online_url_edit.text.strip_edges()
-	if _online_url == "":
-		_online_url = NetClient.RELAY_URL
+	_save_last_host(addr)
+	if "://" in addr:
+		_online_url = addr
+	elif addr.count(":") == 1:
+		_online_url = "ws://%s" % addr  # name:port
+	else:
+		_online_url = "ws://%s:%d" % [addr, LocalRelay.PORT]
 	_online = true
 	_online_role = "guest"
-	_online_code = code
+	_online_code = ""
 	_selecting_player = 0
 	_classes = ["", ""]
 	_show_class_select()
+
+
+# The last address joined, remembered for next time.
+func _load_last_host() -> String:
+	var f := FileAccess.open("user://last_host.txt", FileAccess.READ)
+	return f.get_as_text().strip_edges() if f != null else ""
+
+
+func _save_last_host(addr: String) -> void:
+	var f := FileAccess.open("user://last_host.txt", FileAccess.WRITE)
+	if f != null:
+		f.store_string(addr)
+
+
+# This PC's Tailscale addresses (100.64.0.0/10), to tell the friend.
+static func tailscale_addresses() -> Array:
+	var out: Array = []
+	for a in IP.get_local_addresses():
+		var parts: PackedStringArray = str(a).split(".")
+		if parts.size() == 4 and parts[0] == "100" and int(parts[1]) >= 64 and int(parts[1]) <= 127:
+			out.append(str(a))
+	return out
 
 
 func _show_online_lobby() -> void:
@@ -1082,28 +1123,82 @@ func _start_online_connection() -> void:
 	_net_match.status_changed.connect(func(t: String) -> void:
 		if is_instance_valid(_online_status_label):
 			_online_status_label.text = t)
-	_net_match.room_ready.connect(func(code: String) -> void:
-		if is_instance_valid(_online_room_label):
-			_online_room_label.text = "ROOM CODE: %s" % code)
+	_net_match.room_ready.connect(func(_code: String) -> void:
+		if is_instance_valid(_online_status_label):
+			_online_status_label.text = "Waiting for your friend to join…")
 	_net_match.failed.connect(func(reason: String) -> void:
 		if is_instance_valid(_online_status_label):
 			_online_status_label.text = reason)
 	_net_match.match_started.connect(_on_online_match_started)
 	if _online_role == "host":
+		if _local_relay == null:
+			_local_relay = LocalRelay.new()
+			_local_relay.name = "LocalRelay"
+			add_child(_local_relay)
+		if not _local_relay.is_listening() and _local_relay.start() != OK:
+			_online_status_label.text = "Couldn't open port %d to host (is another Everdeck already hosting?)" % LocalRelay.PORT
+			return
+		var ts: Array = tailscale_addresses()
+		if is_instance_valid(_online_room_label):
+			_online_room_label.text = ("Tell your friend to join: %s" % ", ".join(ts)) if not ts.is_empty() else "Tell your friend to join with this PC's Tailscale name"
 		_net_match.host_game(_online_url, _decks[0], _classes[0])
 	else:
 		_net_match.join_game(_online_url, _online_code, _decks[0], _classes[0])
 
 
 func _on_online_match_started(my_idx: int) -> void:
-	_online_match = OnlineMatch.new()
-	_full_rect(_online_match)
-	add_child(_online_match)
-	_online_match.leave_requested.connect(_leave_online_match)
-	_online_match.setup(_net_match, my_idx)
+	_human_idx = my_idx
+	_online3d = true
+	_vs_ai = false
+	_awaiting_sync = false
+	_net_match.sync_applied.connect(_on_online_sync_entry)
+	_net_match.action_rejected.connect(_on_online_rejected)
+	_net_match.opponent_disconnected.connect(_on_online_opponent_gone)
+	if _net_match.mirror != null and _net_match.mirror.players.size() == 2:
+		_begin_online_board()
+
+
+func _on_online_sync_entry(events: Array) -> void:
+	if _screen != Screen.MATCH or _gs == null:
+		_begin_online_board()  # the guest's first sync carries the opening state
+		return
+	_on_online_sync(events)
+
+
+func _begin_online_board() -> void:
+	if _net_match == null or _net_match.mirror == null or _net_match.mirror.players.size() != 2:
+		return
+	_music("battle")
+	_gs = _net_match.mirror
+	_gs.take_events()
+	_game_logged = true  # online matches aren't written to the local log
+	_history = []
+	_history_uid_cards = {}
+	_history_column = null
+	_turn_played_cards = []
+	_ai_turn = _gs.active != _human_idx
+	_clear()
+	_refresh_match()
+
+
+func _on_online_opponent_gone() -> void:
+	if not _online3d:
+		return
+	_show_toast("Your opponent left the match.")
+	await get_tree().create_timer(2.5).timeout
+	_teardown_online()
+	_show_title()
 
 
 func _teardown_online() -> void:
+	_online3d = false
+	_awaiting_sync = false
+	_ai_turn = false
+	if _local_relay != null:
+		_local_relay.stop()
+		remove_child(_local_relay)
+		_local_relay.queue_free()
+		_local_relay = null
 	if _online_match != null:
 		remove_child(_online_match)
 		_online_match.queue_free()
@@ -1499,6 +1594,8 @@ func _refresh_match() -> void:
 	var turn_text: String = "YOUR TURN \u2014 Player %d" % (active + 1)
 	if _vs_ai:
 		turn_text = "YOUR TURN" if _gs.active == _human_idx else "COMPUTER'S TURN"
+	elif _online3d:
+		turn_text = "YOUR TURN" if _gs.active == _human_idx else "OPPONENT'S TURN"
 	var turn_l := CardView.label(turn_text, 24, CardView.GOLD_TEXT)
 	turn_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	turn_l.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1546,7 +1643,7 @@ func _refresh_match() -> void:
 	var end_turn := EndTurnButton.new()
 	end_turn.name = "EndTurnBtn"
 	end_turn.position = Vector2(vw - 190, 300)
-	var my_controls: bool = not _ai_turn and not (_vs_ai and _gs.active != _human_idx)
+	var my_controls: bool = not _ai_turn and not _remote_turn()
 	end_turn.set_look(EndTurnButton.Look.WAITING if not my_controls else (EndTurnButton.Look.DONE if not _has_moves(active) else EndTurnButton.Look.READY))
 	end_turn.pressed.connect(_on_end_turn)
 	add_child(end_turn)
@@ -1649,7 +1746,7 @@ func _ensure_board_3d() -> void:
 		return
 	_board_3d = Board3D.new()
 	_board_3d.name = "Board3D"
-	_board_3d.view_player = _human_idx if _vs_ai else -1
+	_board_3d.view_player = _human_idx if (_vs_ai or _online3d) else -1
 	add_child(_board_3d)
 	# Sprint 1a.4: 2D minion stat badges (pinned to projected token
 	# positions). Created once with the board; it reads the board's
@@ -1687,6 +1784,104 @@ func _ensure_board_3d() -> void:
 
 # After a player action: take the event stream, play it (the director
 # animates the batch), then fully sync the view. The state was already
+# --- Actions: local play mutates the engine; online play asks the host ---
+
+func _remote_turn() -> bool:
+	return _gs != null and (_vs_ai or _online3d) and _gs.active != _human_idx
+
+
+func _do_play(hand_idx: int, target: Dictionary) -> bool:
+	if not _online3d:
+		return _gs.play_card(_gs.active, hand_idx, target) if not target.is_empty() else _gs.play_card(_gs.active, hand_idx)
+	if not _gs.can_play(_gs.active, hand_idx):
+		return false
+	return _submit_online({"act": "play_card", "hand_idx": hand_idx, "target": _wire_target(target)})
+
+
+func _do_attack(board_idx: int, target: Dictionary) -> bool:
+	if not _online3d:
+		return _gs.attack(_gs.active, board_idx, target)
+	if not _gs.can_attack(_gs.active, board_idx):
+		return false
+	var m: Dictionary = _gs.players[_gs.active]["board"][board_idx]
+	return _submit_online({"act": "attack", "attacker_uid": int(m.get("uid", -1)), "target": _wire_target(target)})
+
+
+func _do_hero_power(target: Dictionary) -> bool:
+	if not _online3d:
+		return _gs.use_hero_power(_gs.active, target) if not target.is_empty() else _gs.use_hero_power(_gs.active)
+	if bool(_gs.players[_gs.active]["hero_power_used"]):
+		return false
+	return _submit_online({"act": "hero_power", "target": _wire_target(target)})
+
+
+# Engine target (board index) -> wire target (minion uid / hero player).
+func _wire_target(t: Dictionary) -> Dictionary:
+	if t.is_empty():
+		return {}
+	if str(t.get("kind", "")) == "hero":
+		return {"kind": "hero", "player": int(t.get("player", -1))}
+	var p: int = int(t.get("player", -1))
+	var bi: int = int(t.get("board_idx", -1))
+	if p < 0 or bi < 0 or bi >= _gs.players[p]["board"].size():
+		return {}
+	return {"kind": "minion", "uid": int(_gs.players[p]["board"][bi].get("uid", -1))}
+
+
+# Send a request to the host and lock input until its sync comes back.
+func _submit_online(act: Dictionary) -> bool:
+	if _net_match == null or _awaiting_sync:
+		return false
+	_dismiss_all_modals()
+	_awaiting_sync = true
+	_ai_turn = true
+	_net_match.submit_action(act)
+	return true
+
+
+# A sync from the host (our action, the opponent's, or a forced end of
+# turn): animate its events on the 3D board, then redraw.
+func _on_online_sync(_events: Array) -> void:
+	if not _online3d or _gs == null:
+		return
+	_awaiting_sync = false
+	var events: Array = _gs.take_events()
+	_accumulate_played(events)
+	_record_history(events)
+	_board_3d.preload_models(_ids_from_events(events))
+	_animating = true
+	_ai_turn = true
+	if _anim_director != null and _board_3d != null:
+		await _anim_director.play_events(events, _board_3d, _gs, Callable(self, "_whoosh_hands"), Callable(self, "_play_your_turn_banner"))
+		_anim_director.ANIM_SPEED = 1.0
+	_animating = false
+	if _gs == null or not _online3d:
+		return
+	_ai_turn = _gs.active != _human_idx or _awaiting_sync
+	if _gs.winner != -1:
+		_show_gameover()
+		return
+	_refresh_match()
+
+
+func _on_online_rejected(reason: String) -> void:
+	_awaiting_sync = false
+	if _gs != null:
+		_ai_turn = _gs.active != _human_idx
+	_show_toast(reason)
+	_refresh_match()
+
+
+func _ids_from_events(events: Array) -> Array:
+	var ids: Array = []
+	for e in events:
+		var d: Dictionary = (e as Dictionary).get("data", {})
+		var cid: String = str(d.get("card_id", ""))
+		if cid != "":
+			ids.append(cid)
+	return ids
+
+
 # mutated synchronously by the handler, so this is fire-and-forget: with
 # no awaitable events the director returns synchronously and the
 # refresh happens immediately. The director's speed-up (tap during
@@ -1694,6 +1889,8 @@ func _ensure_board_3d() -> void:
 func _after_action() -> void:
 	if _gs == null:
 		return
+	if _online3d:
+		return  # the host's sync brings the events (_on_online_sync)
 	_dismiss_all_modals()  # Sprint 1a.3: a new action closes every modal.
 	if _board_3d == null or _anim_director == null:
 		_refresh_match()
@@ -1740,6 +1937,8 @@ func _play_your_turn_banner() -> void:
 	var banner_text: String = "YOUR TURN"
 	if _vs_ai and _gs != null and _gs.active != _human_idx:
 		banner_text = "COMPUTER'S TURN"
+	elif _online3d and _gs != null and _gs.active != _human_idx:
+		banner_text = "OPPONENT'S TURN"
 	var banner := CardView.label(banner_text, 56, CardView.GOLD_TEXT)
 	banner.name = "YourTurnBanner"
 	banner.position = Vector2(-600, 330)
@@ -2333,7 +2532,7 @@ func _end_drag(pos: Vector2) -> void:
 			if _card_needs_target(card):
 				# Release on a valid (red/snapped) target → play;
 				# anywhere else → cancel.
-				if not snapped.is_empty() and _gs.play_card(_gs.active, hand_idx, snapped):
+				if not snapped.is_empty() and _do_play(hand_idx, snapped):
 					_after_action()
 					return
 				_glide_card_home(node, home_pos, home_z)
@@ -2347,14 +2546,14 @@ func _end_drag(pos: Vector2) -> void:
 						_show_toast("Not enough mana")
 						_glide_card_home(node, home_pos, home_z)
 						return
-					if _gs.play_card(_gs.active, hand_idx):
+					if _do_play(hand_idx, {}):
 						_after_action()
 						return
 				_glide_card_home(node, home_pos, home_z)
 		"my_minion":
 			var board_idx: int = int(ctx.get("board_idx", -1))
 			if not snapped.is_empty():
-				if _gs.attack(_gs.active, board_idx, snapped):
+				if _do_attack(board_idx, snapped):
 					_after_action()
 					return
 			_refresh_match()
@@ -2819,7 +3018,7 @@ func _on_my_minion_pressed(board_idx: int) -> void:
 	var active: int = _gs.active
 	if not _pending.is_empty() and _pending.get("kind") == "hero_power":
 		var tgt: Dictionary = {"kind": "minion", "player": active, "board_idx": board_idx}
-		if _gs.use_hero_power(active, tgt):
+		if _do_hero_power(tgt):
 			_pending = {}
 			_after_action()
 		return
@@ -2837,7 +3036,7 @@ func _on_target_pressed(target: Dictionary) -> void:
 	if _pending.is_empty():
 		return
 	if _pending["kind"] == "attack":
-		if _gs.attack(active, _pending["board_idx"], target):
+		if _do_attack(int(_pending["board_idx"]), target):
 			_pending = {}
 			_after_action()
 
@@ -2858,7 +3057,7 @@ func _on_hero_power_pressed() -> void:
 		_pending = {"kind": "hero_power"}
 		_refresh_match()
 	else:
-		if _gs.use_hero_power(active):
+		if _do_hero_power({}):
 			_after_action()
 
 
@@ -2927,7 +3126,12 @@ func _match_model_ids() -> Array:
 				cards.append(str(c if c is String else c.get("card_id", c.get("id", ""))))
 		for m in pl.get("board", []):
 			ids.append(Minion3D.model_for(m))
+		if _online3d and cards.has(""):
+			for c in CardDB.cards_for_class(str(pl["class"])):
+				cards.append(str((c as Dictionary).get("id", "")) if c is Dictionary else str(c))
 		for cid in cards:
+			if cid == "":
+				continue
 			ids.append(cid)
 			var card: Dictionary = CardDB.get_card(cid)
 			var tok: Variant = card.get("token", null)
@@ -2953,7 +3157,16 @@ func _tick_turn_clock(delta: float) -> void:
 		_clock_key = key
 		_turn_timer.left = TurnTimer.TURN_TIME
 		_turn_timer.deck = str(_gs.players[_gs.active]["class"])
-	if _vs_ai and _gs.active != _human_idx:
+	if _remote_turn():
+		# The opponent's turn: the host keeps their clock and ends the
+		# turn for them if they run past it (a short grace for lag).
+		if _online3d and _online_role == "host" and _net_match != null:
+			_turn_timer.left -= delta
+			if _turn_timer.left < -5.0:
+				_turn_timer.left = TurnTimer.TURN_TIME
+				_net_match.host_force_end_turn()
+			_turn_timer.visible = false
+			return
 		_turn_timer.left = TurnTimer.TURN_TIME
 		return
 	var vw: float = get_viewport_rect().size.x
@@ -2980,6 +3193,9 @@ func _on_end_turn() -> void:
 		return
 	_dismiss_all_modals()  # Sprint 1a.3: end turn is a new action.
 	_pending = {}
+	if _online3d:
+		_submit_online({"act": "end_turn"})
+		return
 	_gs.end_turn()
 	_after_end_turn()
 
@@ -3047,10 +3263,19 @@ func _show_gameover() -> void:
 	v.add_spacer(true)
 	var wclass: String = CardDB.class_display_name(str(_gs.players[_gs.winner]["class"]))
 	var head: String = "PLAYER %d WINS!" % (_gs.winner + 1)
-	if _vs_ai:
+	if _vs_ai or _online3d:
 		head = "YOU WIN!" if _gs.winner == _human_idx else "YOU LOSE!"
 	v.add_child(CardView.label(head, 56, CardView.GOLD_TEXT))
 	v.add_child(CardView.label("%s — %d turns" % [wclass, _gs.turn_count], 28))
+	if _online3d:
+		var leave := CardView.button("BACK TO TITLE", 30, 420, 70, CardView.BTN_BLUE)
+		leave.pressed.connect(func() -> void:
+			_teardown_online()
+			_show_title())
+		v.add_child(leave)
+		v.add_spacer(true)
+		add_child(v)
+		return
 	var rematch := CardView.button("REMATCH (same decks)", 30, 420, 70, CardView.BTN_END)
 	rematch.pressed.connect(_start_match)
 	v.add_child(rematch)
