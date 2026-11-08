@@ -2958,6 +2958,8 @@ func _test_online_3d() -> void:
 	var guest_input_locked: bool = other._ai_turn
 	_check("online: the waiting player can't act", guest_input_locked)
 	me._on_end_turn()
+	var etb: Node = me.find_child("EndTurnBtn", true, false)
+	_check("online: END TURN shows the hand-off right away", etb is EndTurnButton and (etb as EndTurnButton).look == EndTurnButton.Look.WAITING)
 	t0 = Time.get_ticks_msec()
 	while (other._gs.active != other._human_idx or other._animating or me._animating) and Time.get_ticks_msec() - t0 < 15000:
 		await get_tree().process_frame

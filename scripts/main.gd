@@ -3194,7 +3194,11 @@ func _on_end_turn() -> void:
 	_dismiss_all_modals()  # Sprint 1a.3: end turn is a new action.
 	_pending = {}
 	if _online3d:
-		_submit_online({"act": "end_turn"})
+		if _submit_online({"act": "end_turn"}):
+			# Show the hand-off at once; the host's reply can take a moment.
+			var btn: Node = find_child("EndTurnBtn", true, false)
+			if btn is EndTurnButton:
+				(btn as EndTurnButton).set_look(EndTurnButton.Look.WAITING)
 		return
 	_gs.end_turn()
 	_after_end_turn()
