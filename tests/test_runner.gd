@@ -805,43 +805,17 @@ func _run_all() -> void:
 		await get_tree().process_frame
 		await get_tree().process_frame
 		var trect: Rect2 = tbtn.get_global_rect().grow(1.0)
-		var art_ok2: bool = false
-		var type_ok2: bool = false
-		var name_ok2: bool = false
-		var rules_ok2: bool = str(scard.get("text", "")).is_empty()
-		# Flavor omitted by design on 298px tiles (magnify shows it).
-		var flavor_ok2: bool = true
+		# The gilded CardFrame draws the frame, art, name, type tag and
+		# gems; the rules are a RichTextLabel (bold keywords).
+		var face2: CardFrame = tbtn.find_child("Face", false, false) as CardFrame
+		var art_ok2: bool = face2 != null and face2._tex != null
 		var expected_type2: String = "CREW" if scard["type"] == "minion" else ("CHAOS" if CardView.is_chaos(scard) else "TRICK")
-		var vbox2: VBoxContainer = null
-		for ch in tbtn.get_children():
-			if ch is VBoxContainer:
-				vbox2 = ch
-		if vbox2 != null:
-			for ch in vbox2.get_children():
-				if ch is CardArt:
-					art_ok2 = ch.art_id == scard["art"] and ch.size.x > 0 and ch.size.y > 0 and trect.encloses(ch.get_global_rect())
-				elif ch is HBoxContainer:
-					for gch in ch.get_children():
-						if gch is Label and (gch.text == "CREW" or gch.text == "TRICK" or gch.text == "CHAOS"):
-							type_ok2 = gch.text == expected_type2
-				elif ch is PanelContainer:
-					for gch in ch.get_children():
-						if gch is Label and gch.text == scard["name"]:
-							name_ok2 = true
-				elif ch is Label:
-					if ch.name == "RulesLabel" and ch.text == scard["text"]:
-						rules_ok2 = true
-					elif ch.name == "FlavorLabel" and ch.text == scard["flavor"]:
-						flavor_ok2 = true
-		var badges_ok2: bool = true
-		if scard["type"] == "minion":
-			var atk2: Node = tbtn.find_child("ATKBadge", false, false)
-			var hp2: Node = tbtn.find_child("HPBadge", false, false)
-			badges_ok2 = atk2 != null and hp2 != null and trect.encloses((atk2 as Control).get_global_rect()) and trect.encloses((hp2 as Control).get_global_rect())
-		var bounds_ok2: bool = true
-		for ch in tbtn.get_children():
-			if ch is Control and not trect.encloses(ch.get_global_rect()):
-				bounds_ok2 = false
+		var type_ok2: bool = face2 != null and (("CREW" if face2._is_crew() else ("CHAOS" if CardView.is_chaos(face2.card) else "TRICK")) == expected_type2)
+		var name_ok2: bool = face2 != null and str(face2.card.get("name", "")) == str(scard["name"])
+		var rules_ok2: bool = str(scard.get("text", "")).is_empty() or (face2 != null and face2._rules.get_parsed_text().strip_edges() == str(scard["text"]).strip_edges())
+		var flavor_ok2: bool = true
+		var badges_ok2: bool = face2 != null and (scard["type"] != "minion" or (int(face2.card["attack"]) == int(scard["attack"]) and int(face2.card["health"]) == int(scard["health"])))
+		var bounds_ok2: bool = face2 != null and trect.encloses(face2.get_global_rect()) and trect.encloses(face2._rules.get_global_rect())
 		_check("render %s: art + type + name + rules + badges, all in bounds (flavor via magnify)" % sid, art_ok2 and type_ok2 and name_ok2 and rules_ok2 and flavor_ok2 and badges_ok2 and bounds_ok2)
 		tbtn.queue_free()
 	# Input: touch must not also deliver an emulated mouse tap.
@@ -988,8 +962,7 @@ func _run_all() -> void:
 
 	# --- Polish: integrated badges ---
 	var btn_minion: Button = CardView.make_card_button(CardDB.get_card("squire"), 150, 200)
-	_check("card: ATK badge is a child of the card", btn_minion.find_child("ATKBadge", false, false) != null)
-	_check("card: HP badge is a child of the card", btn_minion.find_child("HPBadge", false, false) != null)
+	_check("card: a Crew card's face shows attack and health gems", btn_minion.find_child("Face", false, false) is CardFrame and (btn_minion.find_child("Face", false, false) as CardFrame)._is_crew())
 	var btn_spell: Button = CardView.make_card_button(CardDB.get_card("fireball"), 150, 200)
 	_check("card: spell has no ATK/HP badges", btn_spell.find_child("ATKBadge", false, false) == null and btn_spell.find_child("HPBadge", false, false) == null)
 	var md: Dictionary = {"card_id": "squire", "name": "Squire Gregory", "attack": 1, "health": 2, "max_health": 2, "taunt": false, "can_attack": true, "sick": false}
@@ -1101,6 +1074,7 @@ func _run_all() -> void:
 	var plaque: HeroPlaque3D = main_scene._board_3d.hero_plaque(1)
 	_check("drag: enemy badge highlighted on snap", plaque != null and plaque.is_highlighted())
 	_check("drag: arrow is red on a valid target", main_scene._arrow != null and main_scene._arrow.default_color.r > 0.9)
+	_check("drag: the beam locks onto the target", main_scene._tarrow != null and main_scene._tarrow.visible and main_scene._tarrow.state == TargetArrow.State.LOCKED)
 	main_scene._end_drag(hero_canvas)
 	_check("drag: release on valid target plays the card (hero -3 HP, hand -1)", main_scene._gs.players[1]["hp"] == 27 and main_scene._gs.players[0]["hand"].size() == 0)
 	# Cancel: release far away from any target.

@@ -32,6 +32,13 @@ func _ready() -> void:
 		gs.players[foe]["board"].append(_minion(gs, cid, false))
 	gs.players[me]["board"][1]["attack"] = 9
 	gs.players[me]["hand"] = [_crew(hc, 7)[6]]
+	if OS.get_environment("SHOT_FULLHAND") != "":
+		var hand: Array = []
+		for c in CardDB.CARDS:
+			if str(c["class"]) == hc and hand.size() < 6:
+				hand.append(c["id"])
+		hand.append("coin")
+		gs.players[me]["hand"] = hand
 	gs.players[me]["mana"] = 10
 	gs.players[me]["max_mana"] = 10
 	gs.players[foe]["mana"] = 4
@@ -41,11 +48,23 @@ func _ready() -> void:
 		await _frames(40)
 		var a := TargetArrow.new()
 		m.add_child(a)
-		a.color = UIKit.CLASS_COLOR.get(hc, Color(1, 0.6, 0.2))
 		var src: Vector2 = m._target_screen_pos({"kind": "minion", "player": me, "board_idx": 1})
-		var tgt: Vector2 = m._target_screen_pos({"kind": "minion", "player": foe, "board_idx": 2})
+		var tgt: Vector2 = m._target_screen_pos({"kind": "minion", "player": foe, "board_idx": 4})
 		var boss: Vector2 = m._target_screen_pos({"kind": "hero", "player": foe, "board_idx": -1})
 		var pv := [{"pos": tgt + Vector2(0, -34), "text": "-9", "lethal": true}, {"pos": src + Vector2(0, -38), "text": "-2", "lethal": true}]
+		a.queue_free()
+		# The real drag path: my 9-attack Crew member aimed at enemy #4.
+		var tl: Array = [{"kind": "hero", "player": foe, "board_idx": -1}]
+		for i in gs.players[foe]["board"].size():
+			tl.append({"kind": "minion", "player": foe, "board_idx": i})
+		m._drag = {"ctx": {"kind": "my_minion", "board_idx": 1, "uid": int(gs.players[me]["board"][1]["uid"])}, "targets": tl, "snapped": {}}
+		m._update_target_arrow(src, tgt + Vector2(6, 4))
+		await _frames(10)
+		await _shot("arrow_real")
+		m._hide_arrow()
+		m._drag = {}
+		get_tree().quit()
+		return
 		for st in [TargetArrow.Style.CHEVRON, TargetArrow.Style.BEAM]:
 			a.style = st
 			a.previews = pv

@@ -282,103 +282,23 @@ static func board_texture_rect() -> TextureRect:
 # Layout is budgeted so content NEVER overflows the card: top + art + name
 # + rules (+ flavor) + badge zone == card height. Small hand cards omit
 # flavor (read it via magnify); deckbuild + magnified cards show it.
-static func make_card_button(card: Dictionary, w: int, h: int, magnified: bool = false) -> Button:
+static func make_card_button(card: Dictionary, w: int, h: int, _magnified: bool = false) -> Button:
+	# The card is drawn by CardFrame (gilded frame, arched art window,
+	# class ribbon, parchment rules with bold keywords, cut gems), fitted
+	# into w x h at the frame's own proportions and centred.
 	var b := Button.new()
 	b.custom_minimum_size = Vector2(w, h)
-	var frame := frame_color(card)
-	var sb := card_style(frame, 5)
-	b.add_theme_stylebox_override("normal", sb)
-	b.add_theme_stylebox_override("hover", sb)
-	b.add_theme_stylebox_override("pressed", sb)
-	b.add_theme_stylebox_override("focus", sb)
-	var v := VBoxContainer.new()
-	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	full_rect(v)
-	v.add_theme_constant_override("separation", 2)
-
-	# Vertical budget (sums to <= h; leftover = badge zone at the bottom).
-	var badge_h: float = 44.0 if not magnified else 64.0
-	var top_h: float = 30.0 if not magnified else 44.0
-	var art_h: float = h * 0.30
-	var name_h: float = 26.0 if not magnified else 40.0
-	var avail: float = h - badge_h - top_h - art_h - name_h
-	var show_flavor: bool = magnified or h >= 300
-	var rules_h: float = avail if not show_flavor else avail * 0.62
-	var flavor_h: float = 0.0 if not show_flavor else avail * 0.38
-
-	# Cost crystal row.
-	var top := HBoxContainer.new()
-	top.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	top.custom_minimum_size = Vector2(0, top_h)
-	top.add_child(gem("%d" % card["cost"], MANA_GEM, 22 if not magnified else 34))
-	var type_l := label("CREW" if card["type"] == "minion" else ("CHAOS" if is_chaos(card) else "TRICK"), 14 if not magnified else 20, frame)
-	type_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	top.add_child(type_l)
-	v.add_child(top)
-
-	# Art panel.
-	var art := CardArt.new()
-	art.art_id = card.get("art", "")
-	art.card_id = str(card.get("id", ""))
-	art.custom_minimum_size = Vector2(w - 14, art_h)
-	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(art)
-
-	# Name banner.
-	var name_bg := PanelContainer.new()
-	name_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	name_bg.custom_minimum_size = Vector2(0, name_h)
-	name_bg.add_theme_stylebox_override("panel", panel_style(frame, 4))
-	var name_l := label(card["name"], 17 if not magnified else 28, Color.WHITE)
-	name_l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	name_bg.add_child(name_l)
-	v.add_child(name_bg)
-
-	# Rules text — dynamic size so it ALWAYS fits the box.
-	if not str(card.get("text", "")).is_empty():
-		var text_l := label(card["text"], 14, INK)
-		text_l.name = "RulesLabel"
-		text_l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		text_l.custom_minimum_size = Vector2(0, rules_h)
-		var fs: int = fit_font_size(card["text"], w - 24, rules_h, 16 if not magnified else 26, 7 if not magnified else 14)
-		text_l.add_theme_font_size_override("font_size", fs)
-		v.add_child(text_l)
-
-	# Flavor joke — small on big cards, full size when magnified,
-	# omitted on small hand cards (read it via magnify).
-	if show_flavor and not str(card.get("flavor", "")).is_empty():
-		var fl_l := label(card["flavor"], 11 if not magnified else 18, FLAVOR_INK)
-		fl_l.name = "FlavorLabel"
-		fl_l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		fl_l.custom_minimum_size = Vector2(0, flavor_h)
-		v.add_child(fl_l)
-
-	b.add_child(v)
-
-	# INTEGRATED stat badges — children of the card, pinned to the corners.
-	if card["type"] == "minion":
-		var atk := _stat_badge("%d" % card["attack"], ATK_GEM, magnified)
-		atk.name = "ATKBadge"
-		atk.anchor_left = 0.0
-		atk.anchor_top = 1.0
-		atk.anchor_right = 0.0
-		atk.anchor_bottom = 1.0
-		atk.offset_left = 8
-		atk.offset_top = -badge_h
-		atk.offset_right = 62 if not magnified else 88
-		atk.offset_bottom = -6
-		b.add_child(atk)
-		var hp := _stat_badge("%d" % card["health"], HP_BADGE, magnified)
-		hp.name = "HPBadge"
-		hp.anchor_left = 1.0
-		hp.anchor_top = 1.0
-		hp.anchor_right = 1.0
-		hp.anchor_bottom = 1.0
-		hp.offset_left = -62 if not magnified else -88
-		hp.offset_top = -badge_h
-		hp.offset_right = -8
-		hp.offset_bottom = -6
-		b.add_child(hp)
+	b.size = Vector2(w, h)
+	b.flat = true
+	b.focus_mode = Control.FOCUS_NONE
+	for k in ["normal", "hover", "pressed", "hover_pressed", "disabled", "focus"]:
+		b.add_theme_stylebox_override(k, StyleBoxEmpty.new())
+	var fw: float = minf(float(w), float(h) / CardFrame.ASPECT)
+	var f := CardFrame.new()
+	f.name = "Face"
+	f.setup(card, CardFrame.Look.GILDED, fw)
+	f.position = Vector2((w - fw) * 0.5, (h - fw * CardFrame.ASPECT) * 0.5)
+	b.add_child(f)
 	# Scroll-friendly: taps reach the tile via gui_input, drags reach a
 	# parent ScrollContainer (deckbuilder pool). Children never swallow.
 	pass_through(b)

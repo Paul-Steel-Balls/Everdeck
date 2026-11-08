@@ -12,10 +12,16 @@ class_name StatBadges
 # the 3D stat discs + Label3D numbers (too big, overlapped neighbors, hid
 # behind discs at some angles).
 
-const ATK_BG := Color(0.9, 0.1, 0.2)
-const HP_BG := Color(0.1, 0.65, 0.25)
-const HP_HURT_BG := Color(0.62, 0.08, 0.12)  # damaged: darker red
-const GOLD_OUTLINE := Color(1.0, 0.8, 0.2)   # buffed: gold outline
+# Chip style (same family as the arrow's outcome chips): a deep fill, a
+# light rim in the same hue, a white display-font number with a thick ink
+# outline, and a soft drop shadow.
+const ATK_BG := Color(0.66, 0.36, 0.02)
+const ATK_RIM := Color(1.0, 0.84, 0.45)
+const HP_BG := Color(0.07, 0.44, 0.18)
+const HP_RIM := Color(0.72, 1.0, 0.76)
+const HP_HURT_BG := Color(0.6, 0.05, 0.09)   # damaged: red
+const HP_HURT_RIM := Color(1.0, 0.82, 0.82)
+const GOLD_OUTLINE := Color(1.0, 0.86, 0.2)  # buffed: thick gold rim
 # (Sprint 1a.5: the visual token radius comes from
 # Board3D.token_visual_radius(), not a local const.)
 
@@ -52,24 +58,23 @@ func _badge_label() -> Label:
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	l.add_theme_font_override("font", UIKit.font(UIKit.FONT_DISPLAY_PATH))
 	l.add_theme_color_override("font_color", Color.WHITE)
-	l.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1.0))
-	l.add_theme_constant_override("outline_size", 5)
+	l.add_theme_color_override("font_outline_color", UIKit.INK)
+	l.add_theme_constant_override("outline_size", 7)
 	return l
 
 
-func _style_badge(p: PanelContainer, bg: Color, outline: Color) -> void:
+func _style_badge(p: PanelContainer, bg: Color, outline: Color, buffed: bool = false) -> void:
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = bg
-	sb.corner_radius_top_left = 999
-	sb.corner_radius_top_right = 999
-	sb.corner_radius_bottom_left = 999
-	sb.corner_radius_bottom_right = 999
+	sb.set_corner_radius_all(999)
 	sb.border_color = outline
-	sb.border_width_left = 3
-	sb.border_width_right = 3
-	sb.border_width_top = 3
-	sb.border_width_bottom = 3
+	sb.set_border_width_all(3 if buffed else 2)
+	sb.shadow_color = Color(0, 0, 0, 0.45)
+	sb.shadow_size = 3
+	sb.shadow_offset = Vector2(0, 2)
+	sb.anti_aliasing = true
 	p.add_theme_stylebox_override("panel", sb)
 
 
@@ -134,20 +139,24 @@ func _update_badge(uid: int, node: Minion3D) -> void:
 	var hp_l: Label = pair["hp_l"]
 	atk_l.text = "%d" % node.cur_atk
 	hp_l.text = "%d" % node.cur_hp
-	var fs: int = maxi(int(badge_d * 0.52), 10)
+	var fs: int = maxi(int(badge_d * 0.5), 10)
 	atk_l.add_theme_font_size_override("font_size", fs)
 	hp_l.add_theme_font_size_override("font_size", fs)
 	# Colors: damaged health = darker red + white number; buffed stat =
 	# gold outline. A transient flash color (heal) overrides.
-	var atk_outline: Color = GOLD_OUTLINE if node.cur_atk > node.base_atk else Color(1, 1, 1, 0.6)
+	var atk_buff: bool = node.cur_atk > node.base_atk
+	var atk_outline: Color = GOLD_OUTLINE if atk_buff else ATK_RIM
 	var hp_bg: Color = HP_BG
+	var hp_rim: Color = HP_RIM
 	if node.cur_hp < node.max_hp:
 		hp_bg = HP_HURT_BG
+		hp_rim = HP_HURT_RIM
 	if _flash.has(uid):
 		hp_bg = _flash[uid]
-	var hp_outline: Color = GOLD_OUTLINE if node.cur_hp > node.base_hp else Color(1, 1, 1, 0.6)
-	_style_badge(atk, ATK_BG, atk_outline)
-	_style_badge(hp, hp_bg, hp_outline)
+	var hp_buff: bool = node.cur_hp > node.base_hp
+	var hp_outline: Color = GOLD_OUTLINE if hp_buff else hp_rim
+	_style_badge(atk, ATK_BG, atk_outline, atk_buff)
+	_style_badge(hp, hp_bg, hp_outline, hp_buff)
 	for b in [atk, hp]:
 		(b as PanelContainer).custom_minimum_size = Vector2(badge_d, badge_d * 0.78)
 		(b as Control).size = Vector2(badge_d, badge_d * 0.78)

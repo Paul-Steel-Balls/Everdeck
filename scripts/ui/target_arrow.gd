@@ -19,7 +19,10 @@ enum State { AIMING, LOCKED, BLOCKED }
 var style: int = Style.BEAM
 var state: int = State.AIMING
 var kind: String = "attack"
-var color: Color = Color(1.0, 0.55, 0.15)
+# Electric cyan: reads on every arena floor (they're all warm or wood),
+# and never gets mistaken for a damage number or a Boss color.
+const LOCK_COLOR := Color(0.2, 0.92, 1.0)
+var color: Color = LOCK_COLOR
 var from: Vector2 = Vector2.ZERO
 var to: Vector2 = Vector2.ZERO
 var reason: String = ""
@@ -114,7 +117,7 @@ func _at(pts: PackedVector2Array, s: float) -> Array:
 func _draw_chevrons(pts: PackedVector2Array) -> void:
 	var c: Color = _col()
 	var L: float = _length(pts) - 34.0
-	var gap: float = 24.0
+	var gap: float = 28.0
 	var flow: float = fmod(_t * 60.0, gap)
 	var s: float = flow + 8.0
 	while s < L:
@@ -123,28 +126,23 @@ func _draw_chevrons(pts: PackedVector2Array) -> void:
 		var p: Vector2 = r[0]
 		var d: Vector2 = r[1]
 		var nrm := Vector2(-d.y, d.x)
-		var w: float = lerpf(7.0, 13.0, f)
-		var a: float = lerpf(0.35, 1.0, f) * (0.75 if state == State.AIMING else 1.0)
-		var tip: Vector2 = p + d * w * 0.7
-		var shape := PackedVector2Array([tip, p - d * w * 0.3 + nrm * w, p - d * w * 0.3 + nrm * w * 0.45 + d * w * 0.35, p - d * w * 0.3 - nrm * w * 0.45 + d * w * 0.35, p - d * w * 0.3 - nrm * w])
-		var sh := PackedVector2Array()
-		for v in shape:
-			sh.append(v + Vector2(0, 3))
-		draw_colored_polygon(PackedVector2Array([sh[0], sh[1], sh[2], sh[3], sh[4]]), Color(0, 0, 0, 0.35 * a))
-		draw_colored_polygon(PackedVector2Array([shape[0], shape[1], shape[2]]), Color(c.r, c.g, c.b, a))
-		draw_colored_polygon(PackedVector2Array([shape[0], shape[3], shape[4]]), Color(c.r, c.g, c.b, a))
-		draw_colored_polygon(PackedVector2Array([shape[0], shape[2], shape[3]]), Color(c.r, c.g, c.b, a))
-		draw_polyline(PackedVector2Array([shape[1], shape[0], shape[4]]), Color(1, 1, 1, 0.55 * a), 1.5, true)
+		var w: float = lerpf(9.0, 15.0, f)
+		var a: float = lerpf(0.45, 1.0, f) * (0.7 if state == State.AIMING else 1.0)
+		# Each chevron is a thick V: ink outline, color, a bright edge.
+		var v := PackedVector2Array([p - d * w * 0.55 + nrm * w, p + d * w * 0.45, p - d * w * 0.55 - nrm * w])
+		draw_polyline(v, Color(UIKit.INK.r, UIKit.INK.g, UIKit.INK.b, a), lerpf(10.0, 14.0, f), true)
+		draw_polyline(v, Color(c.r, c.g, c.b, a), lerpf(6.0, 9.0, f), true)
+		draw_polyline(v, Color(1, 1, 1, 0.7 * a), 1.8, true)
 		s += gap
 	# Big head.
 	var r2: Array = _at(pts, L + 18.0)
 	var hp: Vector2 = r2[0]
 	var hd: Vector2 = r2[1]
 	var hn := Vector2(-hd.y, hd.x)
-	var head := PackedVector2Array([hp + hd * 20.0, hp - hd * 8.0 + hn * 17.0, hp - hd * 2.0, hp - hd * 8.0 - hn * 17.0])
-	draw_colored_polygon(head, UIKit.INK)
-	draw_colored_polygon(_shrink(head, 0.78), c)
-	draw_polyline(PackedVector2Array([head[1], head[0], head[3]]), Color(1, 1, 1, 0.6), 2.0, true)
+	var head := PackedVector2Array([hp + hd * 26.0, hp - hd * 10.0 + hn * 21.0, hp - hd * 3.0, hp - hd * 10.0 - hn * 21.0])
+	draw_colored_polygon(_shrink(head, 1.25), UIKit.INK)
+	draw_colored_polygon(head, c)
+	draw_polyline(PackedVector2Array([head[1], head[0], head[3]]), Color(1, 1, 1, 0.75), 2.0, true)
 
 
 func _shrink(p: PackedVector2Array, f: float) -> PackedVector2Array:
@@ -162,14 +160,16 @@ func _draw_beam(pts: PackedVector2Array) -> void:
 	var c: Color = _col()
 	var bright: float = 1.0 if state != State.AIMING else 0.55
 	# Glow layers, tapering from thin at the source to thick at the tip.
-	var layers := [[16.0, 0.08], [10.0, 0.16], [5.0, 0.5], [2.0, 1.0]]
+	# [width at the tip, alpha, color]: ink underlay for contrast on any
+	# floor, a wide soft glow, the colored body, then a white-hot core.
+	var layers := [[30.0, 0.18, c], [16.0, 0.75, UIKit.INK], [11.0, 1.0, c], [4.5, 1.0, Color(1, 1, 0.92)]]
 	for lay in layers:
 		var wmax: float = lay[0]
-		var al: float = lay[1] * bright
+		var al: float = lay[1] * (bright if lay[2] != UIKit.INK else 0.6 + 0.4 * bright)
+		var cc: Color = lay[2]
 		for i in range(1, pts.size()):
 			var f: float = float(i) / pts.size()
-			var w: float = wmax * lerpf(0.35, 1.0, f)
-			var cc: Color = c.lerp(Color.WHITE, 0.6 if wmax <= 2.0 else 0.0)
+			var w: float = wmax * lerpf(0.4, 1.0, f)
 			draw_line(pts[i - 1], pts[i], Color(cc.r, cc.g, cc.b, al), w, true)
 	# Pulses running toward the target.
 	var L: float = _length(pts)
@@ -178,8 +178,8 @@ func _draw_beam(pts: PackedVector2Array) -> void:
 		var r: Array = _at(pts, s)
 		var p: Vector2 = r[0]
 		var f2: float = s / L
-		draw_circle(p, lerpf(3.0, 7.0, f2) * 1.8, Color(c.r, c.g, c.b, 0.25 * bright))
-		draw_circle(p, lerpf(2.0, 4.5, f2), Color(1, 1, 1, 0.9 * bright))
+		draw_circle(p, lerpf(5.0, 11.0, f2) * 1.6, Color(c.r, c.g, c.b, 0.35 * bright))
+		draw_circle(p, lerpf(3.5, 7.0, f2), Color(1, 1, 1, 0.95 * bright))
 	# Source ring.
 	draw_arc(from, 14.0, 0, TAU, 32, Color(c.r, c.g, c.b, 0.6 * bright), 2.0, true)
 
@@ -198,7 +198,8 @@ func _draw_reticle() -> void:
 	draw_arc(p, r + 3.0, 0, TAU, 48, Color(0, 0, 0, 0.4), 6.0, true)
 	for i in 4:
 		var a0: float = spin + i * TAU / 4.0 + 0.18
-		draw_arc(p, r, a0, a0 + TAU / 4.0 - 0.36, 12, c, 4.0, true)
+		draw_arc(p, r, a0, a0 + TAU / 4.0 - 0.36, 12, UIKit.INK, 9.0, true)
+		draw_arc(p, r, a0, a0 + TAU / 4.0 - 0.36, 12, c, 5.0, true)
 		var a1: float = spin + i * TAU / 4.0
 		var dir := Vector2(cos(a1), sin(a1))
 		draw_line(p + dir * (r - 9.0), p + dir * (r + 9.0), Color(1, 1, 1, 0.9), 3.0, true)

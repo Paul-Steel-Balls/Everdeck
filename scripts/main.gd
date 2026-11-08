@@ -23,7 +23,7 @@ enum Screen { TITLE, CLASSSELECT, DECKBUILD, INTERSTITIAL, MATCH, GAMEOVER, ONLI
 const LONG_PRESS_MS: int = 400
 const DRAG_THRESHOLD: float = 12.0
 const HAND_CARD_W: float = 130.0
-const HAND_CARD_H: float = 170.0
+const HAND_CARD_H: float = 188.0  # HAND_CARD_W x CardFrame.ASPECT
 const HAND_ZONE_H: float = 110.0
 const VIEW_W: float = 1280.0
 const VIEW_H: float = 720.0
@@ -105,6 +105,7 @@ var _board_zone: Control = null
 var _hand_zone: Control = null
 var _arrow: Line2D = null
 var _arrowhead: Polygon2D = null
+var _tarrow: TargetArrow = null
 var _magnify_overlay: Control = null
 # Sprint 1a.2: inspect panel (long-press any minion/hero/hand card, or tap
 # an enemy when not targeting) and the "what did they play" recap.
@@ -328,6 +329,7 @@ func _clear() -> void:
 	_hand_zone = null
 	_arrow = null
 	_arrowhead = null
+	_tarrow = null
 	_magnify_overlay = null
 	_pool_center = null
 	_pool_grid = null
@@ -381,6 +383,7 @@ func _clear_overlay() -> void:
 	_hand_zone = null
 	_arrow = null
 	_arrowhead = null
+	_tarrow = null
 	_magnify_overlay = null
 	_inspect_overlay = null
 	_emote_menu = null
@@ -1715,6 +1718,15 @@ func _refresh_match() -> void:
 	_arrowhead.visible = false
 	_arrowhead.z_index = 101
 	add_child(_arrowhead)
+	# The Line2D / head above keep the arrow's logic (where it points,
+	# snapped or not); TargetArrow draws it: the cyan hologram beam, the
+	# lock-on ring and the outcome chips.
+	_arrow.self_modulate.a = 0.0
+	_arrowhead.self_modulate.a = 0.0
+	_tarrow = TargetArrow.new()
+	_tarrow.name = "TargetArrowFX"
+	_tarrow.visible = false
+	add_child(_tarrow)
 
 
 	# Sync the 3D board to the state (adds/updates/removes minions by uid,
@@ -2332,6 +2344,98 @@ func _update_target_arrow(origin: Vector2, finger: Vector2) -> void:
 		red = true
 		_highlight_targets([best])
 	_draw_curved_arrow(origin, end, red)
+	_update_arrow_fx(origin, end, best, finger)
+
+
+# What kind of action the arrow is for (sets the ring's center mark).
+func _arrow_kind() -> String:
+	var ctx: Dictionary = _drag.get("ctx", {})
+	match str(ctx.get("kind", "")):
+		"my_minion":
+			return "attack"
+		"hand_card":
+			var c: Dictionary = _press_card(ctx)
+			var eff: String = str(c.get("effect", ""))
+			return "heal" if eff.begins_with("heal") else ("attack" if str(c.get("type", "")) == "minion" else "trick")
+	return "trick"
+
+
+# The damage this action deals to a target, or -1 when it isn't damage.
+func _arrow_damage() -> int:
+	var ctx: Dictionary = _drag.get("ctx", {})
+	if _gs == null:
+		return -1
+	match str(ctx.get("kind", "")):
+		"my_minion":
+			var b: Array = _gs.players[_gs.active]["board"]
+			var bi: int = int(ctx.get("board_idx", -1))
+			return int(b[bi]["attack"]) if bi >= 0 and bi < b.size() else -1
+		"hand_card":
+			var c: Dictionary = _press_card(ctx)
+			if str(c.get("effect", "")) == "damage":
+				return int(c.get("effect_value", 0))
+	return -1
+
+
+# Draw the beam: locked on a valid target with outcome chips, aiming at
+# nothing, or blocked (a Bouncer is in the way) with the reason.
+func _update_arrow_fx(origin: Vector2, end: Vector2, best: Dictionary, finger: Vector2) -> void:
+	if _tarrow == null:
+		return
+	_tarrow.visible = true
+	_tarrow.previews = []
+	_tarrow.reason = ""
+	var kind: String = _arrow_kind()
+	if not best.is_empty():
+		var dmg: int = _arrow_damage()
+		if dmg > 0:
+			_tarrow.previews = _outcome_chips(best, dmg, end, origin)
+		_tarrow.aim(origin, end, TargetArrow.State.LOCKED, kind)
+		return
+	# Over an enemy that can't be picked while a Bouncer stands guard?
+	if kind == "attack" and _gs != null:
+		var foe: int = 1 - _gs.active
+		var guarded: bool = false
+		for m in _gs.players[foe]["board"]:
+			if bool(m.get("taunt", false)):
+				guarded = true
+		if guarded:
+			var spots: Array = [{"kind": "hero", "player": foe, "board_idx": -1}]
+			for i in _gs.players[foe]["board"].size():
+				spots.append({"kind": "minion", "player": foe, "board_idx": i})
+			for t in spots:
+				var sp: Vector2 = _target_screen_pos(t)
+				if sp.distance_to(finger) < 46.0:
+					_tarrow.reason = "A Bouncer is in the way"
+					_tarrow.aim(origin, sp, TargetArrow.State.BLOCKED, kind)
+					return
+	_tarrow.aim(origin, finger, TargetArrow.State.AIMING, kind)
+
+
+# "-3" over what takes damage; a skull when it would die. An attack also
+# shows what hits back.
+func _outcome_chips(t: Dictionary, dmg: int, tpos: Vector2, apos: Vector2) -> Array:
+	var out: Array = []
+	var p: int = int(t.get("player", 0))
+	var hp: int = 0
+	var counter: int = 0
+	if str(t.get("kind", "")) == "hero":
+		hp = int(_gs.players[p]["hp"])
+	else:
+		var b: Array = _gs.players[p]["board"]
+		var bi: int = int(t.get("board_idx", -1))
+		if bi < 0 or bi >= b.size():
+			return out
+		hp = int(b[bi]["health"])
+		counter = int(b[bi]["attack"])
+	out.append({"pos": tpos + Vector2(0, -40), "text": "-%d" % dmg, "lethal": dmg >= hp})
+	var ctx: Dictionary = _drag.get("ctx", {})
+	if str(ctx.get("kind", "")) == "my_minion" and counter > 0:
+		var mb: Array = _gs.players[_gs.active]["board"]
+		var mi: int = int(ctx.get("board_idx", -1))
+		if mi >= 0 and mi < mb.size():
+			out.append({"pos": apos + Vector2(0, -42), "text": "-%d" % counter, "lethal": counter >= int(mb[mi]["health"])})
+	return out
 
 
 func _draw_curved_arrow(from: Vector2, to: Vector2, red: bool) -> void:
@@ -2572,6 +2676,8 @@ func _clear_highlights() -> void:
 
 
 func _hide_arrow() -> void:
+	if _tarrow != null:
+		_tarrow.visible = false
 	if _arrow != null:
 		_arrow.visible = false
 	if _arrowhead != null:

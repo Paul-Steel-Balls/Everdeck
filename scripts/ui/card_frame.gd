@@ -19,6 +19,7 @@ var card: Dictionary = {}
 var look: int = Look.GILDED
 var _tex: Texture2D = null
 var _rules: RichTextLabel = null
+var _flavor: Label = null
 var _font: Font
 var _body: Font
 var _t: float = 0.0
@@ -33,8 +34,11 @@ func setup(c: Dictionary, l: int, width: float) -> void:
 	_font = UIKit.font(UIKit.FONT_DISPLAY_PATH)
 	_body = UIKit.font(UIKit.FONT_BODY_PATH)
 	_tex = CardArt.texture_for(str(c.get("id", "")))
+	if _tex == null:
+		_tex = _fallback_art()
 	if _rules == null:
 		_rules = RichTextLabel.new()
+		_rules.name = "RulesLabel"
 		_rules.bbcode_enabled = true
 		_rules.fit_content = false
 		_rules.scroll_active = false
@@ -42,8 +46,47 @@ func setup(c: Dictionary, l: int, width: float) -> void:
 		_rules.add_theme_font_override("normal_font", UIKit.font(UIKit.FONT_BODY_LIGHT_PATH))
 		_rules.add_theme_font_override("bold_font", UIKit.font("res://fonts/Inter-Black.otf"))
 		add_child(_rules)
+	if _flavor == null and _big() and str(card.get("flavor", "")) != "":
+		_flavor = Label.new()
+		_flavor.name = "FlavorLabel"
+		_flavor.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_flavor.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_flavor.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_flavor.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		_flavor.add_theme_font_override("font", UIKit.font(UIKit.FONT_BODY_LIGHT_PATH))
+		_flavor.add_theme_color_override("font_color", Color(0.42, 0.3, 0.18))
+		add_child(_flavor)
+	if _flavor != null:
+		_flavor.text = str(card.get("flavor", ""))
 	_layout_rules()
 	queue_redraw()
+
+
+func _ready() -> void:
+	# RichTextLabel measures properly once it's in the tree.
+	if not card.is_empty():
+		_layout_rules.call_deferred()
+
+
+# Big cards (inspect / magnify) also show the flavor line.
+func _big() -> bool:
+	return size.x >= 280.0
+
+
+# A card with no painting yet (e.g. a token) shows its drawn placeholder,
+# rendered once into a texture so it clips to the art window.
+func _fallback_art() -> Texture2D:
+	var vp := SubViewport.new()
+	vp.size = Vector2i(256, 382)
+	vp.transparent_bg = false
+	vp.render_target_update_mode = SubViewport.UPDATE_ONCE
+	var art := CardArt.new()
+	art.art_id = str(card.get("art", ""))
+	art.card_id = str(card.get("id", ""))
+	art.size = Vector2(256, 382)
+	vp.add_child(art)
+	add_child(vp)
+	return vp.get_texture()
 
 
 func _k() -> float:
@@ -89,7 +132,15 @@ func _text_rect() -> Rect2:
 
 
 func _layout_rules() -> void:
+	if _rules == null:
+		return
 	var r: Rect2 = _text_rect()
+	if _flavor != null:
+		var fr := Rect2(Vector2(r.position.x, r.position.y + r.size.y * 0.66), Vector2(r.size.x, r.size.y * 0.34))
+		r.size.y *= 0.64
+		_flavor.position = fr.position
+		_flavor.size = fr.size
+		_flavor.add_theme_font_size_override("font_size", maxi(int(11 * _k()), 9))
 	_rules.position = r.position
 	_rules.size = r.size
 	_rules.text = _rules_bbcode()
@@ -158,6 +209,12 @@ func _art(dst: Rect2, mask: PackedVector2Array) -> void:
 	draw_colored_polygon(mask, Color.WHITE, uvs, _tex)
 
 
+func _ink(poly: PackedVector2Array, w: float) -> void:
+	var p := poly.duplicate()
+	p.append(poly[0])
+	draw_polyline(p, UIKit.INK, maxf(w, 1.0), true)
+
+
 func _text(f: Font, pos: Vector2, s: String, fs: int, col: Color, outline: int, center_w: float = -1.0) -> void:
 	var p := pos
 	if center_w > 0.0:
@@ -175,7 +232,7 @@ func _name_text(box: Rect2, fs: int) -> void:
 	var nf: Font = UIKit.font("res://fonts/Inter-Black.otf")
 	var one: int = _fit(nf, nm, fs, box.size.x)
 	var words: PackedStringArray = nm.split(" ")
-	if one >= int(14 * k) or words.size() < 2:
+	if one >= int(fs * 0.8) or words.size() < 2:
 		_text(nf, Vector2(box.position.x, box.get_center().y + one * 0.36), nm, one, Color.WHITE, int(6 * k), box.size.x)
 		return
 	var best: int = 1
@@ -221,6 +278,7 @@ func _scaled(p: PackedVector2Array, c: Vector2, f: float) -> PackedVector2Array:
 func _num_gem(c: Vector2, r: float, sides: int, rot: float, body: Color, rim: Color, n: String, fs: int) -> void:
 	var g := _gem_poly(c, r, sides, rot)
 	draw_colored_polygon(_scaled(g, c + Vector2(0, 3) * _k(), 1.08), Color(0, 0, 0, 0.45))
+	draw_colored_polygon(_scaled(g, c, 1.22), UIKit.INK)
 	draw_colored_polygon(_scaled(g, c, 1.16), rim.darkened(0.35))
 	draw_colored_polygon(_scaled(g, c, 1.08), rim)
 	draw_colored_polygon(g, body)
@@ -260,6 +318,10 @@ func _draw_gilded() -> void:
 	# Inner body: the class color, dark, with a lighter centre.
 	var inner := _chamfer(full.grow(-8 * k), 12 * k)
 	draw_colored_polygon(inner, col.darkened(0.72))
+	# Thin ink lines on the gilding (outer edge and inner edge) so the
+	# gold pops off anything behind it.
+	_ink(_chamfer(full.grow(-0.5 * k), 16 * k), 1.6 * k)
+	_ink(inner, 1.4 * k)
 	draw_colored_polygon(_chamfer(full.grow(-20 * k), 8 * k), col.darkened(0.6))
 	# Art window: arched for Crew, cut corners for Tricks.
 	var aw := Rect2(Vector2(18, 18) * k, Vector2(W - 36 * k, 190 * k))
@@ -268,6 +330,8 @@ func _draw_gilded() -> void:
 	draw_colored_polygon(outer, gold_d)
 	draw_colored_polygon(_poly_round_top(aw.grow(2.5 * k), aw.size.x * 0.5 + 2.5 * k, 18) if crew else _chamfer(aw.grow(2.5 * k), 19 * k), gold)
 	_art(aw, mask)
+	_ink(outer, 1.4 * k)
+	_ink(mask, 1.2 * k)
 	# Text plate: parchment.
 	var tr := Rect2(Vector2(20, 214) * k, Vector2(W - 40 * k, 126 * k))
 	var sb := StyleBoxFlat.new()
@@ -276,6 +340,12 @@ func _draw_gilded() -> void:
 	sb.border_color = gold_d
 	sb.set_border_width_all(int(maxf(2.0, 2.5 * k)))
 	draw_style_box(sb, tr)
+	var ink_sb := StyleBoxFlat.new()
+	ink_sb.draw_center = false
+	ink_sb.set_corner_radius_all(int(11 * k))
+	ink_sb.border_color = UIKit.INK
+	ink_sb.set_border_width_all(maxi(1, int(1.3 * k)))
+	draw_style_box(ink_sb, tr.grow(1.0 * k))
 	draw_rect(Rect2(tr.position + Vector2(4, 4) * k, Vector2(tr.size.x - 8 * k, tr.size.y * 0.35)), Color(1, 1, 1, 0.18))
 	# Name ribbon across the bottom of the art.
 	var ry: float = 188 * k
@@ -295,6 +365,7 @@ func _draw_gilded() -> void:
 	draw_colored_polygon(top_half, col.darkened(0.15))
 	var rl := rib_pts.duplicate()
 	rl.append(rib_pts[0])
+	draw_polyline(rl, UIKit.INK, 4.2 * k, true)
 	draw_polyline(rl, gold, 2.0 * k, true)
 	_name_text(Rect2(rib.position + Vector2(nt * 1.5, 0), Vector2(rib.size.x - nt * 3.0, rib.size.y)), int(18 * k))
 	# Rarity jewel on top of the ribbon.
@@ -305,10 +376,11 @@ func _draw_gilded() -> void:
 	draw_colored_polygon(jw, _rarity_color())
 	draw_circle(jc + Vector2(-1.5, -1.5) * k, 1.5 * k, Color(1, 1, 1, 0.8))
 	# Type tag at the bottom edge.
-	var tag: String = "CREW" if crew else "TRICK"
+	var tag: String = "CREW" if crew else ("CHAOS" if CardView.is_chaos(card) else "TRICK")
 	var tfs: int = int(12 * k)
 	var tw: float = _font.get_string_size(tag, HORIZONTAL_ALIGNMENT_LEFT, -1, tfs).x + 22 * k
 	var tg := Rect2(Vector2((W - tw) * 0.5, H - 20 * k), Vector2(tw, 20 * k))
+	draw_colored_polygon(_chamfer(tg.grow(3 * k), 8 * k), UIKit.INK)
 	draw_colored_polygon(_chamfer(tg.grow(2 * k), 7 * k), gold_d)
 	draw_colored_polygon(_chamfer(tg, 6 * k), Color(0.1, 0.07, 0.14))
 	_text(_font, Vector2(tg.position.x, tg.position.y + tg.size.y * 0.5 + tfs * 0.4), tag, tfs, gold, 0, tg.size.x)
