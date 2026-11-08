@@ -106,6 +106,7 @@ func _modal_no_stop_kids(root: Control) -> bool:
 
 func _run_all() -> void:
 	await _test_online_3d()
+	_test_ai_no_stall()
 	# --- cards.json loading (Phase 3) ---
 	_check("cards.json: 340 cards load", CardDB.CARDS.size() == 340)
 	var fields_ok: bool = true
@@ -2936,6 +2937,42 @@ func _has_label_with(root: Node, needle: String) -> bool:
 
 # --- PC online play: two games in one process, host runs the built-in
 # relay, the guest joins by address; both play on the real 3D board. ---
+# The AI must keep hitting a Boss whatever its health (it used to stall
+# at 16 and 8, where its health scoring jumped), and not waste 2 mana
+# healing at full health.
+func _test_ai_no_stall() -> void:
+	var mono: bool = true
+	for h in range(0, 31):
+		if AIPlayer.health_value(h) <= AIPlayer.health_value(h - 1) and h > 0:
+			mono = false
+	_check("ai: losing health always lowers the AI's value of it", mono)
+	for start_hp in [30, 16, 9, 8]:
+		var gs := GameState.new()
+		gs.setup(_valid_deck_for("reginald"), _valid_deck_for("agatha"), "reginald", "agatha")
+		gs.active = 1
+		gs.players[0]["hp"] = start_hp
+		gs.players[0]["board"] = []
+		gs.players[1]["board"] = [_minion("squire")]
+		gs.players[1]["board"][0]["can_attack"] = true
+		gs.players[1]["board"][0]["sick"] = false
+		gs.players[1]["hand"] = []
+		gs.players[1]["mana"] = 2
+		var ai := AIPlayer.new()
+		ai.sloppiness = 0.0
+		var a: Dictionary = ai.next_action(gs, 1)
+		_check("ai: attacks a Boss on %d health with an empty board in the way" % start_hp, str(a.get("type", "")) == "attack")
+	var gs2 := GameState.new()
+	gs2.setup(_valid_deck_for("reginald"), _valid_deck_for("agatha"), "reginald", "agatha")
+	gs2.active = 1
+	gs2.players[1]["hp"] = 30
+	gs2.players[1]["hand"] = []
+	gs2.players[1]["board"] = []
+	gs2.players[1]["mana"] = 2
+	var ai2 := AIPlayer.new()
+	ai2.sloppiness = 0.0
+	_check("ai: Agatha doesn't heal at full health", str(ai2.next_action(gs2, 1).get("type", "")) == "end")
+
+
 func _test_online_3d() -> void:
 	_check("online: game version stamped", NetMatch.build_version().begins_with("everdeck-pc-1/"))
 	var host: Control = load("res://main.tscn").instantiate()

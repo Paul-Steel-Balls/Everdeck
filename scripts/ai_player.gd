@@ -100,7 +100,11 @@ func next_action(gs: GameState, me: int) -> Dictionary:
 			total += evaluate(g, me)
 		if not ok:
 			continue
-		var gain: float = total / float(samples) - base + _tempo(gs, me, a)
+		var diff: float = total / float(samples) - base
+		# A Signature Move that changes nothing (healing at full health)
+		# earns no tempo: don't burn 2 mana on it.
+		var tempo: float = 0.0 if (str(a.get("type", "")) == "power" and absf(diff) < 0.001) else _tempo(gs, me, a)
+		var gain: float = diff + tempo
 		scored.append([gain, a])
 	if scored.is_empty():
 		return {"type": "end"}
@@ -207,12 +211,23 @@ static func evaluate(gs: GameState, me: int) -> float:
 	return v
 
 
+# Each point of health is worth more the lower health gets: 1.8 for the
+# last 8, 1.0 for the next 7, 0.6 above 15. Summed point by point, so
+# losing health ALWAYS lowers the value. (It used to be hp x one rate
+# picked by the band, which jumped UP when health crossed 15 or 8: the
+# AI then refused to hit a Boss at 16 and stalled forever, spending its
+# 2 mana on the Signature Move every turn.)
+static func health_value(hp: int) -> float:
+	var h: float = float(maxi(hp, 0))
+	return 1.8 * minf(h, 8.0) + 1.0 * clampf(h - 8.0, 0.0, 7.0) + 0.6 * maxf(h - 15.0, 0.0)
+
+
 static func _side_value(p: Dictionary, is_me: bool) -> float:
 	var hp: int = int(p["hp"])
 	var v: float = 0.0
 	# Health matters more the lower it gets (for both sides: the AI
 	# defends when low and goes for the throat when the enemy is low).
-	v += float(hp) * (0.6 if hp > 15 else (1.0 if hp > 8 else 1.8))
+	v += health_value(hp)
 	for m in p["board"]:
 		var atk: float = float(m["attack"])
 		var health: float = float(max(0, int(m["health"])))
