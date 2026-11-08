@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cn8od1mol6g53"
-path="res://.godot/imported/parchment.png-f057fba66d7d5036fd23a2bb2b6e82d4.ctex"
+uid="uid://tda35kv6xgg8"
+path="res://.godot/imported/wood.png-20ba7e5eed2d0af1351a5778f3c77f12.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://art/ui/parchment.png"
-dest_files=["res://.godot/imported/parchment.png-f057fba66d7d5036fd23a2bb2b6e82d4.ctex"]
+source_file="res://textures/card/wood.png"
+dest_files=["res://.godot/imported/wood.png-20ba7e5eed2d0af1351a5778f3c77f12.ctex"]
 
 [params]
 

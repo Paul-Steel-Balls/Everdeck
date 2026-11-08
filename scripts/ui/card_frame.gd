@@ -13,9 +13,9 @@ class_name CardFrame
 enum Look { GILDED, HOLO }
 
 const BASE_W := 250.0
-const GOLD_TEX := preload("res://art/ui/gold.png")
-const WOOD_TEX := preload("res://art/ui/wood.png")
-const PARCH_TEX := preload("res://art/ui/parchment.png")
+const GOLD_TEX := preload("res://textures/card/gold.png")
+const WOOD_TEX := preload("res://textures/card/wood.png")
+const PARCH_TEX := preload("res://textures/card/parchment.png")
 const ASPECT := 1.45   # height / width
 
 var card: Dictionary = {}
