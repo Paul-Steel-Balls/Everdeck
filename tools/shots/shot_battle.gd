@@ -37,6 +37,31 @@ func _ready() -> void:
 	gs.players[foe]["mana"] = 4
 	gs.players[foe]["max_mana"] = 6
 	m._refresh_match()
+	if OS.get_environment("SHOT_ARROW") != "":
+		await _frames(40)
+		var a := TargetArrow.new()
+		m.add_child(a)
+		a.color = UIKit.CLASS_COLOR.get(hc, Color(1, 0.6, 0.2))
+		var src: Vector2 = m._target_screen_pos({"kind": "minion", "player": me, "board_idx": 1})
+		var tgt: Vector2 = m._target_screen_pos({"kind": "minion", "player": foe, "board_idx": 2})
+		var boss: Vector2 = m._target_screen_pos({"kind": "hero", "player": foe, "board_idx": -1})
+		var pv := [{"pos": tgt + Vector2(0, -34), "text": "-9", "lethal": true}, {"pos": src + Vector2(0, -38), "text": "-2", "lethal": true}]
+		for st in [TargetArrow.Style.CHEVRON, TargetArrow.Style.BEAM]:
+			a.style = st
+			a.previews = pv
+			a.aim(src, tgt, TargetArrow.State.LOCKED, "attack")
+			await _frames(12)
+			await _shot("arrow_%d_locked" % st)
+			a.previews = []
+			a.aim(src, src + Vector2(160, -120), TargetArrow.State.AIMING, "attack")
+			await _frames(4)
+			await _shot("arrow_%d_aiming" % st)
+			a.reason = "A Taunt is in the way"
+			a.aim(src, boss, TargetArrow.State.BLOCKED, "attack")
+			await _frames(4)
+			await _shot("arrow_%d_blocked" % st)
+		get_tree().quit()
+		return
 	if OS.get_environment("SHOT_EMOTE") != "":
 		await _frames(40)
 		m._show_emote_menu()
