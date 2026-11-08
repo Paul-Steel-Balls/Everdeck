@@ -1998,6 +1998,79 @@ func _run_all() -> void:
 	m8._on_gesture_release(Vector2(30, 700))
 	await get_tree().create_timer(0.4).timeout
 	_check("gesture: targeted card released elsewhere cancels", m8._gs.players[1]["hp"] == 30 and m8._gs.players[0]["hand"].size() == 1)
+	# A Crew card with a targeted Entrance (2 damage to an enemy Crew
+	# member): drag it up, aim at the enemy, let go -> it lands and hits.
+	await get_tree().create_timer(0.4).timeout
+	m8._gs.players[0]["hand"] = ["grunk_boot"]
+	m8._gs.players[0]["mana"] = 10
+	m8._gs.players[0]["board"] = []
+	m8._gs.players[1]["board"] = [_minion("angry_squirrel")]
+	m8._gs.players[1]["board"][0]["health"] = 5
+	m8._gs.players[1]["board"][0]["max_health"] = 5
+	m8._refresh_match()
+	for _f12 in 4:
+		await get_tree().process_frame
+	var hz12: Node = m8.find_child("HandZone", true, false)
+	var card_btn12: Control = hz12.get_child(0)
+	var ctx12 := {"kind": "hand_card", "hand_idx": 0, "node": card_btn12}
+	m8._on_hand_gesture_input(gp8, ctx12, card_btn12)
+	var start_c12: Vector2 = card_btn12.global_position + lp8
+	for di12 in range(1, 8):
+		m8._on_gesture_move(start_c12 + Vector2(0, -60.0 * di12))
+		await get_tree().process_frame
+	var e_uid12: int = m8._gs.uid_for(m8._gs.players[1]["board"][0])
+	var e_res12: Dictionary = m8._board_3d.minion_position(e_uid12)
+	var e_canvas12: Vector2 = m8.get_viewport().get_canvas_transform().affine_inverse() * m8._board_3d.screen_pos(e_res12["position"])
+	m8._on_gesture_move(e_canvas12)
+	await get_tree().process_frame
+	var snapped12: bool = not (m8._drag.get("snapped", {}) as Dictionary).is_empty()
+	m8._on_gesture_release(e_canvas12)
+	for _f13 in 3:
+		await get_tree().process_frame
+	_check("gesture: a Crew card's targeted Entrance snaps to the enemy (snapped=%s)" % snapped12, snapped12)
+	_check("gesture: release plays the Crew card and its Entrance hits (enemy 5 -> 3)", m8._gs.players[0]["board"].size() == 1 and m8._gs.players[1]["board"].size() == 1 and int(m8._gs.players[1]["board"][0]["health"]) == 3)
+	# Same with the MOUSE: once the arrow is out the card hides and stops
+	# getting mouse events, so the release must still be caught.
+	var w14: int = Time.get_ticks_msec()
+	while (m8._animating or m8._ai_turn) and Time.get_ticks_msec() - w14 < 8000:
+		await get_tree().process_frame
+	m8._gs.players[0]["hand"] = ["grunk_boot"]
+	m8._gs.players[0]["mana"] = 10
+	m8._gs.players[0]["board"] = []
+	m8._gs.players[1]["board"][0]["health"] = 5
+	m8._refresh_match()
+	for _f14 in 4:
+		await get_tree().process_frame
+	var hz14: Node = m8.find_child("HandZone", true, false)
+	var card14: Control = hz14.get_child(0)
+	var ctx14 := {"kind": "hand_card", "hand_idx": 0, "node": card14}
+	var md14 := InputEventMouseButton.new()
+	md14.button_index = MOUSE_BUTTON_LEFT
+	md14.pressed = true
+	md14.position = card14.size * 0.5
+	m8._on_hand_gesture_input(md14, ctx14, card14)
+	var start14: Vector2 = card14.global_position + card14.size * 0.5
+	for di14 in range(1, 8):
+		var mm14 := InputEventMouseMotion.new()
+		mm14.button_mask = MOUSE_BUTTON_MASK_LEFT
+		mm14.position = (start14 + Vector2(0, -60.0 * di14)) - card14.global_position
+		if card14.is_visible_in_tree():
+			m8._on_hand_gesture_input(mm14, ctx14, card14)
+		else:
+			var gm14 := InputEventMouseMotion.new()
+			gm14.button_mask = MOUSE_BUTTON_MASK_LEFT
+			gm14.position = m8.get_global_transform_with_canvas() * (start14 + Vector2(0, -60.0 * di14))
+			m8._input(gm14)
+		await get_tree().process_frame
+	_check("mouse: the card hides while the arrow is out", not card14.is_visible_in_tree())
+	var gr14 := InputEventMouseButton.new()
+	gr14.button_index = MOUSE_BUTTON_LEFT
+	gr14.pressed = false
+	gr14.position = m8.get_global_transform_with_canvas() * e_canvas12
+	m8._input(gr14)
+	for _f15 in 3:
+		await get_tree().process_frame
+	_check("mouse: letting go over the enemy plays the Crew card and its Entrance hits", m8._gs.players[0]["board"].size() == 1 and int(m8._gs.players[1]["board"][0]["health"]) == 3)
 	m8.queue_free()
 
 	# --- Sprint 1a.4: board layout & targeting ---

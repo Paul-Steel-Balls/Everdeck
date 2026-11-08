@@ -262,6 +262,22 @@ func _process(delta: float) -> void:
 # Sprint 1a.3: Android back button closes the topmost modal (any tap
 # anywhere also closes them, via each overlay's gui_input).
 func _input(event: InputEvent) -> void:
+	# A hand card dragged with the mouse hides while its targeting arrow
+	# is out, and a hidden Control gets no more mouse events, so the
+	# release (the moment the card is played) would never arrive. Route
+	# the drag and the release from here while the card is hidden.
+	if not _press.is_empty() and str(_press.get("family", "")) == "mouse" and _press.has("preview"):
+		var pn: Control = _press.get("node")
+		if pn != null and is_instance_valid(pn) and not pn.is_visible_in_tree():
+			var le: InputEvent = make_input_local(event)
+			if le is InputEventMouseMotion and (le.button_mask & MOUSE_BUTTON_MASK_LEFT) != 0:
+				_on_gesture_move(le.position)
+				get_viewport().set_input_as_handled()
+				return
+			if le is InputEventMouseButton and le.button_index == MOUSE_BUTTON_LEFT and not le.pressed:
+				_on_gesture_release(le.position)
+				get_viewport().set_input_as_handled()
+				return
 	# Esc during a computer match: ask to leave.
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 		if _screen == Screen.MATCH and _vs_ai:
