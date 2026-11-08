@@ -188,6 +188,7 @@ func _process(delta: float) -> void:
 		_deckbuild_fling_step(delta)
 	_tick_turn_clock(delta)
 	_tick_hover_card()
+	_tick_hand_fx(delta)
 	# Long-press -> inspect (Sprint 1a.2; touch primary path). Not while
 	# animating.
 	if _animating or _ai_turn:
@@ -1637,8 +1638,16 @@ func _refresh_match() -> void:
 		cb.position = Vector2(fan[i]["x"], fan[i]["y"] - 10)
 		cb.rotation = fan[i]["rot"]
 		cb.z_index = i
+		cb.set_meta("fan_home", cb.position)
+		cb.set_meta("fan_rot", cb.rotation)
+		cb.set_meta("fan_z", i)
 		if not _gs.can_play(active, i):
 			cb.modulate = Color(0.6, 0.6, 0.6)
+		elif not _ai_turn and not _remote_turn():
+			# Playable now: the card glows so it catches the eye.
+			var face: CardFrame = cb.get_node_or_null("Face") as CardFrame
+			if face != null:
+				face.glow = true
 		cb.gui_input.connect(_on_pressable_gui_input.bind({"kind": "hand_card", "hand_idx": i, "node": cb}))
 		hand_zone.add_child(cb)
 		_hand_cards.append(cb)
@@ -2204,7 +2213,7 @@ func _glide_card_home(node: Control, home_pos: Vector2, home_z: int) -> void:
 
 
 # Large preview above the hand, shown ONLY while the finger stays down.
-func _show_hand_preview(ctx: Dictionary) -> void:
+func _show_hand_preview(ctx: Dictionary, anchor_x: float = -1.0) -> void:
 	_hide_hand_preview()
 	var card: Dictionary = _press_card(ctx)
 	if card.is_empty() or _hand_zone == null:
@@ -2224,7 +2233,10 @@ func _show_hand_preview(ctx: Dictionary) -> void:
 		kw_h = _inspect_keywords(card).size() * 24.0
 		kw_box.position = Vector2(0, 424.0)
 		big.add_child(kw_box)
-	big.position = Vector2((vw - 300.0) / 2.0, maxf(8.0, hand_top - 432.0 - kw_h))
+	var px: float = (vw - 300.0) / 2.0 if anchor_x < 0.0 else clampf(anchor_x - 150.0, 170.0, vw - 300.0 - 210.0)
+	big.position = Vector2(px, maxf(8.0, hand_top - 432.0 - kw_h - (40.0 if anchor_x >= 0.0 else 0.0)))
+	for n in big.find_children("*", "Control", true, false):
+		(n as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
 	big.z_index = 200
 	add_child(big)
 	_hand_preview = big
@@ -2816,6 +2828,9 @@ func _keyword_help_box(card: Dictionary, font_size: int, width: float) -> VBoxCo
 	box.name = "KeywordHelp"
 	box.add_theme_constant_override("separation", 2)
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# A dark plate behind the lines so they read over the board.
+	var plate_sb: StyleBox = CardView.panel_style(Color(0.06, 0.04, 0.1, 0.88), 10)
+	box.draw.connect(func() -> void: box.draw_style_box(plate_sb, Rect2(Vector2(-6, -4), box.size + Vector2(12, 8))))
 	for kw in kws:
 		var l := CardView.label("%s — %s" % [kw, KEYWORD_HELP.get(kw, "")], font_size, CardView.GOLD_TEXT)
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -3024,16 +3039,71 @@ func _show_inspect(data: Dictionary) -> void:
 	_inspect_overlay = overlay
 
 
+# --- The hand follows the mouse: cards near the cursor rise, straighten
+# and grow, their neighbours lean away; resting on one for a moment shows
+# it big above the hand. ---
+var _hand_hover_idx: int = -1
+var _hand_hover_since: int = 0
+var _hand_hover_preview: bool = false
+
+
+func _tick_hand_fx(delta: float) -> void:
+	if _screen != Screen.MATCH or _hand_zone == null or _hand_cards.is_empty():
+		return
+	var busy: bool = not _press.is_empty() or not _drag.is_empty() or _inspect_overlay != null
+	if busy:
+		_hand_hover_idx = -1
+		return
+	var mp: Vector2 = get_global_mouse_position()
+	var top: float = _hand_zone.global_position.y
+	var near: bool = hover_cards_enabled and mp.y > top - 70.0 and mp.y < get_viewport_rect().size.y + 4.0
+	var k: float = minf(1.0, delta * 14.0)
+	var hovered: int = -1
+	var best: float = 1e9
+	for i in _hand_cards.size():
+		var cb: Control = _hand_cards[i]
+		if not is_instance_valid(cb) or not cb.has_meta("fan_home"):
+			continue
+		var home: Vector2 = cb.get_meta("fan_home")
+		var rot0: float = float(cb.get_meta("fan_rot"))
+		var dx: float = mp.x - (_hand_zone.global_position.x + home.x + cb.size.x * 0.5)
+		var f: float = exp(-pow(dx / 105.0, 2.0)) if near else 0.0
+		var push: float = (-signf(dx) * 30.0 * exp(-pow(dx / 175.0, 2.0)) * (1.0 - f)) if near else 0.0
+		var tpos: Vector2 = home + Vector2(push, -52.0 * f)
+		var tsc: float = 1.0 + 0.16 * f
+		cb.pivot_offset = Vector2(cb.size.x * 0.5, cb.size.y)
+		cb.position = tpos if cb.position.distance_to(tpos) < 0.4 else cb.position.lerp(tpos, k)
+		cb.rotation = lerp_angle(cb.rotation, lerpf(rot0, 0.0, f), k)
+		var sc: float = lerpf(cb.scale.x, tsc, k)
+		cb.scale = Vector2(sc, sc)
+		cb.z_index = int(cb.get_meta("fan_z")) + (30 if f > 0.55 else 0)
+		if near and absf(dx) < cb.size.x * 0.5 and absf(dx) < best:
+			best = absf(dx)
+			hovered = i
+	if hovered != _hand_hover_idx:
+		_hand_hover_idx = hovered
+		_hand_hover_since = Time.get_ticks_msec()
+		if _hand_hover_preview:
+			_hide_hand_preview()
+			_hand_hover_preview = false
+		return
+	if hovered >= 0 and not _hand_hover_preview and Time.get_ticks_msec() - _hand_hover_since >= HOVER_CARD_MS:
+		var cbh: Control = _hand_cards[hovered]
+		_show_hand_preview({"kind": "hand_card", "hand_idx": hovered, "node": cbh}, cbh.global_position.x + cbh.size.x * 0.5)
+		_hand_hover_preview = true
+
+
 # --- Hover a Crew member on the board: after a moment its card pops up
 # beside it (no click needed), and goes away when the mouse moves off. ---
 const HOVER_CARD_MS: int = 800
+var hover_cards_enabled: bool = true  # (screenshot harnesses turn it off)
 var _hover_uid: int = -1
 var _hover_since: int = 0
 var _hover_card: Control = null
 
 
 func _tick_hover_card() -> void:
-	var busy: bool = _screen != Screen.MATCH or _board_3d == null or _gs == null or not _press.is_empty() \
+	var busy: bool = not hover_cards_enabled or _screen != Screen.MATCH or _board_3d == null or _gs == null or not _press.is_empty() \
 		or not _drag.is_empty() or _inspect_overlay != null or _emote_menu != null \
 		or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
 	var uid: int = -1

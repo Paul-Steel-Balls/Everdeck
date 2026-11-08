@@ -50,7 +50,28 @@ func _badge_pair() -> Dictionary:
 	hp.add_child(hp_l)
 	add_child(atk)
 	add_child(hp)
-	return {"atk": atk, "hp": hp, "atk_l": atk_l, "hp_l": hp_l}
+	# Bouncer: a small ice-blue shield between the two chips (matches its guard wall).
+	var guard := Control.new()
+	guard.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	guard.visible = false
+	guard.draw.connect(func() -> void: _draw_shield(guard))
+	add_child(guard)
+	return {"atk": atk, "hp": hp, "atk_l": atk_l, "hp_l": hp_l, "guard": guard}
+
+
+func _draw_shield(c: Control) -> void:
+	var w: float = c.size.x
+	var h: float = c.size.y
+	var pts := PackedVector2Array([Vector2(w * 0.5, 0), Vector2(w, h * 0.16), Vector2(w * 0.94, h * 0.6), Vector2(w * 0.5, h), Vector2(w * 0.06, h * 0.6), Vector2(0, h * 0.16)])
+	var outer := PackedVector2Array()
+	for p in pts:
+		outer.append(Vector2(w, h) * 0.5 + (p - Vector2(w, h) * 0.5) * 1.22)
+	c.draw_colored_polygon(outer, UIKit.INK)
+	c.draw_colored_polygon(pts, Color(0.3, 0.6, 1.0))
+	var inner := PackedVector2Array()
+	for p in pts:
+		inner.append(Vector2(w, h) * 0.5 + (p - Vector2(w, h) * 0.5) * 0.62)
+	c.draw_colored_polygon(inner, Color(0.78, 0.9, 1.0))
 
 
 func _badge_label() -> Label:
@@ -100,6 +121,7 @@ func _process(_delta: float) -> void:
 		var pair: Dictionary = _badges[uid]
 		(pair["atk"] as Control).queue_free()
 		(pair["hp"] as Control).queue_free()
+		(pair["guard"] as Control).queue_free()
 		_badges.erase(uid)
 		_flash.erase(uid)
 
@@ -109,6 +131,8 @@ func _update_badge(uid: int, node: Minion3D) -> void:
 	var atk: PanelContainer = pair["atk"]
 	var hp: PanelContainer = pair["hp"]
 	# Hidden while the token dies.
+	var guard: Control = pair["guard"]
+	guard.visible = false
 	if node.dying:
 		atk.visible = false
 		hp.visible = false
@@ -169,6 +193,13 @@ func _update_badge(uid: int, node: Minion3D) -> void:
 	hp.visible = true
 	atk.z_index = 60
 	hp.z_index = 60
+	if node.is_bouncer:
+		var gs_px: float = badge_d * 0.62
+		guard.size = Vector2(gs_px, gs_px * 1.15)
+		guard.position = canvas_pos + Vector2(-gs_px * 0.5, radius * 0.30 - gs_px * 0.62)
+		guard.z_index = 61
+		guard.visible = true
+		guard.queue_redraw()
 
 
 # --- Director entry points (called via Minion3D forwarders) ---

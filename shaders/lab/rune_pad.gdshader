@@ -1,5 +1,5 @@
 shader_type spatial;
-render_mode unshaded, blend_add, cull_disabled, depth_draw_never;
+render_mode unshaded, blend_mix, cull_disabled, depth_draw_never;
 // Summoning circle under a unit: two rings with rotating tick marks.
 uniform vec4 col : source_color = vec4(1.0, 0.5, 0.1, 1.0);
 uniform float intensity = 1.0;
@@ -16,6 +16,8 @@ void fragment() {
 	float ticks = step(0.75, fract((a + TIME * 0.4) / 6.2831 * 24.0)) * step(0.76, r) * step(r, 0.88);
 	v += ticks * 0.7;
 	v += (1.0 - smoothstep(0.0, 0.7, r)) * 0.12;
-	ALBEDO = col.rgb * v * 2.0 * intensity;
-	ALPHA = clamp(v, 0.0, 1.0);
+	// Mixed (not added) so the color holds on bright floors: a lit core
+	// on the rings, the soft center fill stays faint.
+	ALBEDO = mix(col.rgb, vec3(1.0), clamp(v - 1.0, 0.0, 0.35)) * (0.85 + 0.35 * intensity);
+	ALPHA = clamp(v * 0.95 * intensity, 0.0, 0.95);
 }

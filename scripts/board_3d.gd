@@ -40,6 +40,9 @@ const ENEMY_ROW_Z: float = -2.0
 const CENTER_Z: float = 0.0
 const ROW_CENTER_X: float = 0.0
 const BOSS_SCALE: float = 1.75
+# The arena (platform, props, set piece) is built at the lab's size and
+# scaled up by this; the Bosses stand where the scaled stage puts them.
+const STAGE_SCALE: float = 1.15
 # Sprint 1c: HEADS/TAILS label height for the center-screen coin flip
 # (low enough to stay on-screen at all aspect ratios).
 const COIN_LABEL_HEIGHT: float = 1.1
@@ -274,6 +277,7 @@ func _ensure_stage(gs: GameState) -> void:
 	var far_c: Color = UIKit.CLASS_COLOR.get(far_cls, Color(0.2, 0.8, 0.8))
 	_stage = ArenaStage.new()
 	_stage.name = "Stage"
+	_stage.scale = Vector3.ONE * STAGE_SCALE
 	add_child(_stage)
 	_stage.build(near_cls, near_c, far_c)
 	_world_env.environment = _stage.env
@@ -281,7 +285,7 @@ func _ensure_stage(gs: GameState) -> void:
 		var cls: String = str(gs.players[p]["class"])
 		var is_near: bool = p == near
 		var col: Color = near_c if is_near else far_c
-		var pos: Vector3 = ArenaStage.hero_pos(is_near)
+		var pos: Vector3 = boss_pos(is_near)
 		if not ModelLib.has_model("hero_" + cls):
 			continue
 		var hu := HoloUnit.new()
@@ -299,7 +303,7 @@ func _ensure_stage(gs: GameState) -> void:
 			act.theme = _stage.theme
 			act.hero = hu
 			act.prop = _stage.prop_holder
-			act.prop_size = ArenaStage.SET_PIECE_SIZE
+			act.prop_size = ArenaStage.SET_PIECE_SIZE * STAGE_SCALE
 			act.color = col
 			act.interval = Vector2(20.0, 30.0)
 			act.first_delay = 6.0
@@ -308,7 +312,12 @@ func _ensure_stage(gs: GameState) -> void:
 	for p2 in [0, 1]:
 		var plaque: HeroPlaque3D = _plaques[p2]
 		if plaque != null:
-			plaque.place_at(ArenaStage.hero_pos(p2 == near), _bosses[p2])
+			plaque.place_at(boss_pos(p2 == near), _bosses[p2])
+
+
+# Where a Boss stands on the (scaled) stage.
+static func boss_pos(near: bool) -> Vector3:
+	return ArenaStage.hero_pos(near) * STAGE_SCALE
 
 
 # Screen-space aim points sit at chest height on a 3D model.
@@ -835,7 +844,7 @@ func sync(gs: GameState) -> void:
 			_plaques[p] = plaque
 			plaque.badge = hero_badges[p]
 			plaque.setup(p, str(gs.players[p]["class"]), int(gs.players[p]["hp"]))
-			plaque.place_at(ArenaStage.hero_pos(p == active), boss_unit(p))
+			plaque.place_at(boss_pos(p == active), boss_unit(p))
 		# Hotfix 1c.2: update_hp runs on EVERY sync, not just the
 		# existing-plaque path. After the pass-the-phone interstitial's
 		# full _clear(), plaques are recreated and setup() alone never

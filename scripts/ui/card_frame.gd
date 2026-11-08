@@ -19,6 +19,10 @@ const PARCH_TEX := preload("res://textures/card/parchment.png")
 const ASPECT := 1.45   # height / width
 
 var card: Dictionary = {}
+var glow: bool = false:   # playable now: a soft pulsing green aura
+	set(v):
+		glow = v
+		queue_redraw()
 var look: int = Look.GILDED
 var _tex: Texture2D = null
 var _rules: RichTextLabel = null
@@ -98,7 +102,7 @@ func _k() -> float:
 
 func _process(delta: float) -> void:
 	_t += delta
-	if look == Look.HOLO:
+	if look == Look.HOLO or glow:
 		queue_redraw()
 
 
@@ -407,6 +411,14 @@ func _draw_gilded() -> void:
 	var gold_d: Color = UIKit.GOLD_DEEP.darkened(0.3)
 	var full := Rect2(Vector2.ZERO, size)
 	var crew: bool = _is_crew()
+	# Playable: a green aura that breathes, with a bright edge.
+	if glow:
+		var ga: float = 0.7 + 0.3 * sin(_t * 3.2)
+		for i in 5:
+			draw_colored_polygon(_chamfer(full.grow(3.0 + i * 3.2), 16.0 * k + 3.0 + i * 3.0), Color(0.25, 1.0, 0.4, ga * (0.34 - i * 0.06)))
+		var e := _chamfer(full.grow(2.0), 16.0 * k + 2.0)
+		e.append(e[0])
+		draw_polyline(e, Color(0.7, 1.0, 0.72, ga), 3.0, true)
 	# Shadow under the card.
 	var sh := _chamfer(full.grow(-1), 16 * k)
 	for i in sh.size():

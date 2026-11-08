@@ -12,6 +12,7 @@ func _ready() -> void:
 	DirAccess.make_dir_recursive_absolute(out)
 	get_window().size = Vector2i(1280, 720)
 	m = load("res://main.tscn").instantiate()
+	m.hover_cards_enabled = false
 	add_child(m)
 	await _frames(5)
 	var hc: String = OS.get_environment("SHOT_HERO") if OS.get_environment("SHOT_HERO") != "" else "grunk"
@@ -44,7 +45,25 @@ func _ready() -> void:
 	gs.players[me]["max_mana"] = 10
 	gs.players[foe]["mana"] = 4
 	gs.players[foe]["max_mana"] = 6
+	if OS.get_environment("SHOT_TAUNT") != "":
+		gs.players[foe]["board"][2]["taunt"] = true
 	m._refresh_match()
+	if OS.get_environment("SHOT_HANDHOVER") != "":
+		gs.players[foe]["board"][2]["taunt"] = true
+		gs.players[me]["mana"] = 2
+		m._refresh_match()
+		m.hover_cards_enabled = true
+		await _frames(30)
+		var cb: Control = m._hand_cards[2]
+		var p: Vector2 = cb.global_position + Vector2(cb.size.x * 0.5, 40)
+		Input.warp_mouse(m.get_global_transform_with_canvas() * p)
+		await _frames(12)
+		await _shot("hand_hover")
+		await get_tree().create_timer(1.2).timeout
+		await _frames(4)
+		await _shot("hand_preview")
+		get_tree().quit()
+		return
 	if OS.get_environment("SHOT_HOVER") != "":
 		await _frames(40)
 		gs.players[foe]["board"][1]["health"] = 1

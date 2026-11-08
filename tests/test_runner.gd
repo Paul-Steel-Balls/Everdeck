@@ -2214,7 +2214,9 @@ func _run_all() -> void:
 	_check("1a.4: arrow grey off-target", m9._arrow.visible and grey9.r < 0.7 and grey9.g < 0.7 and grey9.b < 0.7)
 	var hh9: Dictionary = m9._board_3d.hero_position(1, m9._gs.active)
 	var hc9: Vector2 = c2t9 * m9._board_3d.screen_pos(hh9["position"])
-	m9._update_drag(hc9 + Vector2(40, 0))
+	# Aim 40px off the Boss's aim point (chest height), inside the snap.
+	var aimpt9: Vector2 = m9._target_screen_pos({"kind": "hero", "player": 1, "board_idx": -1})
+	m9._update_drag(aimpt9 + Vector2(40, 0))
 	await get_tree().process_frame
 	var red9: Color = m9._arrow.default_color
 	var snapped9: Dictionary = m9._drag.get("snapped", {})

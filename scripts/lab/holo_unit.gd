@@ -13,6 +13,7 @@ enum Style { CARD, FIGURE, BUST, MODEL }
 
 const HOLO_SHADER := preload("res://shaders/lab/holo.gdshader")
 const LITE_SHADER := preload("res://shaders/lab/holo_lite.gdshader")
+const PAD_PURPLE := Color(0.62, 0.3, 1.0)
 const OUTLINE_SHADER := preload("res://shaders/lab/holo_outline.gdshader")
 const MODEL_HEIGHT := 1.55  # tallest a model stands (before the unit's scale)
 const MODEL_WIDTH := 1.2   # widest it may be, so neighbours don't overlap
@@ -135,12 +136,14 @@ func _mesh(mesh: Mesh, mat: Material, pos: Vector3, parent: Node3D = null) -> Me
 
 
 func _emitter(radius: float) -> void:
-	# Summoning circle under every unit, in its SIDE's color (the hero's).
+	# Summoning circle under every unit: the same deep hologram purple for
+	# everyone (it used to take the side's color, and washed out to white
+	# on the bright floors).
 	var q := PlaneMesh.new()
 	q.size = Vector2(radius * 2.4, radius * 2.4)
 	var m := ShaderMaterial.new()
 	m.shader = preload("res://shaders/lab/rune_pad.gdshader")
-	m.set_shader_parameter("col", pad_color)
+	m.set_shader_parameter("col", PAD_PURPLE)
 	_pad_mat = m
 	var mi := MeshInstance3D.new()
 	mi.mesh = q
@@ -447,9 +450,7 @@ func knock(strength: float = 1.0) -> void:
 
 # The summoning pad's color (the owner's Boss color; changes on a steal).
 func set_pad_color(c: Color) -> void:
-	pad_color = c
-	if _pad_mat != null:
-		_pad_mat.set_shader_parameter("col", c)
+	pad_color = c  # (the pad itself stays purple)
 
 
 # Death: the hologram glitches, then breaks into cubes that drift up and

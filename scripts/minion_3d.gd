@@ -41,6 +41,8 @@ var base_scale: Vector3 = Vector3.ZERO
 var _zzz_label: Label3D = null
 var _gold_rim: MeshInstance3D = null
 var _iron_rim: MeshInstance3D = null
+var _guard_wall: MeshInstance3D = null  # Bouncer's glowing guard wall
+var is_bouncer: bool = false
 var _pulse_ring: MeshInstance3D = null
 var _pulse_mat: StandardMaterial3D = null
 var _target_ring: MeshInstance3D = null
@@ -141,6 +143,25 @@ func _build_model(minion: Dictionary) -> void:
 	_iron_rim.position.y = 0.04
 	_iron_rim.visible = false
 	add_child(_iron_rim)
+	# Bouncer: an ice-blue hex-light guard wall around the feet, so "attack
+	# this first" reads from across the table.
+	var wall := CylinderMesh.new()
+	wall.top_radius = MODEL_RING_R * 1.32
+	wall.bottom_radius = MODEL_RING_R * 1.32
+	wall.height = 0.95
+	wall.cap_top = false
+	wall.cap_bottom = false
+	wall.radial_segments = 40
+	wall.rings = 1
+	var wm := ShaderMaterial.new()
+	wm.shader = preload("res://shaders/lab/bouncer_wall.gdshader")
+	_guard_wall = MeshInstance3D.new()
+	_guard_wall.mesh = wall
+	_guard_wall.material_override = wm
+	_guard_wall.position.y = 0.48
+	_guard_wall.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_guard_wall.visible = false
+	add_child(_guard_wall)
 	# Green "can attack" ring.
 	_pulse_mat = StandardMaterial3D.new()
 	_pulse_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
@@ -296,10 +317,13 @@ func update_stats(minion: Dictionary, is_mine: bool) -> void:
 	if badge_link != null and badge_link.has_method("clear_flash"):
 		badge_link.clear_flash(uid)
 	var taunt: bool = bool(minion.get("taunt", false))
+	is_bouncer = taunt
 	if _gold_rim != null:
 		_gold_rim.visible = not taunt
 	if _iron_rim != null:
 		_iron_rim.visible = taunt
+	if _guard_wall != null:
+		_guard_wall.visible = taunt
 	if unit != null:
 		unit.side = 1.0 if is_mine else -1.0
 	var can_attack: bool = bool(minion.get("can_attack", false)) and cur_atk > 0
