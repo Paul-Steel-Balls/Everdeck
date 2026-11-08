@@ -48,6 +48,17 @@ func _ready() -> void:
 	if OS.get_environment("SHOT_TAUNT") != "":
 		gs.players[foe]["board"][2]["taunt"] = true
 	m._refresh_match()
+	if OS.get_environment("SHOT_ZOOM") != "":
+		await _frames(30)
+		var mpos: Vector2 = m._board_3d.screen_pos(m._board_3d.minion_position(int(gs.players[foe]["board"][1]["uid"]))["position"])
+		for i in 4:
+			m._board_3d.zoom_step(1, mpos)
+		m._board_3d.zoom_amount = m._board_3d._zoom_target
+		m._board_3d._zoom_focus = m._board_3d._zoom_focus_target
+		await _frames(8)
+		await _shot("zoom")
+		get_tree().quit()
+		return
 	if OS.get_environment("SHOT_HISTORY") != "":
 		m._record_history([{"type": "card_played", "data": {"player": foe, "card_id": "healing_light"}}])
 		m._record_history([{"type": "signature_move", "data": {"player": foe, "class": oc}}])

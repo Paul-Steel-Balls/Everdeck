@@ -2070,6 +2070,18 @@ func _ctx_for_pick(hit: Dictionary) -> Dictionary:
 # run the same press / drag / tap state machine as the 2D controls.
 # While animations play, a tap here is the 3x speed-up (not a press).
 func _on_board_pick_gui_input(event: InputEvent) -> void:
+	# Mouse wheel: zoom in toward the cursor / back out; middle-click resets.
+	if event is InputEventMouseButton and event.pressed and _board_3d != null:
+		var mb: InputEventMouseButton = event
+		if mb.button_index == MOUSE_BUTTON_WHEEL_UP:
+			_board_3d.zoom_step(1, _to_viewport_pos(mb.position))
+			return
+		if mb.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_board_3d.zoom_step(-1, _to_viewport_pos(mb.position))
+			return
+		if mb.button_index == MOUSE_BUTTON_MIDDLE:
+			_board_3d.reset_zoom()
+			return
 	if _animating or _ai_turn:
 		if (event is InputEventScreenTouch and event.pressed) or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
 			if _anim_director != null:

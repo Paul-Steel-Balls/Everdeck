@@ -158,7 +158,7 @@ func _update_badge(uid: int, node: Minion3D) -> void:
 		return
 	# Step 2: a standing 3D model leaves room for bigger, readable badges
 	# (~40% of the footprint's width), set at its feet.
-	var badge_d: float = radius * 2.0 * 0.40
+	var badge_d: float = minf(radius * 2.0 * 0.40, 46.0)  # capped (zoomed-in views)
 	var atk_l: Label = pair["atk_l"]
 	var hp_l: Label = pair["hp_l"]
 	atk_l.text = "%d" % node.cur_atk

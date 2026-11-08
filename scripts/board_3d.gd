@@ -165,9 +165,83 @@ func _ready() -> void:
 	_build_pools()
 
 
+# --- Zoom: the mouse wheel moves the camera in toward what's under the
+# cursor and lowers it, so the models are seen closer and more from the
+# front; wheel back out (or middle-click) to return to the table view. ---
+const ZOOM_MAX: float = 0.68
+const ZOOM_STEP: float = 0.17
+const ZOOM_LOW_ELEV: float = 26.0   # camera elevation (deg) at full zoom
+var zoom_amount: float = 0.0
+var _zoom_target: float = 0.0
+var _zoom_focus: Vector3 = CAM_TARGET
+var _zoom_focus_target: Vector3 = CAM_TARGET
+
+
+func zoom_step(dir: int, viewport_pt: Vector2) -> void:
+	if dir > 0:
+		var hit: Variant = _ground_point(viewport_pt)
+		if hit != null:
+			var hp: Vector3 = hit
+			hp.x = clampf(hp.x, -7.0, 7.0)
+			hp.z = clampf(hp.z, -6.0, 6.5)
+			_zoom_focus_target = Vector3(hp.x, 0.8, hp.z) if _zoom_target <= 0.001 else _zoom_focus_target.lerp(Vector3(hp.x, 0.8, hp.z), 0.5)
+		_zoom_target = minf(ZOOM_MAX, _zoom_target + ZOOM_STEP)
+	else:
+		_zoom_target = maxf(0.0, _zoom_target - ZOOM_STEP)
+
+
+func reset_zoom() -> void:
+	_zoom_target = 0.0
+
+
+func is_zoomed() -> bool:
+	return _zoom_target > 0.001 or zoom_amount > 0.01
+
+
+# Where a screen point meets the table (y = 0), or null.
+func _ground_point(viewport_pt: Vector2) -> Variant:
+	if _camera == null:
+		return null
+	var o: Vector3 = _camera.project_ray_origin(viewport_pt)
+	var d: Vector3 = _camera.project_ray_normal(viewport_pt)
+	if absf(d.y) < 0.0001:
+		return null
+	var t: float = -o.y / d.y
+	return o + d * t if t > 0.0 else null
+
+
+func _apply_zoom(delta: float) -> void:
+	if _camera == null:
+		return
+	if zoom_amount < 0.0005 and _zoom_target <= 0.0:
+		if zoom_amount != 0.0:
+			zoom_amount = 0.0
+			_camera.position = CAM_POS
+			_camera.look_at(CAM_TARGET)
+			_camera_base_pos = CAM_POS
+		return
+	var k: float = minf(1.0, delta * 7.0)
+	zoom_amount = lerpf(zoom_amount, _zoom_target, k)
+	if _zoom_target <= 0.0:
+		_zoom_focus_target = _zoom_focus_target.lerp(CAM_TARGET, k)
+	_zoom_focus = _zoom_focus.lerp(_zoom_focus_target, k)
+	var zn: float = zoom_amount / ZOOM_MAX
+	var target: Vector3 = CAM_TARGET.lerp(_zoom_focus, minf(1.0, zn * 1.4))
+	var d: Vector3 = CAM_POS - CAM_TARGET
+	var elev0: float = atan2(d.y, d.z)
+	var elev: float = lerpf(elev0, deg_to_rad(ZOOM_LOW_ELEV), zn)
+	var dist: float = d.length() * (1.0 - zoom_amount)
+	var pos: Vector3 = target + Vector3(0.0, sin(elev), cos(elev)) * dist
+	_camera_base_pos = pos
+	if _shake_time <= 0.0:
+		_camera.position = pos
+	_camera.look_at(target)
+
+
 func _process(delta: float) -> void:
 	if not _preload_q.is_empty():
 		_pump_preload()
+	_apply_zoom(delta)
 	# Camera shake (attack impacts): random offsets that decay to zero,
 	# then the camera returns exactly to its base position.
 	if _shake_time > 0.0 and _camera != null:
