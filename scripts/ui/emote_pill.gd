@@ -4,7 +4,7 @@ class_name EmotePill
 # One emote choice in the picker around your Boss: a small gold-rimmed
 # plaque (same family as END TURN), lifting on hover.
 
-const W := 150.0
+const W := 172.0
 const H := 44.0
 
 var label_text: String = ""
@@ -61,6 +61,8 @@ func _draw() -> void:
 		up.append(Vector2(v.x, minf(v.y, H * 0.5)))
 	draw_colored_polygon(up, Color(0.24, 0.12, 0.46).lerp(Color(0.36, 0.2, 0.62), _hover))
 	var fs: int = 17
+	while fs > 10 and _font.get_string_size(label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x > W - 34.0:
+		fs -= 1
 	var tw: float = _font.get_string_size(label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
 	var base := Vector2((W - tw) * 0.5, H * 0.5 + fs * 0.4)
 	draw_string_outline(_font, base, label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, 6, UIKit.INK)

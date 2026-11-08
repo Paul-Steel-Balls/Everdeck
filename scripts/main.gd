@@ -1528,10 +1528,61 @@ func _on_history_entry_tapped(entry: Dictionary) -> void:
 	_show_inspect(data)
 
 
+# Resting on a history thumbnail: the card (or the Boss card for a
+# Signature Move) pops up to its left with a line saying what happened.
+var _history_pop: Control = null
+
+
+func _on_history_hover(entry: Dictionary, rect: Rect2) -> void:
+	if _history_pop != null and is_instance_valid(_history_pop):
+		_history_pop.queue_free()
+	_history_pop = null
+	if entry.is_empty() or _gs == null:
+		return
+	var box := VBoxContainer.new()
+	box.name = "HistoryPopup"
+	box.z_index = 220
+	box.add_theme_constant_override("separation", 6)
+	var who: String = "You" if int(entry.get("player", 0)) == _view() else ("The computer" if _vs_ai else "Your opponent")
+	var head := CardView.label(who, 18, Color(0.55, 0.78, 1.0) if who == "You" else Color(1.0, 0.55, 0.55))
+	head.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(head)
+	var cw: float = 210.0
+	if str(entry.get("kind", "")) == "signature":
+		var data: Dictionary = _inspect_data_for_hero_power(int(entry.get("player", 0)))
+		var pl := CardView.label("%s\n%s" % [str(data.get("name", "")), str(data.get("text", ""))], 17, CardView.GOLD_TEXT)
+		pl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		pl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		pl.custom_minimum_size = Vector2(cw, 0)
+		box.add_child(pl)
+	else:
+		var card: Dictionary = CardDB.get_card(str(entry.get("card_id", "")))
+		if not card.is_empty():
+			box.add_child(CardView.make_card_button(card, int(cw), int(cw * CardFrame.ASPECT)))
+	var det: String = str(entry.get("detail", ""))
+	if det != "":
+		var dl := CardView.label(det, 16, Color.WHITE)
+		dl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		dl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		dl.custom_minimum_size = Vector2(cw, 0)
+		box.add_child(dl)
+	var plate_sb: StyleBox = CardView.panel_style(Color(0.06, 0.04, 0.1, 0.9), 12)
+	box.draw.connect(func() -> void: box.draw_style_box(plate_sb, Rect2(Vector2(-10, -8), box.size + Vector2(20, 16))))
+	add_child(box)
+	for n in box.find_children("*", "Control", true, false):
+		(n as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.size = Vector2(cw, 0)
+	box.reset_size()
+	var h: float = box.get_combined_minimum_size().y
+	box.position = Vector2(rect.position.x - cw - 26.0, clampf(rect.position.y - 20.0, 12.0, 720.0 - h - 12.0))
+	_history_pop = box
+
+
 func _build_history_column() -> void:
 	var col := HistoryColumn.new()
 	col.name = "HistoryColumn"
-	col.setup(Callable(self, "_on_history_entry_tapped"), _view())
+	col.setup(Callable(self, "_on_history_entry_tapped"), _view(), Callable(self, "_on_history_hover"))
 	# The left edge belongs to the Boss cards now; history runs down the
 	# right edge, above END TURN.
 	col.position = Vector2(_canvas_width() - HistoryColumn.ENTRY_W - HistoryColumn.COL_X, HistoryColumn.COL_Y)
@@ -3273,7 +3324,7 @@ func _show_emote_menu() -> void:
 		var id: String = Emotes.IDS[ei]
 		var eb := EmotePill.new()
 		eb.name = "Emote_" + id
-		eb.label_text = str(Emotes.LABELS[id])
+		eb.label_text = Emotes.label(str(_gs.players[me]["class"]) if _gs != null else "grunk", id)
 		var col: int = ei % 2
 		var row: int = ei / 2
 		var x: float = c.x + (-EmotePill.W - 70.0 - row * 14.0 if col == 0 else 70.0 + row * 14.0)
@@ -3580,7 +3631,7 @@ func _show_emote(p: int, id: String) -> void:
 	if _board_3d != null:
 		var u: HoloUnit = _board_3d.boss_unit(p)
 		if u != null:
-			u.emote_act(id)
+			u.emote_act(Emotes.act(cls, id))
 
 
 # Canvas position of a Boss's head (the speech bubble's tail points here).

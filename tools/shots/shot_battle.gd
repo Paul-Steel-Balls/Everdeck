@@ -48,6 +48,24 @@ func _ready() -> void:
 	if OS.get_environment("SHOT_TAUNT") != "":
 		gs.players[foe]["board"][2]["taunt"] = true
 	m._refresh_match()
+	if OS.get_environment("SHOT_HISTORY") != "":
+		m._record_history([{"type": "card_played", "data": {"player": foe, "card_id": "healing_light"}}])
+		m._record_history([{"type": "signature_move", "data": {"player": foe, "class": oc}}])
+		m._record_history([{"type": "card_played", "data": {"player": me, "card_id": "fireball"}}])
+		m._record_history([{"type": "card_played", "data": {"player": me, "card_id": _crew(hc, 3)[2]}}])
+		m._refresh_match()
+		await _frames(30)
+		var col: Control = m.find_child("HistoryColumn", true, false)
+		var first: Control = col.get_child(1)
+		m._on_history_hover(m._history[1], first.get_global_rect())
+		await _frames(6)
+		await _shot("history")
+		m._on_history_hover({}, Rect2())
+		m._show_emote_menu()
+		await _frames(6)
+		await _shot("emotes")
+		get_tree().quit()
+		return
 	if OS.get_environment("SHOT_HANDHOVER") != "":
 		gs.players[foe]["board"][2]["taunt"] = true
 		gs.players[me]["mana"] = 2

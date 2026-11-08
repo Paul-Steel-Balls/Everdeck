@@ -1,88 +1,99 @@
 extends VBoxContainer
 class_name HistoryColumn
 
-# Everdeck Sprint 1c — the action-history column. A vertical strip on the
-# left edge of the match screen, between the two hero panels (main
-# positions it; the panels are fixed at (10,75) and (10,407), so this
-# owns y 189..397). Up to 8 entries, newest on top, older ones drop off
-# the end. Each entry: a small card-art icon (hero portrait for a
-# Signature Move), a border colored by the acting player (viewer blue,
-# other red), and a tiny corner letter for the action type (P = played,
-# A = attacked, S = Signature Move — the fallback font has no unicode
-# glyphs, verified by probe). Tap an entry -> the on_tap callable with
-# the entry dict; main shows the detail panel (inspect rules).
+# What just happened: a short column of card thumbnails down the right
+# edge (newest on top). Each is the card's painting in a small frame,
+# rimmed blue for you and red for them, with a tiny mark for what kind of
+# action it was (a card played, an attack, a Signature Move). Rest the
+# mouse on one and the full card pops up beside it with a line saying
+# what it did; tap it for the big view.
 
-const MAX_ENTRIES: int = 8
-const ENTRY_W: float = 30.0
-const ENTRY_H: float = 26.0
+const MAX_ENTRIES: int = 8      # how many the game remembers
+const MAX_SHOWN: int = 5        # how many thumbnails fit above END TURN
+const ENTRY_W: float = 36.0
+const ENTRY_H: float = 44.0
+const GAP: float = 5.0
 const COL_X: float = 12.0
-const COL_Y: float = 66.0   # top of the right-edge strip (ends above END TURN)
-
-const KIND_LETTER: Dictionary = {"played": "P", "attack": "A", "signature": "S"}
+const COL_Y: float = 66.0       # top of the right-edge strip
 
 var _on_tap: Callable = Callable()
+var _on_hover: Callable = Callable()   # (entry, rect) or ({}, Rect2()) to hide
 var _viewer: int = 0
 
 
-func setup(on_tap: Callable, viewer: int) -> void:
+func setup(on_tap: Callable, viewer: int, on_hover: Callable = Callable()) -> void:
 	_on_tap = on_tap
+	_on_hover = on_hover
 	_viewer = viewer
-	add_theme_constant_override("separation", 0)
+	add_theme_constant_override("separation", int(GAP))
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 func set_entries(entries: Array) -> void:
 	for c in get_children():
 		c.queue_free()
-	var n: int = mini(entries.size(), MAX_ENTRIES)
+	var n: int = mini(entries.size(), MAX_SHOWN)
 	for i in n:
-		add_child(_make_entry(entries[i]))
+		add_child(_make_entry(entries[i], i == 0))
 
 
 func _border_color(player: int) -> Color:
-	# Mine blue, enemy red — relative to the viewer.
-	return Color(0.25, 0.5, 1.0) if player == _viewer else Color(1.0, 0.25, 0.25)
+	# Mine blue, theirs red, relative to the viewer.
+	return Color(0.3, 0.6, 1.0) if player == _viewer else Color(1.0, 0.3, 0.3)
 
 
-func _make_entry(entry: Dictionary) -> Control:
+func _make_entry(entry: Dictionary, newest: bool) -> Control:
 	var root := Control.new()
 	root.custom_minimum_size = Vector2(ENTRY_W, ENTRY_H)
 	root.mouse_filter = Control.MOUSE_FILTER_STOP
-	var bg := Panel.new()
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.05, 0.04, 0.08, 0.88)
-	sb.border_color = _border_color(int(entry.get("player", 0)))
-	sb.border_width_left = 2
-	sb.border_width_right = 2
-	sb.border_width_top = 2
-	sb.border_width_bottom = 2
-	sb.corner_radius_top_left = 6
-	sb.corner_radius_top_right = 6
-	sb.corner_radius_bottom_left = 6
-	sb.corner_radius_bottom_right = 6
-	bg.add_theme_stylebox_override("panel", sb)
-	root.add_child(bg)
-	var art := CardArt.new()
-	art.art_id = str(entry.get("art_id", "token"))
-	art.card_id = str(entry.get("card_id", ""))
-	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	art.position = Vector2(4, 3)
-	art.size = Vector2(20, 20)
-	root.add_child(art)
-	var glyph := Label.new()
-	glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	glyph.text = str(KIND_LETTER.get(str(entry.get("kind", "")), "?"))
-	glyph.add_theme_font_size_override("font_size", 10)
-	glyph.add_theme_color_override("font_color", Color(1, 1, 1))
-	glyph.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
-	glyph.add_theme_constant_override("outline_size", 3)
-	glyph.position = Vector2(19, 12)
-	glyph.size = Vector2(10, 12)
-	root.add_child(glyph)
+	root.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	var col: Color = _border_color(int(entry.get("player", 0)))
+	var kind: String = str(entry.get("kind", ""))
+	var tex: Texture2D = CardArt.texture_for(str(entry.get("card_id", "")), str(entry.get("art_id", "")))
+	root.draw.connect(func() -> void: _draw_thumb(root, tex, col, kind, newest))
 	root.gui_input.connect(_on_entry_gui_input.bind(entry))
+	root.mouse_entered.connect(func() -> void:
+		if _on_hover.is_valid():
+			_on_hover.call(entry, root.get_global_rect()))
+	root.mouse_exited.connect(func() -> void:
+		if _on_hover.is_valid():
+			_on_hover.call({}, Rect2()))
 	return root
+
+
+func _draw_thumb(c: Control, tex: Texture2D, col: Color, kind: String, newest: bool) -> void:
+	var r := Rect2(Vector2.ZERO, c.size)
+	# Shadow, colored rim, ink line, the painting.
+	c.draw_rect(Rect2(r.position + Vector2(0, 3), r.size), Color(0, 0, 0, 0.45))
+	c.draw_rect(r.grow(1.0), UIKit.INK)
+	c.draw_rect(r, col)
+	var inner := r.grow(-2.5)
+	if tex != null:
+		var ts: Vector2 = tex.get_size()
+		var sc: float = maxf(inner.size.x / ts.x, inner.size.y / ts.y)
+		var src_size: Vector2 = inner.size / sc
+		c.draw_texture_rect_region(tex, inner, Rect2(Vector2((ts.x - src_size.x) * 0.5, (ts.y - src_size.y) * 0.25), src_size))
+	else:
+		c.draw_rect(inner, col.darkened(0.6))
+	if newest:
+		c.draw_rect(r.grow(2.5), Color(1, 1, 1, 0.55), false, 1.5)
+	# The action mark in the corner: a little badge.
+	var bc := Vector2(r.end.x - 7, r.end.y - 7)
+	c.draw_circle(bc, 8.0, UIKit.INK)
+	c.draw_circle(bc, 6.6, col.darkened(0.25))
+	match kind:
+		"attack":
+			for s in [-1.0, 1.0]:
+				var d := Vector2(s, -1).normalized()
+				c.draw_line(bc - d * 4.2, bc + d * 4.2, Color.WHITE, 1.6, true)
+		"signature":
+			var star := PackedVector2Array()
+			for i in 10:
+				var a: float = -PI / 2 + TAU * i / 10.0
+				star.append(bc + Vector2(cos(a), sin(a)) * (4.6 if i % 2 == 0 else 2.0))
+			c.draw_colored_polygon(star, Color.WHITE)
+		_:
+			c.draw_rect(Rect2(bc - Vector2(2.6, 3.4), Vector2(5.2, 6.8)), Color.WHITE)
 
 
 func _on_entry_gui_input(event: InputEvent, entry: Dictionary) -> void:
