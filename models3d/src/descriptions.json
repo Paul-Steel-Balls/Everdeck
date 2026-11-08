@@ -1,0 +1,950 @@
+{
+ "angry_squirrel": {
+  "d": "this angry red squirrel knight in dented steel armor and a helmet with a red plume, gripping a dagger, with a huge bushy red tail curling up behind it"
+ },
+ "squire": {
+  "d": "this young squire boy with messy brown hair and a dark blue scarf, wearing dented steel armor over a red tunic, holding a battered round iron shield"
+ },
+ "recruit": {
+  "d": "this eager young recruit with spiky black hair and a big open-mouthed grin, wearing slightly oversized steel plate armor, holding a wooden practice sword"
+ },
+ "guard_dog": {
+  "d": "this happy golden-furred dog as a real four-legged animal, not anthropomorphic and not standing on two legs, standing on all four paws in a natural dog pose seen from the side, wearing an ornate gold and steel armored helmet and chest plate, tongue out"
+ },
+ "archer": {
+  "d": "this blond elf archer with long wild hair and pointed ears, wearing green leather armor with gold trim, holding one simple wooden longbow upright in his left hand, the bow a single smooth curve with one straight bowstring, his right hand empty at his side"
+ },
+ "wolf": {
+  "d": "this grey wolf as a real four-legged animal, not anthropomorphic and not standing on two legs, standing on all four paws in a natural wolf pose seen from the side, wearing a big fluffy white sheep's-wool hat, thick grey and white fur, sly smile"
+ },
+ "knight": {
+  "d": "this young knight in shining silver plate armor with a red-plumed helmet and a red cape, raising a sword high in one hand"
+ },
+ "brute": {
+  "d": "this huge muscular shirtless barbarian with a wild brown mane and beard, wearing a fur loincloth, holding a big wooden club over his shoulder"
+ },
+ "ogre": {
+  "d": "this big blue-skinned ogre with tusks, wearing a black graduation cap and a blue graduation gown, holding a rolled diploma with a red ribbon in his right hand and a big rock firmly in his left hand"
+ },
+ "giant": {
+  "d": "this gigantic chubby toddler with spiky blond hair, wearing blue denim overalls, holding up a toy rattle like a mace, with a stubborn frown"
+ },
+ "golem": {
+  "d": "this stone golem made of grey rock blocks with glowing gold runes on its chest, wearing black sunglasses and a purple party hat, flexing both stone fists"
+ },
+ "dragon": {
+  "d": "this red dragon standing upright, wearing a cozy knitted brown cardigan and small round reading glasses, holding a pocket calculator, with horns, wings and a long tail"
+ },
+ "shieldbearer": {
+  "d": "this knight in purple and gold plate armor with a full visored pointed helmet, holding a tall purple and gold tower shield"
+ },
+ "wall": {
+  "d": "this stone golem shaped like a castle tower, battlements on top of its head, mossy grey bricks, glowing yellow eyes, thick stone arms crossed"
+ },
+ "fortress": {
+  "d": "dark fortress castle with spires and a huge gate glowing with blue runes, the whole building visible",
+  "mode": "obj"
+ },
+ "charger": {
+  "d": "this brown war horse as a real four-legged animal seen from the side, mid-gallop, with exactly one head and four hooved legs and no human arms or hands, wearing golden armor plating on its chest and a gold face mask, flowing dark mane and tail"
+ },
+ "cavalry": {
+  "d": "this knight in gold armor with a blue cape riding a white horse, raising a sword; the horse is seen from the side and has exactly four legs, the whole horse visible"
+ },
+ "medic": {
+  "d": "this grinning doctor in sunglasses wearing a white lab coat over a loud floral Hawaiian shirt, a stethoscope around his neck, holding a bubbling green potion flask"
+ },
+ "zapper": {
+  "d": "this grinning electrician with wild spiky brown hair in a yellow hard hat and dark blue work coveralls, wearing yellow rubber gloves and holding two sparking jumper cables"
+ },
+ "scout": {
+  "d": "this woman spy with a purple headscarf and purple shawl and gold earrings, holding a brass spyglass up to one eye and a small notebook"
+ },
+ "summoner": {
+  "d": "this stern middle manager with slicked black hair in a navy suit and red tie, pointing his finger, holding a clipboard"
+ },
+ "neutral_sloth": {
+  "d": "this sleepy sloth hanging from a short tree branch by the long claws of its two front arms, its whole body facing the viewer from head to toe: head upright with its face looking straight at the viewer, belly toward the viewer, two back legs hanging straight down below it with knees facing forward, wearing a silver knight's visor helmet over its face"
+ },
+ "neutral_plant": {
+  "d": "potted office plant with big glossy green leaves in a terracotta pot, the whole pot visible",
+  "mode": "obj"
+ },
+ "neutral_tourist": {
+  "d": "this cheerful young tourist in a straw sun hat with flowers, a bright floral Hawaiian shirt, shorts and sandals, a camera around his neck, holding a big unfolded paper map"
+ },
+ "neutral_teacher": {
+  "d": "this young substitute teacher with messy brown hair in a navy cardigan over a white shirt, holding a piece of chalk and a pointer stick"
+ },
+ "neutral_librarian": {
+  "d": "this very loud librarian woman with her black hair in a tight bun and glasses, wearing a navy blazer over a cream ruffled blouse with a brooch, shouting with one finger raised"
+ },
+ "neutral_auditor": {
+  "d": "this tax auditor with slick black hair and a green accountant's visor, in a grey suit and black gloves, holding a magnifying glass up in his right hand and a closed ledger book in his left hand, nothing else"
+ },
+ "neutral_napper": {
+  "d": "this sleepy young man with eyes closed, wearing light blue pajamas and a light blue nightcap, arms crossed, dozing while standing"
+ },
+ "neutral_wizard": {
+  "d": "this disappointed old wizard with a long white beard and bushy eyebrows, wearing a purple robe covered in gold stars, arms crossed, frowning"
+ },
+ "neutral_partdragon": {
+  "d": "this young man with spiky brown hair wearing a loose white shirt tucked into dark trousers, a short red necktie that ends above his belt, holding a coffee mug in his right hand; his left arm is a single scaly brown dragon arm ending in one clawed hand, and red dragon wings grow from his shoulder blades; he has no tail"
+ },
+ "neutral_vending": {
+  "d": "haunted green vending machine with glowing green ghost faces behind its glass, colorful candy inside and a fanged mouth where the dispenser slot is, the whole machine visible",
+  "mode": "obj"
+ },
+ "neutral_retired": {
+  "d": "this retired superhero, a fit older man with grey hair and beard, wearing a green cardigan over a blue shirt and a faded blue cape, holding a hand of playing cards"
+ },
+ "neutral_sandwich": {
+  "d": "this giant living sandwich monster: a tall stack of burger patties, cheese, lettuce, tomato and purple onion between toasted bread, with angry eyes on the top bun and bread-crust arms holding skewers"
+ },
+ "neutral_landlord": {
+  "d": "this smug landlord in a purple top hat and a purple coat with a fur collar, holding up a huge ring of old iron keys"
+ },
+ "neutral_fridge": {
+  "d": "old cream-colored retro refrigerator with its single door fully closed and sealed shut, no gap and no light coming out, metal hinges on the left edge and a chrome pull handle on the right edge of the door, the door covered in colorful fridge magnets, scuffed and worn, the whole fridge visible",
+  "mode": "obj"
+ },
+ "neutral_dad": {
+  "d": "this confident suburban dad with short black hair in a navy t-shirt and a tan grilling apron, sandals, arms crossed holding barbecue tongs and a spatula"
+ },
+ "neutral_slice": {
+  "d": "single slice of pepperoni pizza with stretchy melted cheese, standing upright, the whole slice visible",
+  "mode": "obj"
+ },
+ "neutral_gary": {
+  "d": "this grumpy old man with wild grey hair and beard, a miner's headlamp on his forehead, wearing a dark blue cloak, holding a big golden fork like a staff"
+ },
+ "grunk_firecracker_minion": {
+  "d": "this small goblin wrapped head to toe in a bundle of red firecrackers like a costume, only his green face showing, arms crossed, a lit fuse on top of his head"
+ },
+ "grunk_tiny_bomber": {
+  "d": "this small grinning goblin with purple hair and pointed ears, wearing a red cape, hugging a big round black bomb with a lit fuse"
+ },
+ "grunk_fuse": {
+  "d": "this goblin with purple hair and brass goggles on his forehead, wearing a dark tunic and red scarf, crouching and lighting a long fuse with a sparking match"
+ },
+ "grunk_sparkler": {
+  "d": "this grinning goblin with a red bandana on his head, wearing dark leather clothes, holding a lit sparkler in each hand"
+ },
+ "grunk_match": {
+  "d": "this sly grinning goblin in a purple cape and gold-trimmed armor, holding up a single lit match"
+ },
+ "grunk_keg": {
+  "d": "this small blue-grey gremlin with big bat ears and bat wings, wearing a red scarf, sitting cross-legged on top of a powder keg barrel that has a grinning face carved into it"
+ },
+ "grunk_scout": {
+  "d": "this nervous little goblin wearing a big gold helmet with a red crest, a red scarf, holding a brass spyglass"
+ },
+ "grunk_boomlet": {
+  "d": "this round orange bomb creature with a curly fuse on top, angry eyes, goblin ears and short stubby green arms and legs, hands on hips"
+ },
+ "grunk_sparky": {
+  "d": "this goblin whose whole body is made of braided golden fuse rope, smiling with eyes closed, arms crossed, with a crackling spark burning on top of his head"
+ },
+ "grunk_demo_crew": {
+  "d": "exactly three goblin demolition workers, no more, standing side by side in a row, one in a yellow hard hat, one in a blue hard hat and one in a red hard hat, all three gripping the long handle of one huge sledgehammer together"
+ },
+ "grunk_dynamite": {
+  "d": "",
+  "mode": "grok",
+  "src": "ed_grunk_dynamite_v2.jpg"
+ },
+ "grunk_fanatic": {
+  "d": "this grinning goblin with spiky bright red hair, wearing a purple vest covered in white stars over a dark shirt, holding a lit firework rocket tube in each hand"
+ },
+ "grunk_pyro": {
+  "d": "this manic laughing goblin with messy brown hair and round goggles with fiery lenses, wearing a ragged brown leather tunic and red scarf, hands spread wide with a small fireball floating above each palm"
+ },
+ "grunk_sapper": {
+  "d": "this goblin sapper wearing a grey miner's helmet with a glowing headlamp, ragged brown clothes, holding up a round black bomb with a lit fuse"
+ },
+ "grunk_grenadier": {
+  "d": "this smirking goblin with slicked black hair, wearing a red military coat with gold epaulettes and a bandolier of small black bombs across his chest, holding a bomb up in one hand"
+ },
+ "grunk_boom_squad": {
+  "d": "these three goblin soldiers in blue and steel armor with pointed steel helmets, standing together, each holding a lit bomb"
+ },
+ "grunk_courier": {
+  "d": "this grinning goblin courier with dark blue hair and a blue scarf, wearing a brown leather jacket and a big wooden crate backpack, riding a small blue bicycle"
+ },
+ "grunk_boot": {
+  "d": "this giant living brown leather boot with angry glowing eyes and a gritted-teeth mouth on its front, stitched seams, standing on its thick sole"
+ },
+ "grunk_dan": {
+  "d": "this muscular goblin with a calm smile in a yellow hard hat and a navy tank top, pressing down the plunger of a wooden detonator box"
+ },
+ "grunk_wrecking": {
+  "d": "this spiked bronze wrecking ball with a grumpy goblin face set into its front, hanging from a short iron chain",
+  "mode": "obj"
+ },
+ "grunk_blastmaster": {
+  "d": "this sly goblin with spiky purple hair and a brass monocle-goggle over one eye, wearing a navy coat with gold trim and a purple cravat, holding a long lit match like a wand"
+ },
+ "grunk_arsonist": {
+  "d": "this young goblin with messy green hair and a nervous look, wearing a scorched cream apron over a purple shirt, holding up a burning torch and carrying a book"
+ },
+ "grunk_torch": {
+  "d": "this snarling goblin with purple hair and a purple scarf, wearing brown leather armor with a gold buckle, holding a flaming torch high in one raised fist"
+ },
+ "grunk_monkey": {
+  "d": "this hunched grey dust-covered goblin with wild white hair and big pointed ears, snarling, hugging a small wooden powder keg leaking grey powder against his chest with both arms; he has no tail"
+ },
+ "grunk_chain": {
+  "d": "golden round cartoon bomb with a flame emblem on its front, a lit fuse on top and a short iron chain attached",
+  "mode": "obj"
+ },
+ "grunk_brigade": {
+  "d": "this goblin firefighter wearing a red firefighter helmet with a gold badge and a dark navy fire coat with a red scarf, saluting with one hand"
+ },
+ "grunk_boombox": {
+  "d": "ornate blue and gold boombox stereo shaped like a crowned owl face, with two big gold speakers as eyes",
+  "mode": "obj"
+ },
+ "grunk_kablooey": {
+  "d": "this mad-scientist goblin professor with wild white hair, brass goggles on his forehead and a long nose, wearing a white lab coat over a purple shirt, holding up a bubbling orange potion flask"
+ },
+ "grunk_aunt": {
+  "d": "this grinning goblin auntie with curly purple hair full of colorful hair curlers, wearing a purple floral house dress and a gold necklace, hugging a big bundle of red dynamite sticks"
+ },
+ "grunk_king": {
+  "d": "this self-appointed goblin king with a crooked grin, wearing a dented cooking pot as a spiked crown and a purple royal cape with a white fur collar, holding a round black bomb like a royal orb"
+ },
+ "grunk_siege": {
+  "d": "this sneering goblin in a small black top hat and a red cape, carrying a big log battering ram under one arm"
+ },
+ "grunk_chucker": {
+  "d": "this wild goblin with spiky purple hair and a purple scarf, two arms, holding a round black bomb with a short lit fuse in his right hand at shoulder height, his left hand on his hip, grinning, a wicker basket of more bombs on the ground beside his feet; he has no tail"
+ },
+ "grunk_imp": {
+  "d": "this small red fire imp with little horns and hair made of flames, grinning with sharp teeth, arms crossed"
+ },
+ "grunk_warmachine": {
+  "d": "rusty bolted-together goblin war machine walker robot on two thick mechanical legs, with a cannon arm and a smokestack, exactly one small goblin pilot sticking out of the top hatch, the whole machine visible",
+  "mode": "obj"
+ },
+ "grunk_betty": {
+  "d": "this confident goblin woman with spiky red hair and aviator goggles on her head, wearing a brown leather jacket over a purple top, holding one round black bomb in each hand, each bomb with only a very short stubby fuse; no cords or strings hanging down"
+ },
+ "grunk_jr": {
+  "d": "this grinning young goblin prince with brass goggles, wearing an oversized spiky gold crown with blue gems and a royal blue and gold robe with a sun jewel, holding a lit firecracker"
+ },
+ "grunk_finale": {
+  "d": "this goblin in a long dark tattered cloak, both arms thrown triumphantly up in the air"
+ },
+ "grunk_artillery": {
+  "d": "this cheering goblin in a steel helmet with a red crest, standing on the ground on his own two feet right beside a small black iron cannon on wooden wheels, one hand resting on top of the cannon barrel and the other fist raised; the whole cannon visible on the ground"
+ },
+ "grunk_megabomb": {
+  "d": "enormous round black iron bomb with spikes, rivets and a lit fuse on top, the whole bomb visible",
+  "mode": "obj"
+ },
+ "grunk_bigone": {
+  "d": "giant round orange and red striped bomb with a lit fuse on top, the whole bomb visible",
+  "mode": "obj"
+ },
+ "grunk_grandma": {
+  "d": "this sweet old goblin grandma with white hair and a purple headscarf, wearing a purple knitted shawl, knitting with lit sparkler needles, holding a plate of cookies"
+ },
+ "agatha_ladle": {
+  "d": "huge silver soup ladle: a deep round bowl shaped like a small cup attached at a right angle to a long ornate gold and black handle that curves into a hook at the top, standing upright on its bowl, the whole ladle visible",
+  "mode": "obj"
+ },
+ "agatha_chicken": {
+  "d": "ornate blue and gold bowl full of glowing magic chicken noodle soup with carrots, the whole bowl visible",
+  "mode": "obj"
+ },
+ "agatha_doily": {
+  "d": "round white lace doily with an intricate pattern, standing upright like a shield, the whole doily visible",
+  "mode": "obj"
+ },
+ "agatha_cookies": {
+  "d": "plate stacked high with chocolate chip cookies on a lace doily, the whole plate visible",
+  "mode": "obj"
+ },
+ "agatha_dish": {
+  "d": "round blue casserole pot with gold patterns and a gold lid knob, wearing red oven mitts as hands, the whole pot visible",
+  "mode": "obj"
+ },
+ "agatha_timmy": {
+  "d": "this grinning boy with spiky brown hair in a purple argyle sweater vest, white shirt and tie, holding a steaming bowl of vegetable soup"
+ },
+ "agatha_volunteer": {
+  "d": "this serious soup kitchen volunteer with a hairnet, wearing a navy shirt and a tan apron, holding a ladle of soup"
+ },
+ "agatha_reinforced": {
+  "d": "lace doily set inside a spiked dark steel shield frame, standing upright, the whole shield visible",
+  "mode": "obj"
+ },
+ "agatha_meatloaf": {
+  "d": "big brown meatloaf with a sprig of parsley on top, sitting on a gold platter, the whole platter visible",
+  "mode": "obj"
+ },
+ "agatha_consequences": {
+  "d": "blue and gold casserole dish with its lid lifted and a glowing angry golden spirit face rising out of it, the whole dish visible",
+  "mode": "obj"
+ },
+ "agatha_knitting": {
+  "d": "this kind smiling grandma with curly grey hair, wearing a purple cardigan and a mustard knitted shawl, knitting a short purple scarf with two needles held in front of her chest; no loose yarn hangs down"
+ },
+ "agatha_dumpling": {
+  "d": "plump white soup dumpling with a silver spoon sticking straight up out of its top, the whole dumpling visible",
+  "mode": "obj"
+ },
+ "agatha_justice": {
+  "d": "this stern old lady judge with a white hair bun and glasses, wearing a black robe with gold trim, raising a golden ladle like a gavel"
+ },
+ "agatha_boris": {
+  "d": "this green dragon chef standing upright with a big toothy grin, wearing a white chef's hat and a white apron, holding a soup ladle, standing beside a pot of soup"
+ },
+ "agatha_marge": {
+  "d": "this scowling old lady with grey hair, wearing a purple wide-brimmed hat with a jewel, a purple suit and pearl necklace, swinging a purple handbag"
+ },
+ "agatha_souppot": {
+  "d": "large black iron soup cauldron full of bubbling golden soup, sitting on a small fire, the whole pot visible",
+  "mode": "obj"
+ },
+ "agatha_iron": {
+  "d": "heavy black cast-iron soup ladle: a deep round cup-shaped iron bowl on a long thick iron handle with a blocky war-hammer head on the back of the handle, standing upright on its bowl, the whole ladle visible",
+  "mode": "obj"
+ },
+ "agatha_medicine": {
+  "d": "dark brown medicine bottle with a gold cap and a golden spoon leaning against it, bubbling green fizz around it, the whole bottle visible",
+  "mode": "obj"
+ },
+ "agatha_lasagna": {
+  "d": "big steaming lasagna in an ornate dark baking dish with bubbling golden cheese, the whole dish visible",
+  "mode": "obj"
+ },
+ "agatha_bouncer": {
+  "d": "this tough muscular soup kitchen bouncer in a hairnet, black tank top and white apron, arms crossed, holding a spoon"
+ },
+ "agatha_sigh": {
+  "d": "this tired grandma with grey hair and a purple headscarf, wearing a purple robe over a white blouse with a gold brooch, eyes closed, letting out a long golden sigh"
+ },
+ "agatha_carol": {
+  "d": "this cheerful woman with curly brown hair, wearing a blue dress and a white apron with gold patterns, proudly holding out a casserole dish"
+ },
+ "agatha_china": {
+  "d": "antique dark wooden china cabinet with both glass doors open, its shelves full of floral porcelain plates, teacups and a teapot, every dish resting on a shelf inside the cabinet, nothing outside or above it, the whole cabinet visible",
+  "mode": "obj"
+ },
+ "agatha_golem": {
+  "d": "this golem built from stacked black iron cooking pots with a lidded pot for a head, glowing yellow eyes, steam venting, arms made of pots holding ladles and big spoons"
+ },
+ "agatha_shield": {
+  "d": "this stern grandma with a grey hair bun, wearing a purple and gold robe, holding up a glowing round lace doily like a shield"
+ },
+ "agatha_seconds": {
+  "d": "this overjoyed grandma with grey hair and a purple headscarf, wearing a purple and pink robe and gold necklace, holding out a big platter of roast chicken and rice"
+ },
+ "agatha_ladle_storm": {
+  "d": "ornate silver soup ladle standing upright with small silver spoons orbiting around it, the whole ladle visible",
+  "mode": "obj"
+ },
+ "agatha_doom": {
+  "d": "black iron cauldron cracked with glowing gold lines, sitting on stubby legs, the whole cauldron visible",
+  "mode": "obj"
+ },
+ "agatha_bobby": {
+  "d": "this smug boy with spiky black hair in a blue cape over a cream shirt, holding a plate with a slice of pie with whipped cream"
+ },
+ "agatha_dragon": {
+  "d": "this grown-up green dragon chef standing upright, wearing a white chef's hat, a white double-breasted chef's coat and a red cravat, holding a big ladle"
+ },
+ "agatha_fortress": {
+  "d": "tall tiered tower made entirely of white lace doilies, like a wedding cake castle with spires, the whole tower visible",
+  "mode": "obj"
+ },
+ "agatha_eternal": {
+  "d": "deep blue casserole pot full of golden bubbling casserole with a swirl of golden steam rising from it, the whole pot visible",
+  "mode": "obj"
+ },
+ "agatha_annihilation": {
+  "d": "giant gleaming silver soup ladle crackling with golden lightning, standing upright, the whole ladle visible",
+  "mode": "obj"
+ },
+ "agatha_recipe": {
+  "d": "old golden parchment recipe card with a glowing heart-shaped wisp of steam rising from it, the whole card visible",
+  "mode": "obj"
+ },
+ "agatha_last": {
+  "d": "royal blue casserole pot with a lid and gold patterns, resting on a round stone pedestal, the whole pot visible",
+  "mode": "obj"
+ },
+ "agatha_pot": {
+  "d": "enormous round dark blue soup pot with golden handles, full of steaming soup, the whole pot visible",
+  "mode": "obj"
+ },
+ "agatha_ironclad": {
+  "d": "this tough old woman with grey hair, wearing a suit of armor covered in iron lace-doily plates, holding a big iron ladle"
+ },
+ "agatha_titan": {
+  "d": "this huge muscular cook with spiky red hair, wearing a white apron over a black tank top and big red oven mitts, holding a giant casserole dish"
+ },
+ "agatha_wrath_full": {
+  "d": "this furious grandma with glowing yellow eyes, grey hair and a purple headband, wearing a purple dress and floral apron, raising a big soup ladle"
+ },
+ "agatha_village": {
+  "d": "huge black iron cauldron with a solid, thick, gloopy creamy-white soup monster with a fierce dragon-like face rising out of it, one solid shape, the whole cauldron visible",
+  "mode": "obj"
+ },
+ "agatha_unleashed": {
+  "d": "this fierce grandma with glowing eyes and wild grey hair, wearing a torn purple dress and white apron, a soup ladle in one hand and a rolling pin in the other"
+ },
+ "agatha_biggest": {
+  "d": "gigantic dark blue casserole pot with two handles, overflowing with golden bubbling casserole, the whole pot visible",
+  "mode": "obj"
+ },
+ "agatha_soupocalypse": {
+  "d": "huge dark iron soup cauldron with gold emblems, overflowing with golden soup and swirling steam, the whole cauldron visible",
+  "mode": "obj"
+ },
+ "grunk_last_firework": {
+  "d": "giant golden spiky firework rocket shaped like a crystal flame, with a glowing star at its center, standing upright, the whole rocket visible",
+  "mode": "obj"
+ },
+ "presto_scroll": {
+  "d": "this young witch with long dark purple hair, wearing a purple wizard hat with a gold star and a purple and gold robe, reading a long glowing scroll covered in runes"
+ },
+ "presto_apprentice": {
+  "d": "this grinning reckless young wizard apprentice with spiky auburn hair, wearing a dark purple robe with gold trim, holding a smoking magic wand"
+ },
+ "presto_familiar": {
+  "d": "this fluffy orange and white fox familiar on its hind legs, wearing a purple and gold harness, carrying a rolled scroll in its mouth and a little rice ball in its paw, with a big fluffy tail"
+ },
+ "presto_ink": {
+  "d": "this living ink creature: a dark purple and black spiky shadow figure made of ink with glowing yellow eyes, arms crossed, rising out of an ink pot"
+ },
+ "presto_homework": {
+  "d": "this exhausted young student wizard with long messy dark hair tied up, wearing a purple robe, resting her head on her hand next to a tall stack of old books"
+ },
+ "presto_firecracker": {
+  "d": "this smug blond firecracker mage with a purple wizard hat with gold trim and a purple and gold robe, holding up one finger with a crackling spark on it"
+ },
+ "presto_mentor": {
+  "d": "this patient old wizard mentor with white hair and beard, wearing a purple wizard hat and robe, pointing at a slate board covered in glowing runes with a wand"
+ },
+ "presto_notes": {
+  "d": "this confident young wizard with spiky dark blue hair and golden eyes, wearing a purple robe with gold trim, holding up a glowing purple notebook"
+ },
+ "presto_trick": {
+  "d": "this winking young wizard with spiky blue hair, wearing a big purple wizard hat with a gold star and a purple and gold robe, flicking a glowing gold magic bolt from his finger"
+ },
+ "presto_scrollkeeper": {
+  "d": "this wise old scroll keeper with a long white beard and a white topknot with a gold clasp, wearing a purple and gold robe, with old scrolls floating around him"
+ },
+ "presto_pet": {
+  "d": "this huge fat fluffy black cat with half-closed smug eyes, lounging on top of a stack of old books"
+ },
+ "presto_quill": {
+  "d": "large white and blue feather quill pen with a sharp gold tip, flying upright, the whole quill visible",
+  "mode": "obj"
+ },
+ "presto_gamble": {
+  "d": "this grinning little purple-haired sprite with pointed ears and a gold tiara, wearing a purple outfit with gold bracelets, sitting on a big purple crystal die and holding up a gold coin"
+ },
+ "presto_tome": {
+  "d": "this bookworm wizard with a messy brown hair bun and round glasses with glowing eyes, wearing a purple robe, reading a huge glowing golden book"
+ },
+ "presto_wand": {
+  "d": "this cool young wizard with spiky black hair and golden eyes, wearing a purple and gold robe and a purple wizard hat, doing a two-finger salute"
+ },
+ "presto_caffeine": {
+  "d": "this wide-eyed jittery young wizard apprentice with messy brown hair and glowing eyes, wearing a purple robe, gripping a big mug of coffee"
+ },
+ "presto_mirror": {
+  "d": "this elegant woman mirror mage with long dark blue hair and a gold circlet, wearing a purple and white robe with gold trim, surrounded by floating mirror shards"
+ },
+ "presto_textbook": {
+  "d": "thick magic textbook flying open with glowing gold pages fanned out like wings, a purple gem on its dark cover, the whole book visible",
+  "mode": "obj"
+ },
+ "presto_unstable": {
+  "d": "this fierce white and lavender owl familiar with big golden eyes and ruffled feathers, standing upright with both feet gripping a single short branch beneath it, wings slightly raised; only one branch"
+ },
+ "presto_golem": {
+  "d": "this golem made entirely of glowing blue crystal shards in a muscular humanoid shape with a spiky crystal head and glowing eyes"
+ },
+ "presto_mira": {
+  "d": "this young prodigy witch with long purple hair and a gold star hair clip, wearing a dark purple robe, holding a fan of glowing tarot-like magic cards"
+ },
+ "presto_fizzle": {
+  "d": "this glum unlucky young wizard with messy dark hair, wearing a droopy purple wizard hat with a gold star and a purple robe, a puff of purple smoke fizzling beside him"
+ },
+ "presto_scribe": {
+  "d": "this focused young scribe with spiky dark blue hair, wearing a purple and gold robe, writing super fast with a big white feather quill on a sheet of parchment"
+ },
+ "presto_librarian": {
+  "d": "this tower librarian woman with long wavy blond hair, wearing a tall purple pointed hat and a purple and gold robe, holding a finger to her lips for silence, holding a glowing gold card"
+ },
+ "presto_sage": {
+  "d": "this exhausted sleep-deprived old sage with wild grey hair, a grey beard and dark glowing purple eyes, wearing a dark purple robe with gold trim"
+ },
+ "presto_circle": {
+  "d": "this small purple imp demon with little horns and glowing yellow eyes, arms crossed, standing in the middle of a glowing purple summoning circle on the floor"
+ },
+ "presto_parchment": {
+  "d": "this stern old professor with a white beard, wearing a black square academic cap with a tassel and a dark robe with a purple gem, writing with a red feather quill on parchment"
+ },
+ "presto_broom": {
+  "d": "magic flying broomstick with a curled wooden handle, purple ribbons and colorful rune charms tied to it, the whole broom visible",
+  "mode": "obj"
+ },
+ "presto_archmage": {
+  "d": "this young archmage apprentice girl with short brown hair, wearing a big purple wizard hat and a purple and gold robe, holding up a tall gold staff topped with a purple crystal"
+ },
+ "presto_study": {
+  "d": "this golem made of a tall stack of colorful old books with a stone body, wearing round glasses on its face, holding an unrolled parchment scroll"
+ },
+ "presto_headmaster": {
+  "d": "this imposing old headmaster wizard with a very long white beard and white hair, wearing a tall blue pointed wizard hat and a dark blue robe with gold trim"
+ },
+ "presto_phoenix": {
+  "d": "this phoenix bird made of folded pink and lavender origami paper, a real bird shape with a beak, bird head, bird body, two folded paper wings spread wide, a long paper tail and two thin bird legs; not humanoid, no arms"
+ },
+ "presto_grandsage": {
+  "d": "this grand sage with flowing white hair and beard and a gold circlet, wearing white and purple robes, sitting cross-legged in meditation with open books floating around him"
+ },
+ "presto_himself": {
+  "d": "this grinning young wizard with black hair, wearing a big purple wizard hat with a gold star and a purple and gold robe, holding up a magic wand with a bright purple spark at its tip"
+ },
+ "presto_dragon": {
+  "d": "a chubby round baby dragon with mint green and cream scales, a big round belly, short stubby legs and tiny stubby arms, little round nub horns, small leathery wings, big surprised eyes and a soot smudge on its snout, a small green frog sitting on top of its head; not purple, no long curved horns"
+ },
+ "barnacle_cabin": {
+  "d": "this young cabin boy with messy brown hair and a red bandana, wearing a white shirt and dark vest, holding a mop upright in both hands in front of him with the mop head resting on the floor beside his feet, the whole mop handle visible and clear of his body"
+ },
+ "barnacle_parrot": {
+  "d": "this pirate woman in a big red tricorn hat with feathers and a dark blue pirate coat, with a red macaw perched on her left shoulder and a white cockatoo perched on her right shoulder; she has exactly two arms, her right hand on her hip and her left hand at her side"
+ },
+ "barnacle_dan": {
+  "d": "this burly bearded deckhand with a big grin, wearing a navy and white striped shirt, holding a mop over his shoulder"
+ },
+ "barnacle_lookout": {
+  "d": "this young pirate lookout in a brown tricorn hat with a feather and a red coat, holding a brass spyglass to his eye"
+ },
+ "barnacle_mate": {
+  "d": "this confident ship's mate with wavy dark hair, wearing an open white shirt and a dark blue coat, a coil of rope over his shoulder and a dagger on his belt"
+ },
+ "barnacle_sailor": {
+  "d": "this cheerful young sailor with brown hair, wearing a white sailor cap and a white sailor uniform with a blue neckerchief, carrying a blue duffel sack over his shoulder"
+ },
+ "barnacle_powder": {
+  "d": "this young powder monkey with spiky dark blue hair and a blue headband, wearing a dark blue vest, carrying a small wooden powder barrel"
+ },
+ "barnacle_flag": {
+  "d": "this pirate flag bearer with a goatee, wearing a red tricorn hat and a red and navy pirate coat, holding a tall gold pole with a black pirate flag"
+ },
+ "barnacle_chest": {
+  "d": "ornate pirate treasure chest overflowing with gold coins, with a blue gem on the lid, the whole chest visible",
+  "mode": "obj"
+ },
+ "barnacle_bosun": {
+  "d": "this tough shouting bosun with short dark hair and stubble, wearing a dark blue coat over an open shirt, a silver whistle on a chain around his neck"
+ },
+ "barnacle_perch": {
+  "d": "this bright red, yellow and blue macaw parrot with wings spread, perched on top of a short wooden ship's post"
+ },
+ "barnacle_grapple": {
+  "d": "large silver grappling hook anchor with three curved prongs and a blue gem, the whole hook visible",
+  "mode": "obj"
+ },
+ "barnacle_tide": {
+  "d": "this sea priestess with long flowing green hair and a gold circlet, wearing flowing sea-green robes, both arms raised calling the tide"
+ },
+ "barnacle_buddy": {
+  "d": "this grinning orange crab-like barnacle creature with a purple spiky shell, big purple claws and lots of little barnacles on its body, scuttling on its legs"
+ },
+ "barnacle_quartermaster": {
+  "d": "this sly quartermaster with spiky black hair, round glasses and a goatee, wearing a dark blue coat, holding an open ledger book and a stack of gold coins"
+ },
+ "barnacle_gunner": {
+  "d": "this pirate gunner woman with wavy brown hair, wearing a navy tricorn hat with gold trim and a purple and navy pirate coat, holding a smoking flintlock pistol in each hand"
+ },
+ "barnacle_helm": {
+  "d": "this grizzled bearded helmsman in a navy tricorn hat with a red band and a dark blue coat, gripping a large wooden ship's wheel"
+ },
+ "barnacle_scout": {
+  "d": "this blue and white hawk-like parrot with a purple crest, wearing a little blue scarf, holding a tiny brass spyglass in one talon, wings spread"
+ },
+ "barnacle_boarding": {
+  "d": "this grinning pirate with spiky black hair and a red bandana, wearing a navy coat and boots, swinging on a rope with a cutlass raised"
+ },
+ "barnacle_kraken": {
+  "d": "this baby kraken: a dark blue sea serpent with a spiky dragon-like head and glowing yellow eyes, its body coiled up on many curling purple octopus tentacles that it rests on"
+ },
+ "barnacle_hunter": {
+  "d": "this pirate treasure hunter woman with long brown hair, wearing a black tricorn hat with a red feather and a red coat, holding up a treasure map with a big X"
+ },
+ "barnacle_storm": {
+  "d": "this big black storm crow with glowing yellow eyes and ruffled dark feathers, standing on its feet"
+ },
+ "barnacle_peggy": {
+  "d": "this confident pirate recruiter woman with long magenta hair, wearing a navy tricorn hat with a gold emblem and a navy pirate coat; she has exactly two arms: her right hand rests on her hip and her left arm is stretched forward pointing at the viewer with her index finger"
+ },
+ "barnacle_aye": {
+  "d": "this aye-aye lemur pirate with huge round eyes and big ears, wearing a small navy tricorn hat and a navy pirate coat with a ruffled shirt, pointing with one long finger"
+ },
+ "barnacle_cook": {
+  "d": "this brown rat pirate cook wearing a white chef's hat with a skull and crossbones and a red bandana, a navy coat, stirring a copper cooking pot"
+ },
+ "barnacle_guard": {
+  "d": "this muscular pirate guard with a goatee, wearing a navy tricorn hat with a red band and a red pirate coat, arms crossed, a cutlass at his side and a small barrel beside him"
+ },
+ "barnacle_firstmate": {
+  "d": "this confident first mate with spiky blond hair, wearing a navy pirate coat, holding a curved cutlass raised over his shoulder"
+ },
+ "barnacle_crowsnest": {
+  "d": "ship's crow's nest: a round wooden lookout basket on top of a short mast with a glowing lantern and a teal pirate flag above it, the whole thing visible",
+  "mode": "obj"
+ },
+ "barnacle_salvage": {
+  "d": "this salvager diver in an old brass diving helmet and a dark diving suit, carrying a fishing net full of gold treasure"
+ },
+ "barnacle_mutineer": {
+  "d": "this scarred smirking mutineer with messy dark hair, wearing an open red-lined dark coat, holding a curved cutlass"
+ },
+ "barnacle_betty": {
+  "d": "this tough woman bosun with long brown hair in a braid, wearing a white shirt, navy vest and red neckerchief, a silver whistle between her lips"
+ },
+ "barnacle_galleon": {
+  "d": "pirate galleon sailing ship with cream sails and a skull figurehead, the whole ship visible including the hull",
+  "mode": "obj"
+ },
+ "barnacle_priestess": {
+  "d": "this tide priestess with long purple hair and a coral crown, wearing a coral and seashell outfit, holding a gold trident staff with a glowing teal gem"
+ },
+ "barnacle_code": {
+  "d": "this old pirate code keeper with a long white beard, wearing a red tricorn hat with a gold compass emblem and a navy coat, holding a thick red leather book"
+ },
+ "barnacle_commodore": {
+  "d": "this stern naval commodore in a black bicorne hat with a white plume and a navy uniform covered in gold braid and medals, with a small cabin boy in a white cap saluting beside him"
+ },
+ "barnacle_broadside": {
+  "d": "black pirate warship with a skull figurehead and a black skull-and-crossbones sail, cannons firing from its side, the whole ship visible including the hull",
+  "mode": "obj"
+ },
+ "barnacle_sea": {
+  "d": "this teal and gold sea serpent with a spiky finned dragon head, its thick scaly snake body coiled once into a neat round pile on the ground with its head raised above the coil, ending in one short tapered tail tip with a small fin; no legs, no arms"
+ },
+ "barnacle_plunder": {
+  "d": "this grinning pirate with an eyepatch, gold tooth and goatee, wearing a red bandana under a navy tricorn hat with a purple feather and an open navy coat, carrying a sack of jewels over his shoulder"
+ },
+ "barnacle_quinn": {
+  "d": "this stern pirate quartermaster woman with long black hair, wearing a navy tricorn hat with a gold emblem and a navy coat, holding an open ledger and a white quill, a coin purse at her belt"
+ },
+ "barnacle_leviathan": {
+  "d": "this huge dark blue and gold leviathan sea serpent with a spiky armored dragon head and glowing blue eyes, its thick legless body rising up in an S-curve from a neat coiled base on the ground, ending in one tapered tail tip with a fin; no legs, no arms"
+ },
+ "barnacle_fleet": {
+  "d": "this young fleet commander with dark hair, wearing a white captain's hat with an anchor and a feather and a navy uniform with gold buttons, saluting with a white glove"
+ },
+ "barnacle_dread": {
+  "d": "this masked dread pirate dressed all in black with gold trim, black tricorn hat and black face mask, holding a curved cutlass"
+ },
+ "barnacle_admiral": {
+  "d": "this grizzled Admiral Barnacle with a big white beard, wearing a navy admiral's tricorn hat with a gold emblem and a navy and red coat with gold stars and medals, holding a brass spyglass"
+ },
+ "barnacle_krakenqueen": {
+  "d": "this kraken queen with long purple hair, purple skin and a pink coral crown, wearing a purple shell bodice; from the waist down she has no legs at all, her lower body is a mass of thick purple octopus tentacles spreading out on the ground"
+ },
+ "barnacle_press_gang": {
+  "d": "these three rough pirates of a press gang standing together, the leader in a black tricorn hat with arms crossed and coils of rope, two others in red bandanas behind him holding clubs"
+ },
+ "barnacle_harpoon_gunner": {
+  "d": "this pirate harpoon gunner with a navy bandana, holding a heavy wooden-stocked harpoon launcher like a big crossbow, one hand on the grip and trigger and the other hand under the barrel, a single barbed harpoon loaded on the front pointing up and away; a young boy in a yellow bandana stands beside him"
+ },
+ "grunk_demo_expert": {
+  "d": "this goblin woman demolition expert with long dark green hair, wearing a yellow hard hat and an orange and yellow safety vest, holding rolled blueprints and a red detonator"
+ },
+ "presto_blast_scholar": {
+  "d": "this smirking young wizard with wild purple hair, wearing a purple and gold robe, holding an open spellbook crackling with purple fire"
+ },
+ "reg_squire_tim": {
+  "d": "this earnest young squire with spiky brown hair, wearing shining silver armor over a blue tunic, holding a stack of papers and a folder"
+ },
+ "reg_shield_squire": {
+  "d": "this determined young squire with spiky brown hair in silver armor and a blue scarf, holding a tall blue shield with a golden lion emblem"
+ },
+ "reg_footman": {
+  "d": "this young footman with brown hair, wearing a blue cap with a white feather, a blue and gold uniform with a short white cape, holding a tall spear"
+ },
+ "reg_pikeman": {
+  "d": "this serious young pikeman with spiky brown hair, wearing blue and gold armor with a belt and pouch, holding a long gold-tipped pike"
+ },
+ "reg_castle_guard": {
+  "d": "this stern castle guard with short black hair, wearing dark blue armor with a golden lion emblem on the chest, holding a gold halberd"
+ },
+ "reg_lance_squire": {
+  "d": "this young lance squire with spiky brown hair and a red scarf, wearing silver and blue armor, sitting in the saddle on the back of a small brown pony with a red mane, holding a wooden lance upright; the pony stands on its four legs and the squire's legs hang down either side of the pony, the whole pony visible"
+ },
+ "reg_chirurgeon": {
+  "d": "this young battlefield medic with spiky brown hair, wearing a white tabard with a red cross over blue clothes, a satchel of bandages, potions and scrolls at his belt"
+ },
+ "reg_crossbow": {
+  "d": "this winking young crossbow squire with spiky brown hair, wearing blue and gold armor, aiming a crossbow"
+ },
+ "reg_shield_knight": {
+  "d": "this knight in blue and gold plate armor with a winged silver helmet and blond hair, holding a huge blue and gold heraldic shield"
+ },
+ "reg_lance_knight": {
+  "d": "this shouting knight in silver armor with a winged helmet and blond hair, riding a white armored horse seen from the side, holding a long silver lance pointed forward above the horse's head; the horse has exactly four legs and the lance does not pass through the horse, the whole horse visible"
+ },
+ "reg_sergeant": {
+  "d": "this stern sergeant with slicked dark hair and a thick mustache, wearing blue and gold armor with a golden lion emblem, holding a rolled scroll"
+ },
+ "reg_hospitaller": {
+  "d": "this calm blond knight hospitaller in a white hooded cloak over blue and gold armor, holding a bowl of soup, with rolled bandages tucked under his arm"
+ },
+ "reg_vengeful": {
+  "d": "this dark blue armored knight with a full visored pointed helmet and glowing blue gems, holding a fan of three blank cards"
+ },
+ "reg_war_horn": {
+  "d": "this blond knight in golden armor and a winged gold helmet, blowing a huge golden war horn"
+ },
+ "reg_sanctuary": {
+  "d": "this sanctuary knight with brown hair in a winged gold helmet and gold and blue armor, holding a blue and gold shield, with a bowl of stew at his feet"
+ },
+ "reg_banner_order": {
+  "d": "this blond knight in blue and gold armor holding a tall flagpole with a blue banner bearing a gold compass-star emblem"
+ },
+ "reg_oathbound": {
+  "d": "this solemn knight in ornate gold and blue armor with a gold crested helmet, both gauntleted hands resting on the hilt of a sword planted point-down in front of him"
+ },
+ "reg_tower_knight": {
+  "d": "this hulking knight whose armor is shaped like a stone castle tower, with battlements on top of his helmet, a portcullis on his belly and a glowing blue gem on his chest"
+ },
+ "reg_charging_knight": {
+  "d": "this knight in silver and blue armor with a winged helmet, riding a white horse with a gold forehead armor plate, the whole horse visible"
+ },
+ "reg_captain": {
+  "d": "this blond knight-captain in silver and blue armor with a gold star on the chest, holding a handful of papers"
+ },
+ "reg_grand_hospitaller": {
+  "d": "this blond grand hospitaller in white and gold armor with a gold cross, holding a big soup ladle in one hand and a clipboard in the other"
+ },
+ "reg_high_marshal": {
+  "d": "this blond high marshal in blue and gold armor with a golden lion emblem, holding up a rolled scroll"
+ },
+ "reg_fallen_standard": {
+  "d": "golden war banner on a gold spear-tipped pole, the golden flag rippling like flame, the whole banner visible",
+  "mode": "obj"
+ },
+ "reg_mercy": {
+  "d": "exactly one gentle blonde woman knight with long hair, wearing silver and blue armor with a blue cape, standing beside one black horse with her hand on its neck, the whole horse visible on all four legs; only these two figures"
+ },
+ "reg_twinblade": {
+  "d": "this knight in blue and gold armor with a tall spiked gold and blue helmet, holding two crossed silver swords"
+ },
+ "reg_war_banner": {
+  "d": "this blond knight in blue and gold armor, raising a blue war banner on a pole in one hand and holding a stack of papers in the other"
+ },
+ "reg_judgment": {
+  "d": "this knight in black and silver armor with a horned black helmet, holding a sword in one hand and a rolled scroll in the other"
+ },
+ "reg_prudence": {
+  "d": "this unflappable blonde lady knight with a silver circlet, wearing silver and blue armor, calmly holding a stack of papers"
+ },
+ "reg_grand_bulwark": {
+  "d": "this giant knight made of grey stone castle bricks with a pointed silver visored helmet, glowing blue eyes and a purple sash across the chest"
+ },
+ "reg_grand_charger": {
+  "d": "this white war horse as a real four-legged animal seen from the side, standing on all four hooves, flowing golden mane, wearing silver and blue barding armor with gold trim; not humanoid, no human arms or hands, the whole horse visible"
+ },
+ "reg_lord_marshal": {
+  "d": "this blond lord marshal in blue and gold armor with a white fur mantle, writing with a feather quill"
+ },
+ "reg_verdict": {
+  "d": "this shouting blond knight in gold and blue armor, raising a sword high over his head"
+ },
+ "reg_fallen_lord": {
+  "d": "this ghostly fallen lord with blue skin, spiky blue hair and a dark purple crown, wearing dark armor, holding a white feather quill, standing behind a helmet resting on a stone pedestal"
+ },
+ "reg_commander": {
+  "d": "this knight-commander in silver and gold armor with a crested gold helmet, pointing forward, holding a rolled scroll"
+ },
+ "reg_eternal_banner": {
+  "d": "small stone castle tower with a filing cabinet built into its base, topped by a gold spear finial with a flowing red banner, the whole tower visible",
+  "mode": "obj"
+ },
+ "reg_godwin": {
+  "d": "this gentle blond knight, Sir Godwin, in blue and silver armor, holding a sword in one hand and a white feather quill in the other"
+ },
+ "reg_bastion": {
+  "d": "this bastion knight in dark blue and gold armor with a helmet shaped like a castle turret with battlements and a blue plume"
+ },
+ "reg_grand_marshal": {
+  "d": "this blond grand marshal in ornate blue and gold armor, signing a parchment with a glowing white feather quill"
+ },
+ "reg_final_word": {
+  "d": "this blond knight in silver and blue armor, holding a long sword point-down at his side"
+ },
+ "reg_reliquary": {
+  "d": "ornate golden reliquary banner: a gold spear-topped staff with a glowing golden reliquary box and a purple banner hanging from it, the whole banner visible",
+  "mode": "obj"
+ },
+ "reg_barrington": {
+  "d": "this steadfast old lord with white hair and a white handlebar mustache, wearing dark blue and gold armor, holding a document with a seal and a quill pen"
+ },
+ "reg_colossus": {
+  "d": "this towering colossus knight in blue and gold armor with a tall spiked helmet and visor, holding a long unrolled scroll"
+ },
+ "reg_champion": {
+  "d": "this blond champion knight in silver and blue armor, saluting with one hand, holding a stack of papers under his other arm, a sword at his side"
+ },
+ "reg_everbloom": {
+  "d": "this lady knight with short brown hair and pink flowers in her hair, wearing blue armor covered in climbing pink roses, holding a blue banner on a spear and a flower basket"
+ },
+ "lar_dice_boy": {
+  "d": "this excited boy with spiky brown hair and green eyes, wearing a green hooded cloak over a navy vest, rolling two glowing green dice"
+ },
+ "lar_chip": {
+  "d": "living green, white and gold casino poker chip with angry glowing green eyes on its white center, standing on its edge, the whole chip visible",
+  "mode": "obj"
+ },
+ "lar_loaded_die": {
+  "d": "glowing green crystal six-sided die with gold edges and glowing green pips, the whole die visible",
+  "mode": "obj"
+ },
+ "lar_card_shark": {
+  "d": "this grinning card shark with purple hair, wearing a black top hat and a black and purple suit, shuffling a fan of playing cards"
+ },
+ "lar_roulette": {
+  "d": "this slick young gambler with black hair, wearing a black suit with a purple vest and a gold pocket-watch chain, holding a small red roulette ball pinched between his thumb and index finger of his raised right hand; nothing floats in the air"
+ },
+ "lar_slot": {
+  "d": "ornate gold and black slot machine showing three cherries, green gems and a lever on its side, pouring gold coins out of its base, the whole machine visible",
+  "mode": "obj"
+ },
+ "lar_ace": {
+  "d": "this winking gambler with spiky black and gold hair, wearing a black and green suit, holding up the ace of spades"
+ },
+ "lar_pete": {
+  "d": "this grinning young man with messy brown hair, wearing a black top hat with a purple band and a green four-leaf clover, an open white shirt and a green coat, gold coins in his hand"
+ },
+ "lar_hustler": {
+  "d": "this smirking hustler in a brown plaid flat cap and a dark jacket over a green vest, holding a hand of cards and flashing a glowing gold card"
+ },
+ "lar_jackpot": {
+  "d": "red and gold jackpot slot machine with a green gem and a gold lever, erupting a fountain of gold coins from its top, the whole machine visible",
+  "mode": "obj"
+ },
+ "lar_craps": {
+  "d": "round green felt craps table with gold trim and two white dice tumbling above it, the whole table visible",
+  "mode": "obj"
+ },
+ "lar_tessa": {
+  "d": "this mysterious woman gambler, Flip-Side Tessa, with short dark purple hair over one eye, wearing a black and purple outfit with a green gem, holding a playing card up in each hand"
+ },
+ "lar_blackjack": {
+  "d": "this confident blackjack dealer with spiky black hair and green eyes, wearing a black suit with a white cravat and a green gem pin, holding up a playing card"
+ },
+ "lar_wheel": {
+  "d": "large purple and gold wheel of fortune with a gold pointer arrow at its center, standing upright on its rim, the whole wheel visible",
+  "mode": "obj"
+ },
+ "lar_dice_golem": {
+  "d": "this hulking golem built from big cracked stone dice with glowing green pips, a dice block for a head"
+ },
+ "lar_bettor": {
+  "d": "this smug high-stakes bettor with spiky dark hair and gold chains, wearing a shiny gold blazer over an open black shirt, lounging on a pile of casino chips"
+ },
+ "lar_dolores": {
+  "d": "this sharpshooter cowgirl Dead-Eye Dolores with dark purple hair, wearing a brown cowboy hat with a green gem and a red jacket, aiming a silver revolver"
+ },
+ "lar_horse": {
+  "d": "this black dark-horse stallion with glowing yellow eyes and a gold and green forehead jewel, flowing black mane, on all four legs, the whole horse visible"
+ },
+ "lar_longshot": {
+  "d": "this white horse as a real four-legged animal seen from the side, standing on all four hooves, head held high, flowing white and green mane and tail, wearing a green and gold bridle; not humanoid, no clothes, the whole horse visible"
+ },
+ "lar_rigger": {
+  "d": "this sly grinning rigger with spiky black hair and a goatee, wearing black gloves and a purple coat, adjusting the gears of a small slot machine reel"
+ },
+ "lar_monte": {
+  "d": "this smirking card hustler with spiky orange-brown hair, wearing a purple and gold coat, shuffling three face-down cards on a small table"
+ },
+ "lar_bookie": {
+  "d": "this chubby bookie with dark hair and a cigar, wearing a purple suit jacket over a mustard vest with a gold chain, holding out a gold coin and a notepad"
+ },
+ "lar_shark_tank": {
+  "d": "ornate gold-framed glass globe tank with three little sharks in suits and sunglasses playing poker at a green table inside, the whole tank visible",
+  "mode": "obj"
+ },
+ "lar_whale": {
+  "d": "this grey whale gentleman standing upright, wearing a black top hat, a black tuxedo with a bow tie, next to a stack of casino chips"
+ },
+ "lar_bessie": {
+  "d": "this living red and black roulette wheel with a cheeky smiling face with green eyes in its center, set in an ornate gold frame with a green gem, standing on a gold base, the whole wheel visible"
+ },
+ "lar_croupier": {
+  "d": "this composed croupier with black hair and green eyes, wearing a purple vest, white shirt and black bow tie, one palm raised"
+ },
+ "lar_fixer": {
+  "d": "this cool fixer with slicked black hair, wearing a black suit with a green tie, holding open a briefcase full of colorful gems"
+ },
+ "lar_oddsmaker": {
+  "d": "this sly oddsmaker with spiky purple hair, wearing a purple and gold coat with a green gem, holding a piece of chalk next to a betting board"
+ },
+ "lar_lucky7": {
+  "d": "big golden crystal number seven, faceted like a gem, standing upright, the whole seven visible",
+  "mode": "obj"
+ },
+ "lar_pit_boss": {
+  "d": "this stern pit boss with short black hair, wearing a black suit, black shirt and green tie with a gold tie bar"
+ },
+ "lar_cheat": {
+  "d": "this winking cheat with spiky black and purple hair, wearing a black and gold patterned hat and a green and purple coat with cards up his sleeves"
+ },
+ "lar_madame": {
+  "d": "this fortune teller Madame Misfortune with long dark curly hair, wearing a purple witch hat with a green veil and a purple dress, holding a glowing green crystal ball"
+ },
+ "lar_whale_hunter": {
+  "d": "this whale hunter with dark blue hair, wearing a white captain's hat with a gold emblem and a navy coat with gold epaulettes and a ruffled cravat, holding a golden harpoon"
+ },
+ "lar_loaded_dice": {
+  "d": "pair of glowing green crystal dice with gold edges and glowing pips, one stacked at an angle on the other, the whole pair visible",
+  "mode": "obj"
+ },
+ "lar_big_one": {
+  "d": "this ecstatic gambler with wild purple hair and green sunglasses, wearing a purple suit, both arms raised in celebration with gold coins raining down around him"
+ },
+ "lar_magnate": {
+  "d": "this confident casino magnate with swept brown hair, wearing a white suit jacket over a green vest with a gold necklace"
+ },
+ "lar_house": {
+  "d": "golden casino tower building whose top floor is a giant smiling golden mask face with a green gem crown, the whole tower visible",
+  "mode": "obj"
+ },
+ "presto_mana_wisp": {
+  "d": "this little blue flame spirit with big yellow eyes and a flickering blue fire body, floating above an open spellbook"
+ },
+ "presto_study_group": {
+  "d": "these four young wizard students standing together: a blonde girl, a brown-haired boy, a black-haired boy and a small green-haired kid, all in blue and red school robes, conjuring a glowing purple magic orb between them"
+ },
+ "hero_agatha": {
+  "d": "this stern grandma Agatha with a white hair bun and round glasses, wearing a purple dress with a floral apron and a lace doily brooch, holding a big soup ladle"
+ },
+ "hero_barnacle": {
+  "d": "this laughing old pirate captain Barnacle with a grey beard and an eyepatch, wearing a black tricorn hat and a navy coat with gold buttons, holding a cutlass, with a green parrot on his shoulder"
+ },
+ "hero_grunk": {
+  "d": "this grinning goblin chief Grunk with spiky green hair and brass goggles on his head, wearing a dark leather vest with a bandolier of red dynamite sticks across his chest, holding a lit stick of dynamite"
+ },
+ "hero_larry": {
+  "d": "this smug winking gambler Larry with slicked black hair, wearing a purple suit over a gold patterned vest, holding a fan of cards and flipping a gold coin with his thumb"
+ },
+ "hero_presto": {
+  "d": "this grinning young wizard Presto with messy black hair, wearing a big purple wizard hat with a gold star and a purple robe, holding a wand with a purple spark and a rolled scroll"
+ },
+ "hero_reginald": {
+  "d": "this proud knight Sir Reginald with a black mustache, wearing full silver plate armor and a silver helmet with a big red plume, holding a sword in one hand and a thick book in the other"
+ },
+ "_policy": "Glow, steam, smoke, fire, sparks, lightning and floating bits are removed from 3D reference images and re-added in-game as effects.",
+ "_note_ladles": "agatha_ladle, agatha_annihilation, agatha_iron are edits of the agatha_ladle_storm reference (the model draws spoons when asked for ladles)",
+ "_note_presto_dragon": "Redesigned away from the original purple card art (too close to Spyro, per Ian 2026-11-02); card art needs a matching redo."
+}

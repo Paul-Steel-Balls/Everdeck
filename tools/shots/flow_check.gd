@@ -1,0 +1,38 @@
+extends Node
+func _ready() -> void:
+	var m: Node = load("res://main.tscn").instantiate()
+	add_child(m)
+	await _f(5)
+	var t: Node = m.find_child("TitleScreen", true, false)
+	t.buttons["play"].pressed.emit()
+	await _f(40)
+	var hs: Node = m.find_child("HeroSelect", true, false)
+	print("HERO SELECT ", hs != null)
+	hs._select("agatha", false)
+	hs.buttons["lock"].pressed.emit()
+	await _f(5)
+	hs.buttons["quick"].pressed.emit()
+	await _f(60)
+	print("QUICK -> match ", m._screen == 4, " vs_ai ", m._vs_ai, " human class ", m._gs.players[m._human_idx]["class"] if m._gs else "")
+	# Back to title, then the build path.
+	m._goto(m._show_title)
+	await _f(40)
+	m.find_child("TitleScreen", true, false).buttons["play"].pressed.emit()
+	await _f(40)
+	hs = m.find_child("HeroSelect", true, false)
+	hs._select("larry", false)
+	hs.buttons["lock"].pressed.emit()
+	await _f(5)
+	hs.buttons["build"].pressed.emit()
+	await _f(40)
+	var db: Node = m.find_child("DeckBuilder", true, false)
+	print("DECK BUILDER ", db != null)
+	db.buttons["auto"].pressed.emit()
+	await _f(3)
+	db.buttons["done"].pressed.emit()
+	await _f(60)
+	print("BUILD -> match ", m._screen == 4, " deck ok ", GameState.validate_deck(m._decks[m._human_idx], "larry"))
+	get_tree().quit()
+func _f(n: int) -> void:
+	for i in n:
+		await get_tree().process_frame

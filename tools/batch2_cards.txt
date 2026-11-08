@@ -1,0 +1,102 @@
+# Batch 2 card spec (Presto 49 new + Barnacle 50 new)
+# Format: id|name|class|cost|type|attack|health|keywords|effect|effect_value|target|rarity|text|flavor|art|deathrattle|deathrattle_value|deathrattle_target|design_note
+# Empty effect/value fields for vanilla / Deathrattle-only cards as shown.
+presto_cantrip|Cantrip|presto|1|spell|0|0||draw|1|none|Common|Draw a card.|The first spell every apprentice learns. The last one too.|cantrip||||
+presto_spark|Wild Spark|presto|1|spell|0|0||random_enemy_damage|1|none|Common|Deal 1 damage to a random enemy.|It went somewhere. Probably fine.|wild_spark||||
+presto_scroll|Scroll Reader|presto|1|minion|1|1||draw|1|none|Common|Battlecry: Draw a card.|She reads every scroll. Out loud. All of them.|scroll_reader||||
+presto_apprentice|Reckless Apprentice|presto|1|minion|2|1||draw_self_damage|2|none|Common|Battlecry: Draw a card. Take 2 damage.|Homework is dangerous.|reckless_apprentice||||
+presto_misfire|Misfire|presto|1|spell|0|0||damage|2|any_enemy|Common|Deal 2 damage to an enemy.|He was aiming at the target. The target was not the target.|misfire||||
+presto_familiar|Helpful Familiar|presto|1|minion|1|2|||0|none|Common|Deathrattle: Draw a card.|It fetches scrolls. And snacks. Mostly snacks.|helpful_familiar|draw|1|none|
+presto_potion|Mana Potion|presto|1|spell|0|0||gain_mana|1|none|Common|Gain 1 Mana this turn only.|Side effects include: more mana.|mana_potion||||
+presto_ink|Living Ink|presto|1|minion|1|3|||0|none|Common||It is ink. It is alive. It has opinions.|living_ink||||
+presto_homework|Cram Session|presto|2|minion|2|2||draw_self_damage|2|none|Common|Battlecry: Draw a card. Take 2 damage.|Studying at the last minute. It hurts. It works.|cram_session||||
+presto_bolt|Arcane Bolt|presto|2|spell|0|0||damage|3|any_enemy|Common|Deal 3 damage to an enemy.|The bolt goes where the bolt wants.|arcane_bolt||||
+presto_firecracker|Firecracker Mage|presto|2|minion|1|1||damage_per_card_played|1|none|Rare|Battlecry: Deal 1 damage to the enemy hero for each other card you played this turn.|She counts your cards. Then she counts your health. The numbers match.|firecracker_mage||||
+presto_mentor|Patient Mentor|presto|2|minion|2|3||draw|1|none|Rare|Battlecry: Draw a card.|He explains everything twice. You learn. You draw.|patient_mentor||||
+presto_notes|Borrowed Notes|presto|2|minion|1|2||draw|1|none|Common|Battlecry: Draw a card.|Notes from someone smarter. Probably.|borrowed_notes||||
+presto_trick|Trick Shot|presto|2|minion|3|2||random_enemy_damage|1|none|Common|Battlecry: Deal 1 damage to a random enemy.|He never misses. The target is another story.|trick_shot||||
+presto_scrollkeeper|Scroll Keeper|presto|2|minion|2|2||summon_token|0|none|Common|Battlecry: Summon a 1/1 Scroll.|The scrolls keep themselves. Mostly.|scroll_keeper||||Token: Scroll, 1/1 minion, no keywords.
+presto_echo|Echo Blast|presto|2|spell|0|0||damage|4|any_enemy|Rare|Deal 4 damage to an enemy.|The blast echoes. So does the screaming.|echo_blast||||
+presto_pet|Library Cat|presto|2|minion|1|3|||0|none|Common|Deathrattle: Draw a card.|It sleeps on the spellbooks. It knows things.|library_cat|draw|1|none|
+presto_quill|Quill Dart|presto|2|minion|3|1||damage|1|any_enemy|Common|Battlecry: Deal 1 damage to an enemy.|The quill is mightier. Especially when thrown.|quill_dart||||
+presto_gamble|Gamble Sprite|presto|2|minion|2|2||random_enemy_damage|2|none|Rare|Battlecry: Deal 2 damage to a random enemy.|It bets on everything. Including you.|gamble_sprite||||
+presto_tome|Bookworm|presto|3|minion|2|2||draw|2|none|Common|Battlecry: Draw 2 cards.|She ate the textbook. Knowledge is power. So is fiber.|bookworm||||
+presto_payoff|Final Exam|presto|3|spell|0|0||damage_per_card_played|1|none|Rare|Deal 1 damage to the enemy hero for each other card you played this turn.|Everything you learned. All at once. Good luck.|final_exam||||
+presto_wand|Wand Slinger|presto|3|minion|3|2||damage|2|any_enemy|Common|Battlecry: Deal 2 damage to an enemy.|The wand does the work. He takes the credit.|wand_slinger||||
+presto_orb|Orb of Oops|presto|3|spell|0|0||damage|4|any_enemy|Rare|Deal 4 damage to an enemy.|The orb saw it first. The orb is sorry.|orb_oops||||
+presto_caffeine|Caffeine Apprentice|presto|3|minion|2|3||draw_self_damage|2|none|Rare|Battlecry: Draw a card. Take 2 damage.|Four espressos. Zero sleep. One more card.|caffeine_apprentice||||
+presto_mirror|Mirror Mage|presto|3|minion|3|3||summon_token|0|none|Rare|Battlecry: Summon a 1/1 Mirror Image.|Which one is real? Trick question. Neither.|mirror_mage||||Token: Mirror Image, 1/1 minion, no keywords.
+presto_textbook|Doomed Textbook|presto|3|minion|2|2|||0|none|Epic|Deathrattle: Draw 2 cards.|It explodes into knowledge. Literally.|doomed_textbook|draw|2|none|
+presto_unstable|Unstable Familiar|presto|3|minion|3|2|||0|none|Epic|Deathrattle: Deal 2 damage to a random enemy.|It was never stable. That was the charm.|unstable_familiar|random_enemy_damage|2|none|
+presto_golem|Mana Golem|presto|3|minion|2|4||gain_mana|1|none|Epic|Battlecry: Gain 1 Mana this turn only.|It runs on mana. It produces mana. Perpetual motion, probably illegal.|mana_golem||||
+presto_mira|Mira, the Prodigy|presto|3|minion|1|1||damage_per_hand_card|1|none|Legendary|Battlecry: Deal 1 damage to the enemy hero for each card in your hand.|She holds all the cards. Literally. It hurts.|mira_prodigy||||
+presto_fizzle|Fizzle, the Unlucky|presto|3|minion|1|2|||0|none|Legendary|Deathrattle: Deal 1 damage to the enemy hero for each card in your hand.|He dies. You draw. Everyone wins. Except him.|fizzle_unlucky|damage_per_hand_card|1|none|
+presto_scribe|Speed Scribe|presto|3|minion|4|2||draw|1|none|Epic|Battlecry: Draw a card.|Writes so fast the ink gives up.|speed_scribe||||
+presto_thesis|Thesis Defense|presto|4|spell|0|0||damage_per_card_played|2|none|Epic|Deal 2 damage to the enemy hero for each other card you played this turn.|Four years of study. One turn. No questions.|thesis_defense||||
+presto_librarian|Tower Librarian|presto|4|minion|2|4||draw|2|none|Epic|Battlecry: Draw 2 cards.|Shhh. She's drawing.|tower_librarian||||
+presto_pyro|Pyroblast|presto|4|spell|0|0||damage|5|any_enemy|Rare|Deal 5 damage to an enemy.|The fireball grew up. It got a job.|pyroblast||||
+presto_sage|Sleep-Deprived Sage|presto|4|minion|4|3||draw_self_damage|2|none|Rare|Battlecry: Draw a card. Take 2 damage.|He hasn't slept in days. The cards keep coming.|sleep_sage||||
+presto_circle|Summoning Circle|presto|4|minion|3|3||summon_token|0|none|Rare|Battlecry: Summon a 1/1 Imp.|The circle summons. The imp complains.|summoning_circle||||Token: Imp, 1/1 minion, no keywords.
+presto_dummy|Practice Dummy|presto|4|minion|4|4|||0|none|Common||It practices being hit. It's very good at it.|practice_dummy||||
+presto_parchment|Professor Parchment|presto|4|minion|2|2||damage_per_hand_card|1|none|Legendary|Battlecry: Deal 1 damage to the enemy hero for each card in your hand.|He grades your hand. Harshly.|prof_parchment||||
+presto_broom|Flying Broom|presto|4|minion|2|5|||0|none|Epic|Deathrattle: Draw a card.|It flies away. It takes your cards with it. Rude.|flying_broom|draw|1|none|
+presto_grad|Graduation Day|presto|5|spell|0|0||damage_per_card_played|3|none|Epic|Deal 3 damage to the enemy hero for each other card you played this turn.|All those years. One explosion.|graduation_day||||
+presto_archmage|Archmage Apprentice|presto|5|minion|3|4||draw|2|none|Common|Battlecry: Draw 2 cards.|Archmage in training. Emphasis on training.|archmage_apprentice||||
+presto_disint|Disintegrate|presto|5|spell|0|0||destroy|0|enemy_minion|Rare|Destroy an enemy minion.|It was a minion. Now it's dust. Magic.|disintegrate||||
+presto_study|Study Golem|presto|5|minion|4|5||draw_self_damage|2|none|Rare|Battlecry: Draw a card. Take 2 damage.|It studies. It hurts. It draws.|study_golem||||
+presto_headmaster|The Headmaster|presto|5|minion|2|1||damage_per_hand_card|2|none|Legendary|Battlecry: Deal 2 damage to the enemy hero for each card in your hand.|He counts your hand. Then he counts your remaining health.|headmaster||||
+presto_phoenix|Paper Phoenix|presto|5|minion|4|4|||0|none|Epic|Deathrattle: Summon a 1/1 Ash.|It burns. It returns. It's paper. It burns again.|paper_phoenix|summon_token|0|none|Token: Ash, 1/1 minion, no keywords.
+presto_magna|Magna Cum Laude|presto|6|spell|0|0||damage_per_card_played|4|none|Epic|Deal 4 damage to the enemy hero for each other card you played this turn.|Top of the class. Bottom of your health.|magna_laude||||
+presto_grandsage|Grand Sage|presto|6|minion|4|4||draw|2|none|Rare|Battlecry: Draw 2 cards.|He knows everything. He's read everything. Twice.|grand_sage||||
+presto_himself|Presto Himself|presto|6|minion|2|2||damage_per_hand_card|2|none|Legendary|Battlecry: Deal 2 damage to the enemy hero for each card in your hand.|The apprentice. The legend. The miscast.|presto_himself||||
+presto_dragon|Miscast Dragon|presto|6|minion|5|4||random_enemy_damage|3|none|Rare|Battlecry: Deal 3 damage to a random enemy.|He tried to summon a frog. He got a dragon. The dragon is also confused.|miscast_dragon||||
+barnacle_cabin|Cabin Boy|barnacle|1|minion|1|3|||0|none|Common||He swabs. He dreams.|cabin_boy||||
+barnacle_parrot|Parrot Trainer|barnacle|1|minion|1|1||summon_token|0|none|Common|Battlecry: Summon a 1/1 Parrot.|She trains parrots. The parrots train her. It's mutual.|parrot_trainer||||Token: Parrot, 1/1 minion, no keywords.
+barnacle_plank|Walk the Plank|barnacle|1|spell|0|0||damage|2|any_enemy|Common|Deal 2 damage to an enemy.|Walk the plank. Or else. The plank is also a weapon.|walk_plank||||
+barnacle_dan|Deckhand Dan|barnacle|1|minion|1|2|charge||0|none|Common|Charge.|Dan swabs decks. Dan charges. Dan does it all.|deckhand_dan||||
+barnacle_grog|Grog|barnacle|1|spell|0|0||gain_mana|1|none|Rare|Gain 1 Mana this turn only.|Grog: for when you need mana NOW.|grog||||
+barnacle_lookout|Crow's Nest Lookout|barnacle|1|minion|2|2|taunt||0|none|Epic|Taunt.|He sees everything. He blocks everything. He's up there.|lookout||||
+barnacle_mate|Ship's Mate|barnacle|2|minion|2|3|||0|none|Common||He knows every rope. He's tied to none.|ships_mate||||
+barnacle_sailor|Sailor|barnacle|2|minion|2|3||summon_token|0|none|Common|Battlecry: Summon a 1/1 Cabin Boy.|Every sailor brings a friend. The friend also swabs.|sailor||||Token: Cabin Boy, 1/1 minion, no keywords.
+barnacle_cutlass|Cutlass|barnacle|2|spell|0|0||damage|3|any_enemy|Common|Deal 3 damage to an enemy.|Sharp. Sharper. Sharpest.|cutlass||||
+barnacle_powder|Powder Monkey|barnacle|2|minion|2|2||random_enemy_damage|1|none|Common|Battlecry: Deal 1 damage to a random enemy.|He carries powder. Sometimes it goes off. Oops.|powder_monkey||||
+barnacle_flag|Flag Bearer|barnacle|2|minion|3|1|charge||0|none|Common|Charge.|He carries the flag. The flag carries him. Into battle.|flag_bearer||||
+barnacle_chest|Treasure Chest|barnacle|2|minion|1|4|taunt||0|none|Common|Taunt.|It's a chest. It's locked. It's in your way.|treasure_chest||||
+barnacle_cannon|Cannon Blast|barnacle|2|spell|0|0||damage|4|any_enemy|Rare|Deal 4 damage to an enemy.|Fire the cannon. Apologize later.|cannon_blast||||
+barnacle_bosun|Bosun|barnacle|2|minion|2|2||summon_token|0|none|Rare|Battlecry: Summon a 1/1 Swab.|The bosun recruits. The swab swabs. The cycle continues.|bosun||||Token: Swab, 1/1 minion, no keywords.
+barnacle_perch|Parrot Perch|barnacle|2|minion|1|3|||0|none|Rare|Deathrattle: Summon a 1/1 Parrot.|The perch remains. The parrot returns.|parrot_perch|summon_token|0|none|Token: Parrot, 1/1 minion, no keywords.
+barnacle_grapple|Grappling Hook|barnacle|2|minion|3|2||damage|1|any_enemy|Rare|Battlecry: Deal 1 damage to an enemy.|It hooks. It pulls. It bonks.|grappling_hook||||
+barnacle_tide|Tide Caller|barnacle|2|minion|2|2|||0|none|Epic|Deathrattle: Deal 1 damage to a random enemy.|The tide goes out. The damage comes in.|tide_caller|random_enemy_damage|1|none|
+barnacle_buddy|Barnacle Buddy|barnacle|2|minion|2|1||summon_token|0|none|Epic|Battlecry: Summon a 1/1 Barnacle.|It sticks. It sticks to you. It sticks to the ship.|barnacle_buddy||||Token: Barnacle, 1/1 minion, no keywords.
+barnacle_quartermaster|Quartermaster|barnacle|3|minion|3|3|||0|none|Common||He quarters. He masters. He counts the doubloons.|quartermaster||||
+barnacle_gunner|Gunner|barnacle|3|minion|3|2||damage|2|any_enemy|Common|Battlecry: Deal 2 damage to an enemy.|She fires first. She asks later. She fires again.|gunner||||
+barnacle_helm|Helmsman|barnacle|3|minion|2|4|taunt||0|none|Common|Taunt.|He steers. He blocks. He does not turn.|helmsman||||
+barnacle_rum|Rum|barnacle|3|spell|0|0||damage|4|any_enemy|Common|Deal 4 damage to an enemy.|Rum: the solution to, and cause of, most problems.|rum||||
+barnacle_scout|Scout Parrot|barnacle|3|minion|2|3||summon_token|0|none|Common|Battlecry: Summon a 1/1 Parrot.|It scouts. It squawks. It reports.|scout_parrot||||Token: Parrot, 1/1 minion, no keywords.
+barnacle_boarding|Boarding Party|barnacle|3|minion|3|2|charge||0|none|Rare|Charge.|They board. They party. Not necessarily in that order.|boarding_party||||
+barnacle_kraken|Baby Kraken|barnacle|3|minion|2|2||random_enemy_damage|3|none|Rare|Battlecry: Deal 3 damage to a random enemy.|It's a baby. It's already enormous.|baby_kraken||||
+barnacle_hunter|Treasure Hunter|barnacle|3|minion|4|2||damage|1|any_enemy|Rare|Battlecry: Deal 1 damage to an enemy.|X marks the spot. The spot is your face.|treasure_hunter||||
+barnacle_storm|Storm Crow|barnacle|3|minion|1|4|||0|none|Rare|Deathrattle: Summon a 1/1 Crow.|The crow flies. The storm follows.|storm_crow|summon_token|0|none|Token: Crow, 1/1 minion, no keywords.
+barnacle_peggy|Peggy, the Recruiter|barnacle|3|minion|2|2||recruit|1|none|Legendary|Battlecry: Summon a random 1-cost minion from your deck.|Peggy recruits. Peggy never asks. Peggy just takes.|peggy_recruiter||||
+barnacle_aye|Aye-Aye|barnacle|3|minion|3|4||gain_mana|1|none|Epic|Battlecry: Gain 1 Mana this turn only.|Aye. Aye. Aye. (That is the whole card.)|aye_aye||||
+barnacle_cook|Ship's Cook|barnacle|3|minion|3|3|||0|none|Epic|Deathrattle: Summon a 1/1 Galley Rat.|The cook is gone. The rats remain. The rats are in charge now.|ships_cook|summon_token|0|none|Token: Galley Rat, 1/1 minion, no keywords.
+barnacle_guard|Captain's Guard|barnacle|4|minion|4|4|taunt||0|none|Common|Taunt.|He guards the captain. The captain guards the rum.|captains_guard||||
+barnacle_firstmate|First Mate|barnacle|4|minion|4|3||damage|2|any_enemy|Common|Battlecry: Deal 2 damage to an enemy.|Second in command. First in combat.|first_mate||||
+barnacle_harpoon|Harpoon|barnacle|4|spell|0|0||damage|5|any_enemy|Common|Deal 5 damage to an enemy.|For whales. Or enemies. Mostly enemies.|harpoon||||
+barnacle_crowsnest|Crow's Nest|barnacle|4|minion|3|5|taunt||0|none|Rare|Taunt.|High above. Hard to ignore. Impossible to miss.|crows_nest||||
+barnacle_salvage|Salvager|barnacle|4|minion|3|4||summon_token|0|none|Rare|Battlecry: Summon a 1/1 Salvage.|One pirate's trash is another pirate's minion.|salvager||||Token: Salvage, 1/1 minion, no keywords.
+barnacle_mutineer|Mutineer|barnacle|4|minion|2|4||random_enemy_damage|3|none|Rare|Battlecry: Deal 3 damage to a random enemy.|He mutinies. He misses. He mutinies again.|mutineer||||
+barnacle_betty|Bosun Betty|barnacle|4|minion|3|2||recruit|2|none|Legendary|Battlecry: Summon a random minion costing 2 or less from your deck.|Betty recruits. Betty doesn't take no. Betty doesn't take yes either.|bosun_betty||||
+barnacle_galleon|Galleon|barnacle|4|minion|5|3|charge||0|none|Epic|Charge.|A ship. That charges. Into battle. Yes.|galleon||||
+barnacle_priestess|Tide Priestess|barnacle|4|minion|3|4|||0|none|Epic|Deathrattle: Summon a 1/1 Wave.|She calls the tide. The tide answers. The tide is a minion.|tide_priestess|summon_token|0|none|Token: Wave, 1/1 minion, no keywords.
+barnacle_code|Code Keeper|barnacle|4|minion|4|4||random_enemy_damage|2|none|Epic|Battlecry: Deal 2 damage to a random enemy.|The code says: random damage. The code is law.|code_keeper||||
+barnacle_commodore|Commodore|barnacle|5|minion|5|4||summon_token|0|none|Common|Battlecry: Summon a 1/1 Ensign.|The commodore arrives. The ensign arrives first. The ensign is faster.|commodore||||Token: Ensign, 1/1 minion, no keywords.
+barnacle_broadside|Broadside|barnacle|5|minion|4|4||damage|2|any_enemy|Common|Battlecry: Deal 2 damage to an enemy.|Fire all cannons. All of them. Yes, all.|broadside||||
+barnacle_sea|Sea Serpent|barnacle|5|minion|4|5|taunt||0|none|Rare|Taunt.|It rises. It blocks. It is very smug about it.|sea_serpent||||
+barnacle_plunder|Plunderer|barnacle|5|minion|3|3||random_enemy_damage|4|none|Rare|Battlecry: Deal 4 damage to a random enemy.|He plunders. He damages. He plunders the damage.|plunderer||||
+barnacle_quinn|Quartermaster Quinn|barnacle|5|minion|3|2||recruit|3|none|Legendary|Battlecry: Summon a random minion costing 3 or less from your deck.|Quinn quarters. Quinn masters. Quinn recruits.|quartermaster_quinn||||
+barnacle_leviathan|Leviathan|barnacle|5|minion|5|5||gain_mana|1|none|Epic|Battlecry: Gain 1 Mana this turn only.|The leviathan rises. The mana flows. Coincidence? Probably not.|leviathan||||
+barnacle_fleet|Fleet Commander|barnacle|6|minion|5|5||summon_token|0|none|Rare|Battlecry: Summon a 1/1 Ship.|One commander. One fleet. One very small ship.|fleet_commander||||Token: Ship, 1/1 minion, no keywords.
+barnacle_dread|Dread Pirate|barnacle|6|minion|6|4|charge||0|none|Epic|Charge.|Dreaded. Feared. Charging. In that order.|dread_pirate||||
+barnacle_admiral|Admiral Barnacle|barnacle|6|minion|3|2||recruit|4|none|Legendary|Battlecry: Summon a random minion costing 4 or less from your deck.|The admiral. The legend. The recruiter.|admiral_barnacle||||
+barnacle_krakenqueen|The Kraken Queen|barnacle|6|minion|2|2|||0|none|Legendary|Deathrattle: Summon a random minion costing 5 or less from your deck.|She calls the kraken. The kraken brings friends.|kraken_queen|recruit|5|none|

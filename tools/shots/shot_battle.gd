@@ -1,0 +1,116 @@
+extends Node
+# Dev harness: the real match board, staged — full rows, the turn fuse,
+# then an attack, a summon and a death captured frame by frame (slowed
+# down with time_scale) for review. Env: SHOT_HERO, SHOT_FOE, SHOT_OUT.
+var m: Node
+var out := "/tmp/shots/battle"
+var n := 0
+
+func _ready() -> void:
+	if OS.get_environment("SHOT_OUT") != "":
+		out = OS.get_environment("SHOT_OUT")
+	DirAccess.make_dir_recursive_absolute(out)
+	get_window().size = Vector2i(1280, 720)
+	m = load("res://main.tscn").instantiate()
+	add_child(m)
+	await _frames(5)
+	var hc: String = OS.get_environment("SHOT_HERO") if OS.get_environment("SHOT_HERO") != "" else "grunk"
+	var oc: String = OS.get_environment("SHOT_FOE") if OS.get_environment("SHOT_FOE") != "" else "barnacle"
+	m.start_vs_ai(hc, AIPlayer.build_deck(hc), oc)
+	var guard := 0
+	while (m._gs.active != m._human_idx or m._ai_turn or m._animating) and guard < 6000:
+		await _frames(1)
+		guard += 1
+	var me: int = m._human_idx
+	var foe: int = 1 - me
+	var gs: GameState = m._gs
+	gs.players[me]["board"] = []
+	gs.players[foe]["board"] = []
+	for cid in _crew(hc, 5):
+		gs.players[me]["board"].append(_minion(gs, cid, true))
+	for cid in _crew(oc, 5):
+		gs.players[foe]["board"].append(_minion(gs, cid, false))
+	gs.players[me]["board"][1]["attack"] = 9
+	gs.players[me]["hand"] = [_crew(hc, 7)[6]]
+	gs.players[me]["mana"] = 10
+	gs.players[me]["max_mana"] = 10
+	gs.players[foe]["mana"] = 4
+	gs.players[foe]["max_mana"] = 6
+	m._refresh_match()
+	if OS.get_environment("SHOT_MOVIE") != "":
+		await _movie(gs, me, foe)
+		get_tree().quit()
+		return
+	await _frames(40)
+	await _shot("board")
+	m._turn_timer.left = 9.0
+	await _frames(25)
+	await _shot("fuse")
+	m._turn_timer.left = 90.0
+	if OS.get_environment("SHOT_QUICK") != "":
+		get_tree().quit()
+		return
+	Engine.time_scale = 0.15
+	gs.attack(me, 1, {"kind": "minion", "player": foe, "board_idx": 2})
+	m._after_action()
+	for i in 26:
+		await _frames(2)
+		await _shot("atk_%02d" % i)
+	while m._animating:
+		await _frames(1)
+	await _frames(10)
+	gs.play_card(me, 0, {})
+	m._after_action()
+	for j in 14:
+		await _frames(2)
+		await _shot("sum_%02d" % j)
+	Engine.time_scale = 1.0
+	get_tree().quit()
+
+# Movie mode (run with --write-movie --fixed-fps 60): real-speed play, every
+# frame recorded at exactly 1/60 s, for judging smoothness.
+func _movie(gs: GameState, me: int, foe: int) -> void:
+	await _frames(70)
+	gs.attack(me, 1, {"kind": "minion", "player": foe, "board_idx": 2})
+	m._after_action()
+	await _settle()
+	await _frames(20)
+	gs.play_card(me, 0, {})
+	m._after_action()
+	await _settle()
+	await _frames(20)
+	gs.attack(me, 3, {"kind": "hero", "player": foe, "board_idx": -1})
+	m._after_action()
+	await _settle()
+	await _frames(40)
+
+
+func _settle() -> void:
+	await _frames(2)
+	var g := 0
+	while m._animating and g < 900:
+		await _frames(1)
+		g += 1
+
+
+func _crew(cls: String, k: int) -> Array:
+	var ids: Array = []
+	for c in CardDB.CARDS:
+		if str(c["class"]) == cls and str(c["type"]) == "minion" and c["keywords"].is_empty() and str(c.get("effect", "")) == "" and ModelLib.has_model(str(c["id"])):
+			ids.append(c["id"])
+	return ids.slice(0, k)
+
+func _minion(gs: GameState, card_id: String, ready: bool) -> Dictionary:
+	var c: Dictionary = CardDB.get_card(card_id)
+	var mm := {"card_id": c["id"], "name": c["name"], "attack": c["attack"], "health": c["health"], "max_health": c["health"], "taunt": false, "can_attack": ready, "sick": not ready}
+	gs.uid_for(mm)
+	return mm
+
+func _frames(k: int) -> void:
+	for i in k:
+		await get_tree().process_frame
+
+func _shot(name: String) -> void:
+	await RenderingServer.frame_post_draw
+	get_viewport().get_texture().get_image().save_png(out.path_join("%s.png" % name))
+	n += 1

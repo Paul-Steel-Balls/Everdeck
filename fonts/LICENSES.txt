@@ -1,0 +1,5 @@
+Bungee (Bungee-Regular, BungeeShade, BungeeInline) by David Jonathan Ross
+  SIL Open Font License 1.1 — https://github.com/djrrb/Bungee
+Inter (ExtraBold, SemiBold, Black) by Rasmus Andersson
+  SIL Open Font License 1.1 — https://github.com/rsms/inter
+Both licenses allow use, embedding and distribution in games, including commercial ones.
