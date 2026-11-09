@@ -50,8 +50,17 @@ func _init() -> void:
 	var seeds: Array = _seed_set(base * 100000)
 	var champ: Array = []
 	var champ_score: float = -1.0
-	for s in STARTS:
-		var d: Array = AIPlayer.build_deck(cls, base * 977 + s)
+	# SEARCH_START: a JSON {class: [30 ids]} whose list for this class is
+	# the first champion (round 2 starts from round 1's tuned list).
+	var starts: Array = []
+	if _env("SEARCH_START", "") != "":
+		var sd: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(_env("SEARCH_START", "")))
+		if sd.has(cls):
+			starts.append(Array(sd[cls]))
+	for s in STARTS - starts.size() * (STARTS - 1):
+		starts.append(AIPlayer.build_deck(cls, base * 977 + s))
+	for d in starts:
+		var s: int = starts.find(d)
 		var sc: float = _score(d, seeds)
 		printerr("[search %s] start %d: %.3f" % [cls, s, sc])
 		if sc > champ_score:
