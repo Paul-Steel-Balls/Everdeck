@@ -97,6 +97,13 @@ const CLASS_NAMES: Dictionary = {
 # Balance testing only (tools/sim_*): Signature Moves to try in place of
 # the real ones. Empty in the real game.
 static var hero_power_overrides: Dictionary = {}
+# Balance testing only: a different Deckhand (Barnacle's Signature Move
+# token) to try. Empty in the real game.
+static var deckhand_override: Dictionary = {}
+
+
+static func deckhand_token() -> Dictionary:
+	return deckhand_override if not deckhand_override.is_empty() else TOKEN_DECKHAND
 
 
 static func hero_power_for(class_id: String) -> Dictionary:
@@ -130,6 +137,12 @@ static func apply_test_patch(patch: Dictionary) -> Array:
 		if hp.has("value"):
 			hp["value"] = int(hp["value"])
 		hero_power_overrides[cls] = hp
+	if patch.has("deckhand"):
+		var dh: Dictionary = TOKEN_DECKHAND.duplicate(true)
+		for k in patch["deckhand"]:
+			var v2: Variant = patch["deckhand"][k]
+			dh[k] = int(v2) if v2 is float else v2
+		deckhand_override = dh
 	return problems
 
 
@@ -142,7 +155,7 @@ static func get_card(card_id: String) -> Dictionary:
 	if card_id == "squireling":
 		return TOKEN_SQUIRELING
 	if card_id == "deckhand":
-		return TOKEN_DECKHAND
+		return deckhand_token()
 	if card_id == "token":
 		return TOKEN_GENERIC
 	if card_id == "coin":

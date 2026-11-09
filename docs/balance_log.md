@@ -46,3 +46,28 @@ burst line and scores high in the card data.
 
 Before the fix, going first won 60% of bot games; after, 46%. Every
 earlier bot number was skewed by this.
+
+## Patch 3 candidates (testing, nothing applied)
+
+Method: every Boss's list is re-searched under the patch (100 steps,
+160 games each, against every earlier round's lists), then a 300-game
+meta per pairing. Every patch is compared with a no-change control run
+the same way, so a Boss that only looked weak because the search missed
+his best list isn't "fixed".
+
+| Boss | Control (v0.9.2) | A2 |
+|---|---|---|
+| Presto | 64.9% | 57.5% |
+| Grunk | 60.3% | 51.7% |
+| Reginald | 55.7% | 48.9% |
+| Agatha | 48.1% | 46.5% |
+| Barnacle | 37.7% | 38.6% |
+| Larry | 33.3% | 56.8% |
+| Going first | 48.5% | 47.3% |
+
+A2: Larry +stats on 11 cards and Signature Move 2 damage; Agatha -1
+Health on 4 cards. Larry overshoots, Barnacle unchanged.
+
+Next: B (three Signature Moves only: Larry 2 damage, Presto takes 3,
+Barnacle's Deckhand 2/1) and C (Larry 2 damage, Deckhand 2/2).
+Sim-only hook added: a patch can set `"deckhand": {...}`.

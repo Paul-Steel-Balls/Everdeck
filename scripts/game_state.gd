@@ -398,7 +398,7 @@ func use_hero_power(p_idx: int, target: Dictionary = {}) -> bool:
 		use_target = {"kind": "hero", "player": 1 - p_idx, "board_idx": -1}
 	var token: Dictionary = {}
 	if str(hp["effect"]) == "summon_token":
-		token = CardDB.TOKEN_DECKHAND
+		token = CardDB.deckhand_token()
 	_emit("signature_move", {"player": p_idx, "class": str(p["class"])})
 	# Signature moves resolve with source = the hero (uid -1, no card).
 	var prev_uid3: int = _src_uid
