@@ -11,8 +11,9 @@ NAMES = {"grunk": "Grunk", "agatha": "Agatha", "presto": "Presto", "barnacle": "
          "reginald": "Reginald", "larry": "Larry"}
 CLASSES = list(NAMES)
 CARDS = {c["id"]: c for c in json.load(open("data/cards.json"))}
-RULES = [("none", "Now: 5 cards + Lucky Penny"), ("p2card", "Deal the second player 1 more card"),
-         ("p1nodraw", "First player skips their turn-1 draw"), ("p2hp3", "Second player's Boss starts on 33")]
+RULES = [("none", "Now: second player gets 5 cards + Penny"), ("p2minus", "Second player gets 4 cards + Penny"),
+         ("nocoin", "Second player gets 5 cards, no Penny"), ("p2hp3", "Now, plus second Boss starts on 33"),
+         ("p2card", "Second player gets 6 cards + Penny"), ("p1nodraw", "Now, plus first player skips turn-1 draw")]
 
 
 def j(p):

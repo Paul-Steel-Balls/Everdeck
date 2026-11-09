@@ -59,5 +59,14 @@ static func _variant(gs: GameState, v: String) -> void:
 				gs.players[0]["deck"].push_front(h.pop_back())
 		"coin2":      # the second player gets two Lucky Pennies
 			gs.players[1]["hand"].append("coin")
+		"p2minus":    # the second player is dealt one card fewer (4 + Penny)
+			var h2: Array = gs.players[1]["hand"]
+			for i in range(h2.size() - 1, -1, -1):
+				if str(h2[i]) != "coin":
+					gs.players[1]["deck"].push_front(h2[i])
+					h2.remove_at(i)
+					break
+		"nocoin":     # the second player keeps 5 cards but gets no Lucky Penny
+			gs.players[1]["hand"].erase("coin")
 		"p2hp3":      # the second player's Boss starts with 3 more health
 			gs.players[1]["hp"] = int(gs.players[1]["hp"]) + 3
