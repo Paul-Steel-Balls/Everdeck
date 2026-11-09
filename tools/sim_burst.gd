@@ -16,11 +16,13 @@ extends SceneTree
 # (default 250), BURST_CLASSES, BURST_OUT (JSON path), BURST_CAP (payoff
 # cap to test, sim only).
 
+const SimLib = preload("res://tools/sim_lib.gd")
 const ALL_CLASSES: Array = ["grunk", "agatha", "presto", "barnacle", "reginald", "larry"]
 const ENEMY_HP: int = 30
 
 
 func _init() -> void:
+	SimLib.ensure_patch()
 	var manas: Array = []
 	for m in _env("BURST_MANA", "6,7,8,9,10").split(","):
 		manas.append(int(m))

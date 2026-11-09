@@ -34,6 +34,7 @@ var opponents: Array = []
 
 
 func _init() -> void:
+	SimLib.ensure_patch()
 	cls = OS.get_environment("SEARCH_CLASS")
 	var iters: int = int(_env("SEARCH_ITERS", "100"))
 	games = int(_env("SEARCH_GAMES", "150"))

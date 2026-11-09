@@ -24,6 +24,7 @@ const ALL_CLASSES: Array = ["grunk", "agatha", "presto", "barnacle", "reginald",
 
 
 func _init() -> void:
+	SimLib.ensure_patch()
 	var games: int = int(OS.get_environment("SIM_GAMES")) if OS.get_environment("SIM_GAMES") != "" else 20
 	var base_seed: int = int(OS.get_environment("SIM_SEED")) if OS.get_environment("SIM_SEED") != "" else 1
 	var shard_i: int = 0

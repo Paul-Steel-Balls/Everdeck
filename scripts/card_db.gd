@@ -94,8 +94,43 @@ const CLASS_NAMES: Dictionary = {
 }
 
 
+# Balance testing only (tools/sim_*): Signature Moves to try in place of
+# the real ones. Empty in the real game.
+static var hero_power_overrides: Dictionary = {}
+
+
 static func hero_power_for(class_id: String) -> Dictionary:
+	if hero_power_overrides.has(class_id):
+		return hero_power_overrides[class_id]
 	return HERO_POWERS.get(class_id, {})
+
+
+# Balance testing only: apply a what-if patch in memory, never saved.
+# {"cards": {id: {field: value, ...}}, "powers": {class: {...}},
+#  "payoff_cap": n}. Returns a list of problems (unknown ids/fields).
+static func apply_test_patch(patch: Dictionary) -> Array:
+	_ensure_loaded()
+	var problems: Array = []
+	var cards: Dictionary = patch.get("cards", {})
+	for cid in cards:
+		var c: Dictionary = get_card(str(cid))
+		if c.is_empty():
+			problems.append("no card " + str(cid))
+			continue
+		for k in cards[cid]:
+			if not c.has(k):
+				problems.append("%s has no field %s" % [cid, k])
+				continue
+			var v: Variant = cards[cid][k]
+			c[k] = int(v) if (v is float and c[k] is int) else v
+	var powers: Dictionary = patch.get("powers", {})
+	for cls in powers:
+		var hp: Dictionary = HERO_POWERS.get(cls, {}).duplicate()
+		hp.merge(powers[cls], true)
+		if hp.has("value"):
+			hp["value"] = int(hp["value"])
+		hero_power_overrides[cls] = hp
+	return problems
 
 
 static func class_display_name(class_id: String) -> String:

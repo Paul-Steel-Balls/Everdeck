@@ -7,7 +7,29 @@ const TURN_CAP: int = 90          # both players' turns together; then a draw
 const ACTION_CAP: int = 60        # per turn, in case something loops
 
 
+# SIM_PATCH: a JSON file of what-if card changes (see
+# CardDB.apply_test_patch), applied once, in memory only.
+static var _patched: bool = false
+
+
+static func ensure_patch() -> void:
+	if _patched:
+		return
+	_patched = true
+	var path: String = OS.get_environment("SIM_PATCH")
+	if path == "":
+		return
+	var patch: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(path))
+	var problems: Array = CardDB.apply_test_patch(patch)
+	if patch.has("payoff_cap"):
+		GameState.payoff_cap = int(patch["payoff_cap"])
+	for pr in problems:
+		push_error("SIM_PATCH: " + str(pr))
+	printerr("[sim] patch %s applied (%d problems)" % [path.get_file(), problems.size()])
+
+
 static func play(ai: AIPlayer, a: String, b: String, d0: Array, d1: Array, seed: int) -> Dictionary:
+	ensure_patch()
 	var gs := GameState.new()
 	gs.set_seed(seed)
 	ai.rng.seed = seed + 3
