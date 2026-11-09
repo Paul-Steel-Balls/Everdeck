@@ -71,3 +71,25 @@ Health on 4 cards. Larry overshoots, Barnacle unchanged.
 Next: B (three Signature Moves only: Larry 2 damage, Presto takes 3,
 Barnacle's Deckhand 2/1) and C (Larry 2 damage, Deckhand 2/2).
 Sim-only hook added: a patch can set `"deckhand": {...}`.
+
+| Boss | B | C |
+|---|---|---|
+| Barnacle | 58.1% | 64.5% |
+| Grunk | 57.1% | 63.7% |
+| Agatha | 52.8% | 46.3% |
+| Reginald | 48.5% | 49.6% |
+| Larry | 43.0% | 42.7% |
+| Presto | 40.5% | 33.2% |
+| Going first | 51.0% | 53.1% |
+
+Findings:
+- Barnacle's Deckhand is a big lever: 2/1 is +20 points, 2/2 is +27.
+  Both overshoot.
+- Presto falls without being touched (C): his 65% was mostly from
+  farming weak Barnacle and Larry (79% vs each). Fix the bottom first.
+- Larry's Signature Move at 2 alone: 33% -> 43%. Not enough by itself.
+- Run-to-run noise: Agatha, unchanged in every run, ranged 46-53%. The
+  47-53% target is about as tight as one run can measure.
+
+Next: E (Larry 2 damage, Deckhand 1/2) and D (E plus 1-drops 2/2 and
+Lucky Seven / Whale +1 Health).
