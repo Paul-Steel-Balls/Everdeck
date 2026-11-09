@@ -18,6 +18,9 @@ const HERO_POWER_COST: int = 2
 var players: Array = []
 var active: int = 0
 var winner: int = -1
+# Balance testing only (tools/sim_*): the most "other cards" a
+# per-card-played payoff counts. -1 = no cap, which is the real game.
+static var payoff_cap: int = -1
 var log: Array = []
 var rng := RandomNumberGenerator.new()
 # Turn count: number of player-turns that have begun (setup starts turn 1).
@@ -502,6 +505,8 @@ func _resolve_effect(p_idx: int, effect: String, value: int, target: Dictionary,
 			# Reads the counter BEFORE the played card increments it
 			# ("other cards"). Engine doubles: 2N per other card.
 			var n: int = players[p_idx]["cards_played_this_turn"]
+			if payoff_cap >= 0:
+				n = mini(n, payoff_cap)
 			var payoff_dmg: int = value * 2 * n
 			players[1 - p_idx]["hp"] -= payoff_dmg
 			if payoff_dmg > 0:

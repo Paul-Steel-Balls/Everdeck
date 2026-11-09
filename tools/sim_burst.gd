@@ -13,7 +13,8 @@ extends SceneTree
 # A beam search tries play orders and keeps the best partial turns.
 #
 # Environment: BURST_MANA (comma list, default 6,7,8,9,10), BURST_BEAM
-# (default 250), BURST_CLASSES, BURST_OUT (JSON path).
+# (default 250), BURST_CLASSES, BURST_OUT (JSON path), BURST_CAP (payoff
+# cap to test, sim only).
 
 const ALL_CLASSES: Array = ["grunk", "agatha", "presto", "barnacle", "reginald", "larry"]
 const ENEMY_HP: int = 30
@@ -24,6 +25,8 @@ func _init() -> void:
 	for m in _env("BURST_MANA", "6,7,8,9,10").split(","):
 		manas.append(int(m))
 	var beam: int = int(_env("BURST_BEAM", "250"))
+	# BURST_CAP: test a cap on per-card-played payoffs (sim only).
+	GameState.payoff_cap = int(_env("BURST_CAP", "-1"))
 	var classes: Array = ALL_CLASSES
 	if _env("BURST_CLASSES", "") != "":
 		classes = Array(_env("BURST_CLASSES", "").split(","))
