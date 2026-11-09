@@ -1,0 +1,49 @@
+EVERDECK PATCH NOTES
+
+==================================================
+v0.9.3: The first big balance pass
+==================================================
+
+Heads up: your favorite Boss might feel different after this one.
+That's on purpose. This is the first of several balance passes, and
+there's more tuning to come.
+
+How we balance: the computer plays itself thousands of times with the
+strongest decks it can find for every Boss. We change as little as we
+can, test again, and only ship what makes the game more even. Before
+this patch, the best Boss won about 61% of games and the worst won
+about 37%. After it, every Boss wins between about 47% and 56%.
+
+"LUCKY" LARRY
+  - Feeling Lucky (Signature Move): now deals 2 damage to a random
+    enemy (was 1).
+  - Dice Boy: now 2/2 (was 1/2).
+  - Chip: now 2/2 (was 1/2).
+  - Lucky Seven: now 5/5 (was 5/4).
+  - The Whale: now 5/5 (was 5/4).
+  Larry was the weakest Boss by a long way. Now he isn't.
+
+CAPTAIN BARNACLE
+  - Hire a Deckhand (Signature Move): the Deckhand is now 1/2 (was 1/1).
+  Barnacle has no card draw, so he needs his crew to stick around.
+
+GRANDMA AGATHA
+  - A Nice Cup of Tea (Signature Move): now restores 2 Health (was 3).
+  Agatha was one of the two strongest Bosses, and her healing beat
+  Presto far too often.
+
+Still on our list for next time:
+  - Grunk is still a little strong.
+  - Agatha still beats Presto more often than she should.
+  - Echo Blast is being watched.
+
+You need v0.9.3 to play online. Older versions can't connect.
+
+==================================================
+v0.9.2: Payoffs are capped
+==================================================
+
+  - Firecracker Mage, Final Exam, Thesis Defense and Graduation Day now
+    count at most 3 other cards played this turn. Presto could deal 40
+    damage in one turn before; he can no longer kill from full Health.
+  - The computer opponent now uses the Lucky Penny properly.

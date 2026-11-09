@@ -58,7 +58,7 @@ static func _normalize(c: Dictionary) -> void:
 const TOKEN_SQUIRELING: Dictionary = {"id": "squireling", "name": "Kevin, the Intern", "cost": 1, "type": "minion", "attack": 1, "health": 1, "text": "", "flavor": "Unpaid. Overworked. Somehow still smiling.", "art": "intern", "keywords": [], "effect": "", "effect_value": 0, "target": "none", "class": "neutral", "rarity": "Common", "deathrattle": "", "deathrattle_value": 0, "deathrattle_target": "none", "effect2": "", "effect2_value": 0, "effect2_target": "none"}
 
 # Token minion (not in the pool — only summoned by Barnacle's hero power).
-const TOKEN_DECKHAND: Dictionary = {"id": "deckhand", "name": "Deckhand", "cost": 1, "type": "minion", "attack": 1, "health": 1, "text": "", "flavor": "Swabs decks. Sings shanties. Gets paid in biscuits.", "art": "deckhand", "keywords": [], "effect": "", "effect_value": 0, "target": "none", "class": "barnacle", "rarity": "Common", "deathrattle": "", "deathrattle_value": 0, "deathrattle_target": "none", "effect2": "", "effect2_value": 0, "effect2_target": "none"}
+const TOKEN_DECKHAND: Dictionary = {"id": "deckhand", "name": "Deckhand", "cost": 1, "type": "minion", "attack": 1, "health": 2, "text": "", "flavor": "Swabs decks. Sings shanties. Gets paid in biscuits.", "art": "deckhand", "keywords": [], "effect": "", "effect_value": 0, "target": "none", "class": "barnacle", "rarity": "Common", "deathrattle": "", "deathrattle_value": 0, "deathrattle_target": "none", "effect2": "", "effect2_value": 0, "effect2_target": "none"}
 
 # Generic 1/1 token for summon_token cards whose token name is parsed out
 # of their rules text (all summon_token cards read "Summon a 1/1 <name>.").
@@ -75,11 +75,11 @@ const COIN: Dictionary = {"id": "coin", "name": "Lucky Penny", "cost": 0, "type"
 # by the caller; Reginald's friendly_minion target is player-chosen).
 const HERO_POWERS: Dictionary = {
 	"grunk": {"name": "Throw a Firecracker", "text": "Deal 2 damage to the enemy Boss.", "effect": "damage", "value": 2, "target": "enemy_hero"},
-	"agatha": {"name": "A Nice Cup of Tea", "text": "Restore 3 Health to your Boss.", "effect": "heal_hero", "value": 3, "target": "none"},
+	"agatha": {"name": "A Nice Cup of Tea", "text": "Restore 2 Health to your Boss.", "effect": "heal_hero", "value": 2, "target": "none"},
 	"presto": {"name": "Forbidden Homework", "text": "Draw a card. Take 2 damage.", "effect": "draw_self_damage", "value": 2, "target": "none"},
-	"barnacle": {"name": "Hire a Deckhand", "text": "Summon a 1/1 Deckhand.", "effect": "summon_token", "value": 0, "target": "none"},
+	"barnacle": {"name": "Hire a Deckhand", "text": "Summon a 1/2 Deckhand.", "effect": "summon_token", "value": 0, "target": "none"},
 	"reginald": {"name": "Knight's Blessing", "text": "Give a friendly Crew member +1/+1.", "effect": "buff_friendly", "value": 1, "target": "friendly_minion"},
-	"larry": {"name": "Feeling Lucky", "text": "Deal 1 damage to a random enemy.", "effect": "random_enemy_damage", "value": 1, "target": "none"},
+	"larry": {"name": "Feeling Lucky", "text": "Deal 2 damage to a random enemy.", "effect": "random_enemy_damage", "value": 2, "target": "none"},
 }
 
 const CLASS_IDS: Array = ["grunk", "agatha", "presto", "barnacle", "reginald", "larry"]

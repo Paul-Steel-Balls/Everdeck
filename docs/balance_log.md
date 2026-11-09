@@ -121,3 +121,23 @@ Agatha is genuinely strong (her top four lists all score 56-61% with no
 change), and her healing beats Presto 76-84%, which cancels his
 pay-health-to-draw plan. F is the best so far: spread 47-56%, down from
 37-61%. Testing H = F + Bomb Chucker 4/3 and Grunk Jr. 4 split damage.
+
+| Boss | H (F + Bomb Chucker 4/3, Grunk Jr. 4 split) |
+|---|---|
+| Agatha | 58.8% |
+| Presto | 51.5% |
+| Reginald | 50.1% |
+| Barnacle | 50.1% |
+| Larry | 46.3% |
+| Grunk | 43.1% |
+
+H overcorrects Grunk and Agatha bounces back. Not shipped.
+
+## Patch 3, v0.9.3 (2026-11-09): F shipped (Ian approved)
+
+Larry: Feeling Lucky 2 damage; Dice Boy 2/2, Chip 2/2, Lucky Seven 5/5,
+The Whale 5/5. Barnacle: Deckhand 1/2. Agatha: tea restores 2.
+Result (steady method): every Boss 46.8-55.8%, going first 47.5%.
+Still open: Grunk 55.8%, Agatha vs Presto 71/29, Echo Blast on watch.
+Note: Harpoon Gunner's Entrance Deckhand is still a 1/1 (its own token);
+only the Signature Move Deckhand changed.

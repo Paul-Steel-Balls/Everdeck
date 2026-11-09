@@ -326,7 +326,7 @@ func _run_all() -> void:
 	_check("hero power: cannot use with < 2 mana", not hp_poor.use_hero_power(0) and hp_poor.players[0]["hero_power_used"] == false)
 	var hp_agatha := _gs_for([], [], "agatha", "grunk")
 	hp_agatha.players[0]["hp"] = 20
-	_check("hero power agatha: restore 3", hp_agatha.use_hero_power(0) and hp_agatha.players[0]["hp"] == 23)
+	_check("hero power agatha: restore 2", hp_agatha.use_hero_power(0) and hp_agatha.players[0]["hp"] == 22)
 	var hp_agatha2 := _gs_for([], [], "agatha", "grunk")
 	hp_agatha2.players[0]["hp"] = 29
 	_check("hero power agatha: heal caps at 30", hp_agatha2.use_hero_power(0) and hp_agatha2.players[0]["hp"] == 30)
@@ -341,7 +341,7 @@ func _run_all() -> void:
 	hp_presto3.players[0]["deck"] = ["squire"]
 	_check("hero power presto: full hand burns AND damage still applies", hp_presto3.use_hero_power(0) and hp_presto3.players[0]["hand"].size() == 10 and hp_presto3.players[0]["hp"] == 28)
 	var hp_barn := _gs_for([], [], "barnacle", "grunk")
-	_check("hero power barnacle: summons 1/1 Deckhand", hp_barn.use_hero_power(0) and hp_barn.players[0]["board"].size() == 1 and hp_barn.players[0]["board"][0]["name"] == "Deckhand" and hp_barn.players[0]["board"][0]["attack"] == 1 and hp_barn.players[0]["board"][0]["health"] == 1)
+	_check("hero power barnacle: summons 1/2 Deckhand", hp_barn.use_hero_power(0) and hp_barn.players[0]["board"].size() == 1 and hp_barn.players[0]["board"][0]["name"] == "Deckhand" and hp_barn.players[0]["board"][0]["attack"] == 1 and hp_barn.players[0]["board"][0]["health"] == 2)
 	var hp_barn_full := _gs_for([], [], "barnacle", "grunk")
 	for _i in 7:
 		hp_barn_full.players[0]["board"].append(_minion("squire"))
@@ -357,13 +357,13 @@ func _run_all() -> void:
 	hp_reg_dmg.players[0]["board"] = [dmg_m]
 	_check("hero power reginald: buff on damaged minion keeps damage taken", hp_reg_dmg.use_hero_power(0, {"kind": "minion", "player": 0, "board_idx": 0}) and hp_reg_dmg.players[0]["board"][0]["attack"] == 3 and hp_reg_dmg.players[0]["board"][0]["health"] == 2 and hp_reg_dmg.players[0]["board"][0]["max_health"] == 4)
 	var hp_larry := _gs_for([], [], "larry", "grunk")
-	_check("hero power larry: 1 damage to random enemy (hero only)", hp_larry.use_hero_power(0) and hp_larry.players[1]["hp"] == 29)
+	_check("hero power larry: 2 damage to random enemy (hero only)", hp_larry.use_hero_power(0) and hp_larry.players[1]["hp"] == 28)
 	var hp_larry2 := _gs_for([], [], "larry", "grunk")
 	hp_larry2.players[1]["board"] = [_minion("squire")]
 	var l_hp_before: int = hp_larry2.players[1]["hp"]
 	var l_m_before: int = hp_larry2.players[1]["board"][0]["health"]
 	hp_larry2.use_hero_power(0)
-	_check("hero power larry: exactly 1 total damage with minions present", (l_hp_before - hp_larry2.players[1]["hp"]) + (l_m_before - hp_larry2.players[1]["board"][0]["health"]) == 1)
+	_check("hero power larry: exactly 2 total damage with minions present", (l_hp_before - hp_larry2.players[1]["hp"]) + (l_m_before - hp_larry2.players[1]["board"][0]["health"]) == 2)
 	var hp_neutral := _gs_with_hands([], [])
 	_check("hero power: neutral class has none", not hp_neutral.use_hero_power(0))
 
@@ -1247,7 +1247,7 @@ func _run_all() -> void:
 		heal_types.append(e["type"])
 		if e["type"] == "heal":
 			heal_amt = int(e["data"].get("amount", 0))
-	_check("events: Agatha signature move emits signature_move + heal 3", heal_types.has("signature_move") and heal_types.has("heal") and heal_amt == 3)
+	_check("events: Agatha signature move emits signature_move + heal 2", heal_types.has("signature_move") and heal_types.has("heal") and heal_amt == 2)
 	# buff on Reginald's hero power.
 	var ev_buff := _gs_for([], [], "reginald", "grunk")
 	ev_buff.players[0]["board"] = [_minion("guard_dog")]
