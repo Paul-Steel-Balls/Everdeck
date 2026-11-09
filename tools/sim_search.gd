@@ -9,8 +9,9 @@ extends SceneTree
 #   SEARCH_CLASS  class to tune (required)
 #   SEARCH_ITERS  mutations to try (default 100)
 #   SEARCH_GAMES  games per evaluation (default 150)
-#   SEARCH_FIELD  optional JSON {class: [30 ids]}: opponents play these
-#                 lists (round 2: the tuned field) instead of random decks
+#   SEARCH_FIELD  optional JSON {class: [30 ids]} or {class: [[30 ids], ...]}:
+#                 opponents play these lists (later rounds: the tuned field,
+#                 or every earlier round's lists so the search converges)
 #   SEARCH_SEED   base seed (default 7)
 #   SEARCH_OUT    output JSON path
 #
@@ -121,7 +122,7 @@ func _score(deck: Array, seeds: Array) -> float:
 	for i in seeds.size():
 		var sd: int = int(seeds[i])
 		var opp: String = opponents[i % opponents.size()]
-		var od: Array = Array(field[opp]) if field.has(opp) else AIPlayer.build_deck(opp, sd + 11)
+		var od: Array = _field_deck(opp, i, sd)
 		var first: bool = (i / opponents.size()) % 2 == 0
 		var rec: Dictionary
 		if first:
@@ -131,6 +132,18 @@ func _score(deck: Array, seeds: Array) -> float:
 			rec = SimLib.play(ai, opp, cls, od, deck, sd)
 			w += 0.5 if rec["w"] == -1 else (1.0 if rec["w"] == 1 else 0.0)
 	return w / float(seeds.size())
+
+
+# The opponent's list for game i: a fixed list, one of several (a field
+# given as {class: [[30 ids], [30 ids], ...]} rotates through them), or a
+# fresh random deck when the field has none for that class.
+func _field_deck(opp: String, i: int, sd: int) -> Array:
+	if not field.has(opp):
+		return AIPlayer.build_deck(opp, sd + 11)
+	var f: Array = Array(field[opp])
+	if not f.is_empty() and f[0] is Array:
+		return Array(f[(i / opponents.size()) % f.size()])
+	return f
 
 
 # Swap 1-3 cards for others from the class pool, keeping the deck legal.
