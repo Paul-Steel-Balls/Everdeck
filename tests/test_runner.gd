@@ -380,6 +380,11 @@ func _run_all() -> void:
 	var cp2 := _gs_for(["coin", "presto_firecracker"], [], "presto", "grunk")
 	cp2.play_card(0, 0)
 	_check("payoff minion: 2N per other card (1x2x1=2)", cp2.play_card(0, 0) and cp2.players[1]["hp"] == 28 and cp2.players[0]["board"].size() == 1)
+	# Balance patch 2: a payoff counts at most 3 other cards.
+	var cpc := _gs_for(["coin", "coin", "angry_squirrel", "squire", "presto_payoff"], [], "presto", "grunk")
+	for _k in 4:
+		cpc.play_card(0, 0)
+	_check("payoff: counts at most 3 other cards (4 played -> 4x3 = 12)", cpc.play_card(0, 0) and cpc.players[1]["hp"] == 18)
 	var cp3 := _gs_for(["coin"], [], "presto", "grunk")
 	cp3.play_card(0, 0)
 	cp3.end_turn()

@@ -26,7 +26,8 @@ func _init() -> void:
 		manas.append(int(m))
 	var beam: int = int(_env("BURST_BEAM", "250"))
 	# BURST_CAP: test a cap on per-card-played payoffs (sim only).
-	GameState.payoff_cap = int(_env("BURST_CAP", "-1"))
+	if _env("BURST_CAP", "") != "":
+		GameState.payoff_cap = int(_env("BURST_CAP", ""))
 	var classes: Array = ALL_CLASSES
 	if _env("BURST_CLASSES", "") != "":
 		classes = Array(_env("BURST_CLASSES", "").split(","))
@@ -68,8 +69,12 @@ func _fresh(cls: String, mana: int) -> GameState:
 # A partial turn: the game so far, what was played, and copies used.
 func _search(cls: String, mana: int, beam: int) -> Dictionary:
 	var pool: Array = []
+	# BURST_EXCLUDE: card ids left out of the hand (to test "these don't
+	# count": a refund card that doesn't count is a wash, so it's the same
+	# as not having it).
+	var excl: PackedStringArray = _env("BURST_EXCLUDE", "").split(",")
 	for c in CardDB.cards_for_class(cls):
-		if int(c["cost"]) <= mana:
+		if int(c["cost"]) <= mana and not excl.has(str(c["id"])):
 			pool.append(c)
 	var start := {"gs": _fresh(cls, mana), "line": [], "used": {}, "power": false}
 	var frontier: Array = [start]

@@ -18,9 +18,12 @@ const HERO_POWER_COST: int = 2
 var players: Array = []
 var active: int = 0
 var winner: int = -1
-# Balance testing only (tools/sim_*): the most "other cards" a
-# per-card-played payoff counts. -1 = no cap, which is the real game.
-static var payoff_cap: int = -1
+# The most "other cards" a per-card-played payoff counts (Firecracker
+# Mage, Final Exam, Thesis Defense, Graduation Day). Balance patch 2:
+# uncapped, Presto could kill from 30 Health in one turn (40 damage at
+# 10 mana, a kill from 6 mana). The balance tools may change it to test;
+# -1 means no cap.
+static var payoff_cap: int = 3
 var log: Array = []
 var rng := RandomNumberGenerator.new()
 # Turn count: number of player-turns that have begun (setup starts turn 1).
