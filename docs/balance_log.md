@@ -93,3 +93,31 @@ Findings:
 
 Next: E (Larry 2 damage, Deckhand 1/2) and D (E plus 1-drops 2/2 and
 Lucky Seven / Whale +1 Health).
+
+### Steadier method: best list from a shared pool (`tools/sim_pick.gd`)
+
+One search per Boss was too noisy (unchanged Agatha ranged 46-63%).
+Now every list found in every run (about 10 per Boss) is scored against
+the other Bosses' lists under the patch; the top 3 per Boss become the
+field; each Boss then plays his best list. About 20 minutes per patch.
+
+| Boss | No change | E | D | F | G |
+|---|---|---|---|---|---|
+| Grunk | 60.5% | 54.1% | 54.4% | 55.8% | 57.9% |
+| Agatha | 59.5% | 57.9% | 60.2% | 54.2% | 46.1% |
+| Presto | 54.3% | 50.9% | 48.1% | 48.2% | 49.9% |
+| Reginald | 47.6% | 53.2% | 46.6% | 46.8% | 51.3% |
+| Larry | 36.8% | 36.6% | 46.3% | 48.2% | 48.2% |
+| Barnacle | 41.3% | 47.3% | 44.5% | 46.8% | 46.6% |
+| Going first | 47.1% | 45.9% | 46.8% | 47.5% | 47.8% |
+| Worst matchup | 24/76 | 18/82 | 16/84 | 29/71 | 30/70 |
+
+- E: Larry's Signature Move 2 damage; Deckhand 1/2.
+- D: E + Dice Boy and Chip 2/2, Lucky Seven and Whale +1 Health.
+- F: D + Agatha's tea heals 2 (was 3).
+- G: D + Meatloaf Monday, Ladle of Justice, Disappointed Sigh, Soup Pot -1 Health.
+
+Agatha is genuinely strong (her top four lists all score 56-61% with no
+change), and her healing beats Presto 76-84%, which cancels his
+pay-health-to-draw plan. F is the best so far: spread 47-56%, down from
+37-61%. Testing H = F + Bomb Chucker 4/3 and Grunk Jr. 4 split damage.
