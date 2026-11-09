@@ -2973,6 +2973,26 @@ func _test_ai_no_stall() -> void:
 	var ai2 := AIPlayer.new()
 	ai2.sloppiness = 0.0
 	_check("ai: Agatha doesn't heal at full health", str(ai2.next_action(gs2, 1).get("type", "")) == "end")
+	# The Lucky Penny: with 1 mana and a 2-cost Crew card in hand, the AI
+	# plays the Penny first (it used to never play it), and doesn't waste
+	# it when there's nothing it unlocks.
+	var two: String = ""
+	for c in CardDB.cards_for_class("grunk"):
+		if int(c["cost"]) == 2 and c["type"] == "minion" and str(c.get("effect", "")) == "":
+			two = str(c["id"])
+			break
+	var gs3 := GameState.new()
+	gs3.setup(_valid_deck_for("grunk"), _valid_deck_for("grunk"), "grunk", "grunk")
+	gs3.active = 1
+	gs3.players[1]["hand"] = ["coin", two]
+	gs3.players[1]["board"] = []
+	gs3.players[1]["mana"] = 1
+	gs3.players[1]["max_mana"] = 1
+	gs3.players[1]["hero_power_used"] = true
+	var a3: Dictionary = ai2.next_action(gs3, 1)
+	_check("ai: plays the Lucky Penny to unlock a 2-cost Crew card", str(a3.get("type", "")) == "play" and str(gs3.players[1]["hand"][int(a3.get("hand_idx", -1))]) == "coin")
+	gs3.players[1]["hand"] = ["coin"]
+	_check("ai: keeps the Lucky Penny when it unlocks nothing", str(ai2.next_action(gs3, 1).get("type", "")) == "end")
 
 
 func _test_online_3d() -> void:

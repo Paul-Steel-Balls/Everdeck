@@ -12,6 +12,7 @@ static func play(ai: AIPlayer, a: String, b: String, d0: Array, d1: Array, seed:
 	gs.set_seed(seed)
 	ai.rng.seed = seed + 3
 	gs.setup(d0, d1, a, b)
+	_variant(gs, OS.get_environment("SIM_VARIANT"))
 	var played: Array = [[], []]
 	var powers: Array = [0, 0]
 	while gs.winner == -1 and gs.turn_count <= TURN_CAP:
@@ -43,3 +44,20 @@ static func play(ai: AIPlayer, a: String, b: String, d0: Array, d1: Array, seed:
 		"p0": played[0], "p1": played[1],
 		"pw": powers,
 	}
+
+
+# What-if rules for the going-first problem, applied right after the deal.
+# Simulation only: the real game never calls this.
+static func _variant(gs: GameState, v: String) -> void:
+	match v:
+		"p2card":     # the second player is dealt one more card
+			if not gs.players[1]["deck"].is_empty():
+				gs.players[1]["hand"].append(gs.players[1]["deck"].pop_back())
+		"p1nodraw":   # the first player skips their turn-1 draw
+			var h: Array = gs.players[0]["hand"]
+			if h.size() > 3:
+				gs.players[0]["deck"].push_front(h.pop_back())
+		"coin2":      # the second player gets two Lucky Pennies
+			gs.players[1]["hand"].append("coin")
+		"p2hp3":      # the second player's Boss starts with 3 more health
+			gs.players[1]["hp"] = int(gs.players[1]["hp"]) + 3

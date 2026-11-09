@@ -101,6 +101,13 @@ func next_action(gs: GameState, me: int) -> Dictionary:
 		if not ok:
 			continue
 		var diff: float = total / float(samples) - base
+		# Mana now (the Lucky Penny, a Mana Potion) is only worth what it
+		# lets you play next: look one play further, or the AI scores the
+		# Penny as "lose a card, gain nothing" and never uses it.
+		if _gives_mana(gs, me, a):
+			var g2: GameState = gs.clone()
+			if apply(g2, me, a):
+				diff += _best_followup(g2, me)
 		# A Signature Move that changes nothing (healing at full health)
 		# earns no tempo: don't burn 2 mana on it.
 		var tempo: float = 0.0 if (str(a.get("type", "")) == "power" and absf(diff) < 0.001) else _tempo(gs, me, a)
@@ -121,6 +128,30 @@ func next_action(gs: GameState, me: int) -> Dictionary:
 		if alt[0] >= MIN_GAIN and alt[0] >= best * 0.6:
 			pick = alt
 	return pick[1]
+
+
+func _gives_mana(gs: GameState, me: int, a: Dictionary) -> bool:
+	if str(a.get("type", "")) != "play":
+		return false
+	var card: Dictionary = CardDB.get_card(str(gs.players[me]["hand"][int(a["hand_idx"])]))
+	return str(card.get("effect", "")) == "gain_mana"
+
+
+# The best gain of one more action from position `gs` (0 if nothing is
+# worth doing). Mana cards are skipped here so this never chains.
+func _best_followup(gs: GameState, me: int) -> float:
+	var base: float = evaluate(gs, me)
+	var best: float = 0.0
+	for b in legal_actions(gs, me):
+		if _gives_mana(gs, me, b):
+			continue
+		var g: GameState = gs.clone()
+		if not apply(g, me, b):
+			continue
+		var gain: float = evaluate(g, me) - base + _tempo(gs, me, b)
+		if gain > best:
+			best = gain
+	return best
 
 
 func legal_actions(gs: GameState, me: int) -> Array:
