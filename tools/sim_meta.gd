@@ -39,7 +39,12 @@ func _init() -> void:
 		classes = Array(OS.get_environment("SIM_CLASSES").split(","))
 	var fixed: Dictionary = {}
 	if OS.get_environment("SIM_DECKS") != "":
-		fixed = JSON.parse_string(FileAccess.get_file_as_string(OS.get_environment("SIM_DECKS")))
+		var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(OS.get_environment("SIM_DECKS")))
+		if not parsed is Dictionary:
+			printerr("[sim] SIM_DECKS is missing or not JSON: " + OS.get_environment("SIM_DECKS"))
+			quit(1)
+			return
+		fixed = parsed
 	var hero_only: String = OS.get_environment("SIM_HERO")
 	var sloppy: float = float(OS.get_environment("SIM_SLOPPY")) if OS.get_environment("SIM_SLOPPY") != "" else 0.0
 
