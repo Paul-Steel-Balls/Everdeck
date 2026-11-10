@@ -24,6 +24,11 @@ pub struct Rec {
 
 pub fn play(a: &str, b: &str, d0: &[CardId], d1: &[CardId], seed: i64, variant: &str) -> Rec {
     let mut ai = Ai::new(seed + 3);
+    // The bot's look-ahead dice start from the game seed (unless pinned),
+    // so a Lab run repeats exactly. The game itself uses fresh dice.
+    if CLONE_SEED.load(std::sync::atomic::Ordering::Relaxed) < 0 {
+        seed_clone_rng(seed.wrapping_mul(0x9E3779B1).wrapping_add(17));
+    }
     let mut gs = Game::new(seed, d0, d1, a, b);
     apply_variant(&mut gs, variant);
     let mut played: [Vec<(CardId, i32)>; 2] = [vec![], vec![]];

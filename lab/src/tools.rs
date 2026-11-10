@@ -372,7 +372,8 @@ fn pick(a: &Args) {
         }
         out
     };
-    let r1 = round(&pool, (games * 4 / 5).max(60), 5);
+    let ps = a.int("seed", 0);
+    let r1 = round(&pool, (games * 4 / 5).max(60), 5 + ps * 101);
     let mut field2 = HashMap::new();
     for c in &cls {
         let s = &r1[c];
@@ -381,7 +382,7 @@ fn pick(a: &Args) {
         field2.insert(c.clone(), idx.iter().take(3).map(|&i| pool[c][i].clone()).collect::<Vec<_>>());
     }
     // Round 2: every list against the top 3 of each other Boss.
-    let r2 = round(&field2, games, 9);
+    let r2 = round(&field2, games, 9 + ps * 101);
     let mut best = HashMap::new();
     for c in &cls {
         let sc = &r2[c];
@@ -396,7 +397,7 @@ fn pick(a: &Args) {
         for y in &cls {
             for _ in 0..games {
                 k += 1;
-                let seed = 97 * 1000003 + k * 7919;
+                let seed = (97 + ps * 101) * 1000003 + k * 7919;
                 jobs.push(Job { a: x.clone(), b: y.clone(), seed, d0: best[x].clone(), d1: best[y].clone() });
             }
         }
@@ -409,6 +410,8 @@ fn pick(a: &Args) {
         std::fs::create_dir_all(&dir).ok();
         let bj = J::Obj(best.iter().map(|(k, v)| (k.clone(), deck_json(v))).collect());
         std::fs::write(format!("{}/best.json", dir), bj.dump()).ok();
+        let fj = J::Obj(field2.iter().map(|(k, v)| (k.clone(), J::Arr(v.iter().map(|d| deck_json(d)).collect()))).collect());
+        std::fs::write(format!("{}/field.json", dir), fj.dump()).ok();
         std::fs::write(format!("{}/report.txt", dir), report(&recs, &cls)).ok();
     }
 }
