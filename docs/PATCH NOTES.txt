@@ -5,7 +5,7 @@ v0.9.4: New mechanics, and Barnacle's new crew
 ==================================================
 
 Cards can now keep doing things while they're on the board. New
-keywords (right-click any card to read them):
+keywords:
 
   Stunt Double   The first damage it takes does nothing.
   Backstage      Can't be attacked or targeted until it attacks.
