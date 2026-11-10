@@ -149,3 +149,4 @@ the Lab (4 deck searches, pick at 1,000 games per list, then 54,000 fresh
 games): Barnacle 48.6% (today 46.7%), spread 47.2-54.8%, burst unchanged
 (18 at 10 mana). First drafts were 58-60%; leave-one-out found Crow's
 Nest Lookout (~9 pts) and Ship's Cook (~7 pts) carried it.
+Approved by Ian Nov 10 and applied: v0.9.4.

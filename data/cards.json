@@ -4046,16 +4046,16 @@
     "class": "barnacle",
     "cost": 1,
     "type": "minion",
-    "attack": 1,
-    "health": 2,
+    "attack": 2,
+    "health": 1,
     "keywords": [
-      "charge"
+      "stealth"
     ],
     "effect": "",
     "effect_value": 0,
     "target": "none",
     "rarity": "Common",
-    "text": "Hustle.",
+    "text": "Backstage.",
     "flavor": "Dan swabs decks. Dan charges. Dan does it all.",
     "art": "deckhand_dan",
     "deathrattle": "",
@@ -4066,7 +4066,7 @@
     "id": "barnacle_lookout",
     "name": "Crow's Nest Lookout",
     "class": "barnacle",
-    "cost": 1,
+    "cost": 2,
     "type": "minion",
     "attack": 1,
     "health": 2,
@@ -4077,12 +4077,20 @@
     "effect_value": 0,
     "target": "none",
     "rarity": "Epic",
-    "text": "Bouncer.",
+    "text": "Bouncer. Whenever this takes damage and survives, draw a card.",
     "flavor": "He sees everything. He blocks everything. He's up there.",
     "art": "lookout",
     "deathrattle": "",
     "deathrattle_value": 0,
-    "deathrattle_target": "none"
+    "deathrattle_target": "none",
+    "triggers": [
+      {
+        "when": "damaged",
+        "effect": "draw",
+        "value": 1,
+        "target": "none"
+      }
+    ]
   },
   {
     "id": "barnacle_mate",
@@ -4090,14 +4098,16 @@
     "class": "barnacle",
     "cost": 2,
     "type": "minion",
-    "attack": 4,
-    "health": 1,
-    "keywords": [],
+    "attack": 2,
+    "health": 2,
+    "keywords": [
+      "windfury"
+    ],
     "effect": "",
     "effect_value": 0,
     "target": "none",
     "rarity": "Common",
-    "text": "",
+    "text": "Encore.",
     "flavor": "He knows every rope. He's tied to none.",
     "art": "ships_mate",
     "deathrattle": "",
@@ -4177,22 +4187,25 @@
     "class": "barnacle",
     "cost": 2,
     "type": "minion",
-    "attack": 3,
-    "health": 1,
-    "keywords": [
-      "charge"
-    ],
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
     "effect": "",
     "effect_value": 0,
     "target": "none",
     "rarity": "Common",
-    "text": "Hustle.",
+    "text": "Vibe: Your other Crew have +1 Health.",
     "flavor": "He carries the flag. The flag carries him. Into battle.",
     "art": "flag_bearer",
     "deathrattle": "",
     "deathrattle_value": 0,
     "deathrattle_target": "none",
-    "design_note": "Glass-cannon skew (3/1): Charge trades up; the body dies to everything."
+    "design_note": "Glass-cannon skew (3/1): Charge trades up; the body dies to everything.",
+    "vibe": {
+      "attack": 0,
+      "health": 1,
+      "who": "other_friendly"
+    }
   },
   {
     "id": "barnacle_chest",
@@ -4200,7 +4213,7 @@
     "class": "barnacle",
     "cost": 2,
     "type": "minion",
-    "attack": 1,
+    "attack": 0,
     "health": 3,
     "keywords": [
       "taunt"
@@ -4209,11 +4222,11 @@
     "effect_value": 0,
     "target": "none",
     "rarity": "Common",
-    "text": "Bouncer.",
+    "text": "Bouncer. Final Bow: Draw a card.",
     "flavor": "It's a chest. It's locked. It's in your way.",
     "art": "treasure_chest",
-    "deathrattle": "",
-    "deathrattle_value": 0,
+    "deathrattle": "draw",
+    "deathrattle_value": 1,
     "deathrattle_target": "none",
     "design_note": "Wall skew (1/3): Taunt wall; blocks, does not kill. (Batch 2 review re-cost.)"
   },
@@ -4250,17 +4263,25 @@
     "effect_value": 0,
     "target": "none",
     "rarity": "Rare",
-    "text": "Final Bow: Summon a 1/1 Swab.",
+    "text": "Whenever you summon a Crew member, deal 1 damage to a random enemy.",
     "flavor": "The bosun recruits. The swab swabs. The cycle continues.",
     "art": "bosun",
-    "deathrattle": "summon_token",
+    "deathrattle": "",
     "deathrattle_value": 0,
     "deathrattle_target": "none",
     "design_note": "Token: Swab, 1/1 minion, no keywords.",
     "token": {
       "name": "Swab",
       "art": "swab"
-    }
+    },
+    "triggers": [
+      {
+        "when": "friendly_summon",
+        "effect": "damage",
+        "value": 1,
+        "target": "any_enemy"
+      }
+    ]
   },
   {
     "id": "barnacle_perch",
@@ -4268,24 +4289,32 @@
     "class": "barnacle",
     "cost": 2,
     "type": "minion",
-    "attack": 1,
+    "attack": 0,
     "health": 3,
     "keywords": [],
     "effect": "",
     "effect_value": 0,
     "target": "none",
     "rarity": "Rare",
-    "text": "Final Bow: Summon a 1/1 Parrot.",
+    "text": "At the start of your turn, summon a 1/1 Parrot.",
     "flavor": "The perch remains. The parrot returns.",
     "art": "parrot_perch",
-    "deathrattle": "summon_token",
+    "deathrattle": "",
     "deathrattle_value": 0,
     "deathrattle_target": "none",
     "design_note": "Extreme skew (1/3): a perch; blocks, does not kill. (Batch 2 v2 re-cost.)",
     "token": {
       "name": "Parrot",
       "art": "parrot"
-    }
+    },
+    "triggers": [
+      {
+        "when": "start_of_turn",
+        "effect": "summon_token",
+        "value": 0,
+        "target": "none"
+      }
+    ]
   },
   {
     "id": "barnacle_grapple",
@@ -4359,19 +4388,24 @@
     "class": "barnacle",
     "cost": 3,
     "type": "minion",
-    "attack": 5,
-    "health": 2,
+    "attack": 2,
+    "health": 3,
     "keywords": [],
     "effect": "",
     "effect_value": 0,
     "target": "none",
     "rarity": "Common",
-    "text": "",
+    "text": "Vibe: Your other Crew have +1 Attack.",
     "flavor": "He quarters. He masters. He counts the doubloons.",
     "art": "quartermaster",
     "deathrattle": "",
     "deathrattle_value": 0,
-    "deathrattle_target": "none"
+    "deathrattle_target": "none",
+    "vibe": {
+      "attack": 1,
+      "health": 0,
+      "who": "other_friendly"
+    }
   },
   {
     "id": "barnacle_gunner",
@@ -4409,12 +4443,20 @@
     "effect_value": 0,
     "target": "none",
     "rarity": "Common",
-    "text": "Bouncer.",
+    "text": "Bouncer. Whenever another friendly Crew member dies, gain +1 Attack.",
     "flavor": "He steers. He blocks. He does not turn.",
     "art": "helmsman",
     "deathrattle": "",
     "deathrattle_value": 0,
-    "deathrattle_target": "none"
+    "deathrattle_target": "none",
+    "triggers": [
+      {
+        "when": "friendly_crew_died",
+        "effect": "buff_attack",
+        "value": 1,
+        "target": "self"
+      }
+    ]
   },
   {
     "id": "barnacle_rum",
@@ -4490,13 +4532,15 @@
     "cost": 3,
     "type": "minion",
     "attack": 2,
-    "health": 2,
-    "keywords": [],
-    "effect": "random_enemy_damage",
-    "effect_value": 3,
+    "health": 4,
+    "keywords": [
+      "windfury"
+    ],
+    "effect": "",
+    "effect_value": 0,
     "target": "none",
     "rarity": "Rare",
-    "text": "Entrance: Deal 3 damage to a random enemy.",
+    "text": "Encore.",
     "flavor": "It's a baby. It's already enormous.",
     "art": "baby_kraken",
     "deathrattle": "",
@@ -4530,23 +4574,33 @@
     "cost": 3,
     "type": "minion",
     "attack": 2,
-    "health": 4,
-    "keywords": [],
+    "health": 3,
+    "keywords": [
+      "stealth"
+    ],
     "effect": "",
     "effect_value": 0,
     "target": "none",
     "rarity": "Rare",
-    "text": "Final Bow: Summon a 1/1 Crow.",
+    "text": "Backstage. Whenever this attacks, draw a card.",
     "flavor": "The crow flies. The storm follows.",
     "art": "storm_crow",
-    "deathrattle": "summon_token",
+    "deathrattle": "",
     "deathrattle_value": 0,
     "deathrattle_target": "none",
     "design_note": "Token: Crow, 1/1 minion, no keywords.",
     "token": {
       "name": "Crow",
       "art": "crow"
-    }
+    },
+    "triggers": [
+      {
+        "when": "attacks",
+        "effect": "draw",
+        "value": 1,
+        "target": "none"
+      }
+    ]
   },
   {
     "id": "barnacle_peggy",
@@ -4599,24 +4653,32 @@
     "class": "barnacle",
     "cost": 3,
     "type": "minion",
-    "attack": 3,
-    "health": 3,
+    "attack": 2,
+    "health": 4,
     "keywords": [],
     "effect": "",
     "effect_value": 0,
     "target": "none",
     "rarity": "Epic",
-    "text": "Final Bow: Summon a 1/1 Galley Rat.",
+    "text": "At the end of your turn, give a random friendly Crew member +1 Health.",
     "flavor": "The cook is gone. The rats remain. The rats are in charge now.",
     "art": "ships_cook",
-    "deathrattle": "summon_token",
+    "deathrattle": "",
     "deathrattle_value": 0,
     "deathrattle_target": "none",
     "design_note": "Token: Galley Rat, 1/1 minion, no keywords.",
     "token": {
       "name": "Galley Rat",
       "art": "galley_rat"
-    }
+    },
+    "triggers": [
+      {
+        "when": "end_of_turn",
+        "effect": "buff_health",
+        "value": 1,
+        "target": "friendly_minion"
+      }
+    ]
   },
   {
     "id": "barnacle_guard",
@@ -4688,24 +4750,32 @@
     "class": "barnacle",
     "cost": 4,
     "type": "minion",
-    "attack": 4,
-    "health": 4,
+    "attack": 3,
+    "health": 2,
     "keywords": [],
     "effect": "",
     "effect_value": 0,
     "target": "none",
     "rarity": "Rare",
-    "text": "Final Bow: Summon a 1/1 Salvage.",
+    "text": "Whenever another friendly Crew member dies, draw a card.",
     "flavor": "One pirate's trash is another pirate's Crew member.",
     "art": "salvager",
-    "deathrattle": "summon_token",
+    "deathrattle": "",
     "deathrattle_value": 0,
     "deathrattle_target": "none",
     "design_note": "Token: Salvage, 1/1 minion, no keywords.",
     "token": {
       "name": "Salvage",
       "art": "salvage"
-    }
+    },
+    "triggers": [
+      {
+        "when": "friendly_crew_died",
+        "effect": "draw",
+        "value": 1,
+        "target": "none"
+      }
+    ]
   },
   {
     "id": "barnacle_mutineer",
@@ -4866,16 +4936,17 @@
     "class": "barnacle",
     "cost": 5,
     "type": "minion",
-    "attack": 4,
+    "attack": 3,
     "health": 5,
     "keywords": [
-      "taunt"
+      "taunt",
+      "poison"
     ],
     "effect": "",
     "effect_value": 0,
     "target": "none",
     "rarity": "Rare",
-    "text": "Bouncer.",
+    "text": "Bouncer. Showstopper.",
     "flavor": "It rises. It blocks. It is very smug about it.",
     "art": "sea_serpent",
     "deathrattle": "",
@@ -4995,19 +5066,24 @@
     "class": "barnacle",
     "cost": 6,
     "type": "minion",
-    "attack": 3,
-    "health": 2,
+    "attack": 4,
+    "health": 4,
     "keywords": [],
-    "effect": "recruit",
-    "effect_value": 4,
+    "effect": "",
+    "effect_value": 0,
     "target": "none",
     "rarity": "Legendary",
-    "text": "Entrance: Summon a random Crew member costing 4 or less from your deck.",
+    "text": "Vibe: Your other Crew have +1/+1.",
     "flavor": "The admiral. The legend. The recruiter.",
     "art": "admiral_barnacle",
     "deathrattle": "",
     "deathrattle_value": 0,
-    "deathrattle_target": "none"
+    "deathrattle_target": "none",
+    "vibe": {
+      "attack": 1,
+      "health": 1,
+      "who": "other_friendly"
+    }
   },
   {
     "id": "barnacle_krakenqueen",

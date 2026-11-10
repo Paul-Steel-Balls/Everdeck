@@ -1,6 +1,52 @@
 EVERDECK PATCH NOTES
 
 ==================================================
+v0.9.4: New mechanics, and Barnacle's new crew
+==================================================
+
+Cards can now keep doing things while they're on the board. New
+keywords (right-click any card to read them):
+
+  Stunt Double   The first damage it takes does nothing.
+  Backstage      Can't be attacked or targeted until it attacks.
+  Encore         Can attack twice each turn.
+  Showstopper    Destroys any Crew member it damages.
+  Tip Jar        Damage it deals heals your Boss.
+  Heckle         Removes a Crew member's text and buffs.
+  Stage Fright   The target misses its next attack.
+  On Credit      Cheap now: some of your mana is locked next turn.
+  Vibe           Helps other Crew while it's on the board.
+
+Plus "whenever" and "at the start / end of your turn" effects.
+
+CAPTAIN BARNACLE: 15 cards reworked around two ideas, a crew that gets
+stronger together and sneaky pirates who plunder cards.
+  - Deckhand Dan: 2/1 Backstage (was 1/2 Hustle).
+  - Bosun: Whenever you summon a Crew member, deal 1 damage to a random
+    enemy.
+  - Flag Bearer: 2/2. Vibe: Your other Crew have +1 Health.
+  - Parrot Perch: 0/3. At the start of your turn, summon a 1/1 Parrot.
+  - Treasure Chest: 0/3 Bouncer. Final Bow: Draw a card.
+  - Ship's Mate: 2/2 Encore.
+  - Crow's Nest Lookout: now 2 mana. Whenever this takes damage and
+    survives, draw a card.
+  - Quartermaster: 2/3. Vibe: Your other Crew have +1 Attack.
+  - Helmsman: Whenever another friendly Crew member dies, gain +1 Attack.
+  - Ship's Cook: 2/4. At the end of your turn, give a random friendly
+    Crew member +1 Health.
+  - Storm Crow: 2/3 Backstage. Whenever this attacks, draw a card.
+  - Baby Kraken: 2/4 Encore.
+  - Salvager: 3/2. Whenever another friendly Crew member dies, draw a
+    card.
+  - Sea Serpent: 3/5 Bouncer, Showstopper.
+  - Admiral Barnacle: 4/4. Vibe: Your other Crew have +1/+1.
+
+The other Bosses get their own engines next, one at a time. Your
+favorite might change again.
+
+You need v0.9.4 to play online. Older versions can't connect.
+
+==================================================
 v0.9.3: The first big balance pass
 ==================================================
 
