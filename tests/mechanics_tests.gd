@@ -73,6 +73,7 @@ func run(runner) -> void:
 	_triggers()
 	_vibes()
 	_online_snapshot()
+	_ai()
 
 
 func _stunt_double() -> void:
@@ -385,3 +386,43 @@ func _online_snapshot() -> void:
 	r._check("Online: Stunt Double, Stage Fright and Vibe bonus reach the guest", mm["shield"] and int(mm["frozen"]) == 1 and int(mm["vibe_atk"]) == 1 and int(mm["attack"]) == 2)
 	r._check("Online: On Credit reaches the guest", int(nm.mirror.players[0]["overload_next"]) == 2)
 	nm.free()
+
+
+# Let the computer play out its turn.
+func _ai_turn(gs: GameState, me: int) -> void:
+	var ai := AIPlayer.new()
+	ai.sloppiness = 0.0
+	for _i in 30:
+		var a: Dictionary = ai.next_action(gs, me)
+		if str(a.get("type", "")) == "end":
+			return
+		AIPlayer.apply(gs, me, a)
+
+
+func _ai() -> void:
+	# Pops Stunt Double with the small one, then trades the big one in.
+	var gs := _gs()
+	_c("t_one", {"attack": 1, "health": 1})
+	_c("t_five", {"attack": 5, "health": 5})
+	_c("t_wall", {"attack": 3, "health": 3, "keywords": ["shield", "taunt"]})
+	_put(gs, 0, "t_one")
+	_put(gs, 0, "t_five")
+	_put(gs, 1, "t_wall")
+	_ai_turn(gs, 0)
+	r._check("Bot: pops Stunt Double with a small Crew member, then kills it", gs.players[1]["board"].is_empty() and gs.players[0]["board"].size() == 1 and str(gs.players[0]["board"][0]["card_id"]) == "t_five")
+	# Prefers a Crew member that keeps paying off over plain stats.
+	var gs2 := _gs()
+	_c("t_plain", {"cost": 3, "attack": 3, "health": 3})
+	_c("t_engine", {"cost": 3, "attack": 2, "health": 2, "triggers": [{"when": "end_of_turn", "effect": "damage", "value": 2, "target": "enemy_hero"}]})
+	gs2.players[0]["mana"] = 3
+	gs2.players[0]["hand"] = ["t_plain", "t_engine"]
+	_ai_turn(gs2, 0)
+	r._check("Bot: values an end-of-turn engine over plain stats", gs2.players[0]["board"].size() == 1 and str(gs2.players[0]["board"][0]["card_id"]) == "t_engine")
+	# Kills the engine before it fires again.
+	var gs3 := _gs()
+	_c("t_three", {"attack": 3, "health": 3})
+	_put(gs3, 1, "t_engine")
+	_put(gs3, 0, "t_three")
+	gs3.players[1]["hp"] = 30
+	_ai_turn(gs3, 0)
+	r._check("Bot: kills an enemy engine instead of going face", gs3.players[1]["board"].is_empty())

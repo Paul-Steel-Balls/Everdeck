@@ -104,7 +104,9 @@ func next_action(gs: GameState, me: int) -> Dictionary:
 		# Mana now (the Lucky Penny, a Mana Potion) is only worth what it
 		# lets you play next: look one play further, or the AI scores the
 		# Penny as "lose a card, gain nothing" and never uses it.
-		if _gives_mana(gs, me, a):
+		# Popping a Stunt Double only pays off with the hit that follows:
+		# look one action further for those attacks too.
+		if _gives_mana(gs, me, a) or _pops_shield(gs, a):
 			var g2: GameState = gs.clone()
 			if apply(g2, me, a):
 				diff += _best_followup(g2, me)
@@ -128,6 +130,17 @@ func next_action(gs: GameState, me: int) -> Dictionary:
 		if alt[0] >= MIN_GAIN and alt[0] >= best * 0.6:
 			pick = alt
 	return pick[1]
+
+
+func _pops_shield(gs: GameState, a: Dictionary) -> bool:
+	if str(a.get("type", "")) != "attack":
+		return false
+	var t: Dictionary = a.get("target", {})
+	if str(t.get("kind", "")) != "minion":
+		return false
+	var b: Array = gs.players[int(t["player"])]["board"]
+	var i: int = int(t["board_idx"])
+	return i >= 0 and i < b.size() and bool(b[i].get("shield", false))
 
 
 func _gives_mana(gs: GameState, me: int, a: Dictionary) -> bool:
@@ -234,7 +247,11 @@ static func evaluate(gs: GameState, me: int) -> float:
 	# Counting it makes the AI value clearing threats over pure face hits.
 	var threat: float = 0.0
 	for m in theirs["board"]:
-		threat += float(m["attack"])
+		# Stage Fright: a frozen Crew member skips its next attack.
+		# Encore: twice the swings.
+		if int(m.get("frozen", 0)) > 0:
+			continue
+		threat += float(m["attack"]) * (2.0 if m.get("windfury", false) else 1.0)
 	var my_hp: int = int(mine["hp"])
 	v -= threat * (0.5 if my_hp > 15 else (0.9 if my_hp > 8 else 1.6))
 	if threat >= float(my_hp):
@@ -253,6 +270,40 @@ static func health_value(hp: int) -> float:
 	return 1.8 * minf(h, 8.0) + 1.0 * clampf(h - 8.0, 0.0, 7.0) + 0.6 * maxf(h - 15.0, 0.0)
 
 
+# What a Crew member's keywords and ongoing effects are worth beyond its
+# stats. The AI looks one move ahead, so without this it can't see that a
+# "whenever" or "at the end of your turn" Crew member keeps paying off.
+static func _keyword_value(m: Dictionary, atk: float) -> float:
+	var v: float = 0.0
+	if m.get("shield", false):
+		# A whole extra life against one hit: about half the Crew
+		# member's value (the Hearthstone rule of thumb for Divine Shield).
+		v += 2.0 + atk * 0.6 + float(max(0, int(m["health"]))) * 0.2
+	if m.get("stealth", false):
+		v += 0.8
+	if m.get("windfury", false):
+		v += atk * 0.9
+	if m.get("poison", false):
+		v += 2.5
+	if m.get("lifesteal", false):
+		v += atk * 0.5
+	if int(m.get("frozen", 0)) > 0:
+		v -= atk * 0.6
+	if m.get("silenced", false):
+		return v
+	var card: Dictionary = CardDB.get_card(str(m.get("card_id", "")))
+	for t in card.get("triggers", []):
+		var amt: float = float(t.get("value", 1))
+		var when: String = str(t.get("when", ""))
+		if when == "end_of_turn" or when == "start_of_turn":
+			v += 1.5 + amt * 1.2  # fires every turn it lives
+		else:
+			v += 1.0 + amt * 0.6  # fires when its condition comes up
+	if not (card.get("vibe", {}) as Dictionary).is_empty():
+		v += 0.6  # its bonus to others already shows in their stats
+	return v
+
+
 static func _side_value(p: Dictionary, is_me: bool) -> float:
 	var hp: int = int(p["hp"])
 	var v: float = 0.0
@@ -265,7 +316,10 @@ static func _side_value(p: Dictionary, is_me: bool) -> float:
 		v += atk * 1.3 + health * 1.0 + 0.8
 		if m.get("taunt", false):
 			v += 0.8 + health * 0.2
+		v += _keyword_value(m, atk)
 	v += min(float(p["hand"].size()), 8.0) * 0.9
+	# On Credit: mana already spent from next turn.
+	v -= float(p.get("overload_next", 0)) * 0.6
 	if not is_me:
 		pass
 	return v
