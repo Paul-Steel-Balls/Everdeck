@@ -93,7 +93,7 @@ func next_action(gs: GameState, me: int) -> Dictionary:
 		var total: float = 0.0
 		var ok: bool = true
 		for _s in samples:
-			var g: GameState = gs.clone()
+			var g: GameState = _look(gs, me)
 			if not apply(g, me, a):
 				ok = false
 				break
@@ -107,7 +107,7 @@ func next_action(gs: GameState, me: int) -> Dictionary:
 		# Popping a Stunt Double only pays off with the hit that follows:
 		# look one action further for those attacks too.
 		if _gives_mana(gs, me, a) or _pops_shield(gs, a):
-			var g2: GameState = gs.clone()
+			var g2: GameState = _look(gs, me)
 			if apply(g2, me, a):
 				diff += _best_followup(g2, me)
 		# A Signature Move that changes nothing (healing at full health)
@@ -141,6 +141,30 @@ func next_action(gs: GameState, me: int) -> Dictionary:
 	return pick[1]
 
 
+# A look-ahead copy with the hidden cards hidden: the bot knows what's in
+# its own deck but not the order, and doesn't know the opponent's hand or
+# deck at all. Without this, a copy kept the real deck order, so testing
+# a card that draws showed the bot exactly what it would draw (a peek).
+func _look(gs: GameState, me: int) -> GameState:
+	var g: GameState = gs.clone()
+	_shuffle(g, g.players[me]["deck"])
+	var foe: Dictionary = g.players[1 - me]
+	var n: int = foe["hand"].size()
+	var pool: Array = foe["hand"] + foe["deck"]
+	_shuffle(g, pool)
+	foe["hand"] = pool.slice(0, n)
+	foe["deck"] = pool.slice(n)
+	return g
+
+
+func _shuffle(g: GameState, a: Array) -> void:
+	for i in range(a.size() - 1, 0, -1):
+		var j: int = g.rng.randi_range(0, i)
+		var t: Variant = a[i]
+		a[i] = a[j]
+		a[j] = t
+
+
 func _pops_shield(gs: GameState, a: Dictionary) -> bool:
 	if str(a.get("type", "")) != "attack":
 		return false
@@ -167,7 +191,7 @@ func _best_followup(gs: GameState, me: int) -> float:
 	for b in legal_actions(gs, me):
 		if _gives_mana(gs, me, b):
 			continue
-		var g: GameState = gs.clone()
+		var g: GameState = _look(gs, me)
 		if not apply(g, me, b):
 			continue
 		var gain: float = evaluate(g, me) - base + _tempo(gs, me, b)

@@ -41,7 +41,7 @@ impl Ai {
             let mut total = 0.0;
             let mut ok = true;
             for _ in 0..samples {
-                let mut g = gs.clone_for_ai();
+                let mut g = look(gs, me);
                 if !apply(&mut g, me, a) {
                     ok = false;
                     break;
@@ -53,7 +53,7 @@ impl Ai {
             }
             let mut diff = total / samples as f64 - base;
             if gives_mana(gs, me, a) || pops_shield(gs, a) {
-                let mut g2 = gs.clone_for_ai();
+                let mut g2 = look(gs, me);
                 if apply(&mut g2, me, a) {
                     diff += best_followup(&g2, me);
                 }
@@ -94,6 +94,30 @@ impl Ai {
     }
 }
 
+/// A look-ahead copy with the hidden cards hidden (AIPlayer._look): own
+/// deck order unknown, the opponent's hand and deck unknown.
+fn look(gs: &Game, me: usize) -> Game {
+    let mut g = gs.clone_for_ai();
+    let mut deck = std::mem::take(&mut g.players[me].deck);
+    shuffle(&mut g, &mut deck);
+    g.players[me].deck = deck;
+    let foe = 1 - me;
+    let n = g.players[foe].hand.len();
+    let mut pool = std::mem::take(&mut g.players[foe].hand);
+    pool.append(&mut g.players[foe].deck);
+    shuffle(&mut g, &mut pool);
+    g.players[foe].deck = pool.split_off(n);
+    g.players[foe].hand = pool;
+    g
+}
+
+fn shuffle(g: &mut Game, a: &mut [CardId]) {
+    for i in (1..a.len()).rev() {
+        let j = g.rng.randi_range(0, i as i64) as usize;
+        a.swap(i, j);
+    }
+}
+
 fn gives_mana(gs: &Game, me: usize, a: Act) -> bool {
     match a {
         Act::Play(hi, _) => db().card(gs.players[me].hand[hi]).effect == Eff::GainMana,
@@ -115,7 +139,7 @@ fn best_followup(gs: &Game, me: usize) -> f64 {
         if gives_mana(gs, me, b) {
             continue;
         }
-        let mut g = gs.clone_for_ai();
+        let mut g = look(gs, me);
         if !apply(&mut g, me, b) {
             continue;
         }

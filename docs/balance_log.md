@@ -150,3 +150,14 @@ games): Barnacle 48.6% (today 46.7%), spread 47.2-54.8%, burst unchanged
 (18 at 10 mana). First drafts were 58-60%; leave-one-out found Crow's
 Nest Lookout (~9 pts) and Ship's Cook (~7 pts) carried it.
 Approved by Ian Nov 10 and applied: v0.9.4.
+
+## Bot fix: no more peeking (Nov 10)
+
+The bot's look-ahead copies kept the real deck order, so testing a draw
+card showed it the exact card it would draw, and the opponent's hand was
+visible too. Now each look-ahead copy shuffles the bot's own deck and
+deals the opponent's hand afresh from their unknown cards (game and Lab;
+parity 576/576). Steady test after the fix (v0.9.4 cards, 1,000 games per
+list): Grunk 53.4, Agatha 51.2, Reginald 50.4, Barnacle 50.3, Larry 47.6,
+Presto 47.1; going first 45.9%. Worst: Agatha vs Reginald 27/73, Presto
+vs Agatha 31/69.
