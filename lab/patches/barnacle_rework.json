@@ -1,0 +1,188 @@
+{
+ "cards": {
+  "barnacle_bosun": {
+   "attack": 2,
+   "health": 2,
+   "deathrattle": "",
+   "deathrattle_value": 0,
+   "deathrattle_target": "none",
+   "text": "Whenever you summon a Crew member, deal 1 damage to a random enemy.",
+   "triggers": [
+    {
+     "when": "friendly_summon",
+     "effect": "damage",
+     "value": 1,
+     "target": "any_enemy"
+    }
+   ]
+  },
+  "barnacle_flag": {
+   "attack": 2,
+   "health": 2,
+   "keywords": [],
+   "text": "Vibe: Your other Crew have +1 Health.",
+   "vibe": {
+    "attack": 0,
+    "health": 1,
+    "who": "other_friendly"
+   }
+  },
+  "barnacle_quartermaster": {
+   "attack": 2,
+   "health": 3,
+   "text": "Vibe: Your other Crew have +1 Attack.",
+   "vibe": {
+    "attack": 1,
+    "health": 0,
+    "who": "other_friendly"
+   }
+  },
+  "barnacle_helm": {
+   "text": "Bouncer. Whenever another friendly Crew member dies, gain +1 Attack.",
+   "triggers": [
+    {
+     "when": "friendly_crew_died",
+     "effect": "buff_attack",
+     "value": 1,
+     "target": "self"
+    }
+   ]
+  },
+  "barnacle_cook": {
+   "attack": 2,
+   "health": 4,
+   "deathrattle": "",
+   "deathrattle_value": 0,
+   "deathrattle_target": "none",
+   "text": "At the end of your turn, give a random friendly Crew member +1 Health.",
+   "triggers": [
+    {
+     "when": "end_of_turn",
+     "effect": "buff_health",
+     "value": 1,
+     "target": "friendly_minion"
+    }
+   ]
+  },
+  "barnacle_perch": {
+   "attack": 0,
+   "health": 3,
+   "deathrattle": "",
+   "deathrattle_value": 0,
+   "deathrattle_target": "none",
+   "text": "At the start of your turn, summon a 1/1 Parrot.",
+   "triggers": [
+    {
+     "when": "start_of_turn",
+     "effect": "summon_token",
+     "value": 0,
+     "target": "none"
+    }
+   ]
+  },
+  "barnacle_salvage": {
+   "attack": 3,
+   "health": 2,
+   "deathrattle": "",
+   "deathrattle_value": 0,
+   "deathrattle_target": "none",
+   "text": "Whenever another friendly Crew member dies, draw a card.",
+   "triggers": [
+    {
+     "when": "friendly_crew_died",
+     "effect": "draw",
+     "value": 1,
+     "target": "none"
+    }
+   ]
+  },
+  "barnacle_admiral": {
+   "attack": 4,
+   "health": 4,
+   "effect": "",
+   "effect_value": 0,
+   "target": "none",
+   "text": "Vibe: Your other Crew have +1/+1.",
+   "vibe": {
+    "attack": 1,
+    "health": 1,
+    "who": "other_friendly"
+   }
+  },
+  "barnacle_chest": {
+   "attack": 0,
+   "health": 3,
+   "deathrattle": "draw",
+   "deathrattle_value": 1,
+   "deathrattle_target": "none",
+   "text": "Bouncer. Final Bow: Draw a card."
+  },
+  "barnacle_dan": {
+   "attack": 2,
+   "health": 1,
+   "keywords": [
+    "stealth"
+   ],
+   "text": "Backstage."
+  },
+  "barnacle_mate": {
+   "attack": 2,
+   "health": 2,
+   "keywords": [
+    "windfury"
+   ],
+   "text": "Encore."
+  },
+  "barnacle_storm": {
+   "attack": 2,
+   "health": 3,
+   "keywords": [
+    "stealth"
+   ],
+   "deathrattle": "",
+   "deathrattle_value": 0,
+   "deathrattle_target": "none",
+   "text": "Backstage. Whenever this attacks, draw a card.",
+   "triggers": [
+    {
+     "when": "attacks",
+     "effect": "draw",
+     "value": 1,
+     "target": "none"
+    }
+   ]
+  },
+  "barnacle_kraken": {
+   "attack": 2,
+   "health": 4,
+   "keywords": [
+    "windfury"
+   ],
+   "effect": "",
+   "effect_value": 0,
+   "target": "none",
+   "text": "Encore."
+  },
+  "barnacle_sea": {
+   "attack": 3,
+   "health": 5,
+   "keywords": [
+    "taunt",
+    "poison"
+   ],
+   "text": "Bouncer. Showstopper."
+  },
+  "barnacle_lookout": {
+   "text": "Bouncer. Whenever this takes damage and survives, draw a card.",
+   "triggers": [
+    {
+     "when": "damaged",
+     "effect": "draw",
+     "value": 1,
+     "target": "none"
+    }
+   ],
+   "cost": 2
+  }
+ }
+}

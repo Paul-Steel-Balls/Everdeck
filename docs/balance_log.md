@@ -141,3 +141,11 @@ Result (steady method): every Boss 46.8-55.8%, going first 47.5%.
 Still open: Grunk 55.8%, Agatha vs Presto 71/29, Echo Blast on watch.
 Note: Harpoon Gunner's Entrance Deckhand is still a 1/1 (its own token);
 only the Signature Move Deckhand changed.
+
+## Barnacle rework (mechanics pass), proposed Nov 10, awaiting Ian's OK
+
+lab/patches/barnacle_rework.json: 15 Barnacle cards reworked. Tested in
+the Lab (4 deck searches, pick at 1,000 games per list, then 54,000 fresh
+games): Barnacle 48.6% (today 46.7%), spread 47.2-54.8%, burst unchanged
+(18 at 10 mana). First drafts were 58-60%; leave-one-out found Crow's
+Nest Lookout (~9 pts) and Ship's Cook (~7 pts) carried it.
