@@ -5,7 +5,10 @@ and balance change only with Ian's OK.
 
 Targets (agreed 2026-11-09):
 - Every Boss 47-53% with tuned decks
-- No matchup worse than 35/65
+- Matchups: 55/45 is the goal, 60/40 at most (Ian, Nov 10; was "no worse
+  than 35/65"). Counters are fine when they are designed (healer beats
+  self-damage mage) and stay within that; two real decks per Boss make a
+  counter a deck choice, not a class sentence.
 - Going first wins 48-52%
 - No kill from full Health (30) in one turn
 - At least two viable lists per Boss
