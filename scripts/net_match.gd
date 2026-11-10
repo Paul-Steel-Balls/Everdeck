@@ -410,8 +410,6 @@ static func _canonical_minion(m: Dictionary) -> Dictionary:
 		"lifesteal": bool(m.get("lifesteal", false)),
 		"frozen": int(m.get("frozen", 0)),
 		"silenced": bool(m.get("silenced", false)),
-		"base_attack": int(m.get("base_attack", m.get("attack", 0))),
-		"base_health": int(m.get("base_health", m.get("max_health", 0))),
 		"vibe_atk": int(m.get("vibe_atk", 0)),
 		"vibe_hp": int(m.get("vibe_hp", 0)),
 	}

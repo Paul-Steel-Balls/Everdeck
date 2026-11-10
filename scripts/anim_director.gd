@@ -138,6 +138,12 @@ func play_events(events: Array, board: Board3D, gs: GameState, hand_whoosh: Call
 				var group5: Array = _take_damage_group(events, i + 1)
 				await _play_final_bow(data, group5, board, gs)
 				i += 1 + group5.size()
+			"trigger":
+				# Mechanics pass: a "whenever" / end-of-turn effect. Same
+				# look as an Entrance: the source flashes, then its hits.
+				var group7: Array = _take_damage_group(events, i + 1)
+				await _play_trigger(data, group7, board, gs)
+				i += 1 + group7.size()
 			"damage":
 				# Bare damage group (no consuming cause — self-damage).
 				var group6: Array = _take_damage_group(events, i)
@@ -368,6 +374,22 @@ func _play_entrance(data: Dictionary, group: Array, board: Board3D, gs: GameStat
 		return
 	var card: Dictionary = CardDB.get_card(str(data.get("card_id", "")))
 	await _play_effect_damage(str(card.get("effect", "")), group, int(data.get("player", 0)), uid, board, gs)
+
+
+func _play_trigger(data: Dictionary, group: Array, board: Board3D, gs: GameState) -> void:
+	var uid: int = int(data.get("uid", -1))
+	var node: Minion3D = board.minion_node(uid)
+	if node != null:
+		node.start_trigger_flash(_dur(TRIGGER_FLASH_TIME))
+		await _wait(TRIGGER_FLASH_TIME)
+	if group.is_empty():
+		return
+	var card: Dictionary = CardDB.get_card(str(data.get("card_id", "")))
+	var eff: String = ""
+	for t in card.get("triggers", []):
+		if str(t.get("when", "")) == str(data.get("when", "")):
+			eff = str(t.get("effect", ""))
+	await _play_effect_damage(eff, group, int(data.get("player", 0)), uid, board, gs)
 
 
 func _play_final_bow(data: Dictionary, group: Array, board: Board3D, gs: GameState) -> void:

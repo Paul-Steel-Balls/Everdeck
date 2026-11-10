@@ -13,6 +13,9 @@ class_name CardDB
 
 static var CARDS: Array = []
 static var _loaded: bool = false
+# id -> card, built at load: get_card is called constantly (every Vibe
+# refresh and trigger check, thousands of times per simulated game).
+static var _by_id: Dictionary = {}
 
 
 static func _static_init() -> void:
@@ -36,6 +39,7 @@ static func _ensure_loaded() -> void:
 	for c in arr:
 		if c is Dictionary:
 			_normalize(c)
+			_by_id[str(c["id"])] = c
 	CARDS = arr
 
 
@@ -181,6 +185,10 @@ static func get_card(card_id: String) -> Dictionary:
 		return TOKEN_GENERIC
 	if card_id == "coin":
 		return COIN
+	var hit: Variant = _by_id.get(card_id)
+	if hit != null:
+		return hit
+	# Not in the index (a list swapped in at runtime): fall back to a scan.
 	for c in CARDS:
 		if c["id"] == card_id:
 			return c

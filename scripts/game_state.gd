@@ -396,21 +396,18 @@ func _summon(p_idx: int, card: Dictionary, sick: bool) -> void:
 		"can_attack": charge,
 		"attacks_left": (2 if kws.has("windfury") else 1) if charge else 0,
 		"sick": sick and not charge,
-		# Mechanics pass: printed stats (Heckle resets to these), Vibe
-		# bonuses currently applied, and the state keywords.
-		"base_attack": int(card["attack"]),
-		"base_health": int(card["health"]),
-		"vibe_atk": 0,
-		"vibe_hp": 0,
-		"frozen": 0,
-		"silenced": false,
 		# Presentation: the art this minion shows. Tokens carry their own
 		# token art (from the card's "token" field); regular minions carry
 		# their card art. The view prefers this over the card lookup.
 		"art": card.get("art", ""),
 	}
+	# Mechanics pass: only the state a Crew member actually has is stored
+	# (the AI copies boards thousands of times a turn; absent = false/0).
+	# Vibe bonuses, Stage Fright and Heckle add their keys when they happen;
+	# Heckle reads the printed stats from the card.
 	for k in STATE_KEYWORDS:
-		m[k] = kws.has(k)
+		if kws.has(k):
+			m[k] = true
 	m["uid"] = _next_uid
 	_next_uid += 1
 	p["board"].append(m)
@@ -1231,13 +1228,19 @@ func _vibe_applies(src: Dictionary, src_owner: int, m: Dictionary, m_owner: int,
 func _refresh_vibes() -> void:
 	var want: Dictionary = {}  # uid -> [atk, hp]
 	var sources: Array = []
+	var any_bonus: bool = false
 	for pl in players.size():
 		for m in players[pl]["board"]:
+			if int(m.get("vibe_atk", 0)) != 0 or int(m.get("vibe_hp", 0)) != 0:
+				any_bonus = true
 			if int(m["health"]) <= 0 or m.get("silenced", false):
 				continue
 			var vibe: Dictionary = CardDB.get_card(str(m.get("card_id", ""))).get("vibe", {})
 			if not vibe.is_empty():
 				sources.append([pl, m, vibe])
+	# The common case: no Vibes anywhere and none to take off.
+	if sources.is_empty() and not any_bonus:
+		return
 	for pl in players.size():
 		for m in players[pl]["board"]:
 			var a: int = 0
@@ -1266,8 +1269,12 @@ func _set_vibe(m: Dictionary, a: int, h: int) -> void:
 		m["health"] = int(m["health"]) + dh
 	else:
 		m["health"] = mini(int(m["health"]), int(m["max_health"]))
-	m["vibe_atk"] = a
-	m["vibe_hp"] = h
+	if a == 0 and h == 0:
+		m.erase("vibe_atk")
+		m.erase("vibe_hp")
+	else:
+		m["vibe_atk"] = a
+		m["vibe_hp"] = h
 
 
 # --- Heckle (silence) ---
@@ -1276,13 +1283,13 @@ func _silence(owner: int, m: Dictionary) -> void:
 	m["silenced"] = true
 	m["taunt"] = false
 	for k in STATE_KEYWORDS:
-		m[k] = false
-	m["frozen"] = 0
+		m.erase(k)
+	m.erase("frozen")
 	if int(m.get("attacks_left", 0)) > 1:
 		m["attacks_left"] = 1
 	var card: Dictionary = CardDB.get_card(str(m.get("card_id", "")))
-	var base_a: int = int(m.get("base_attack", card.get("attack", m["attack"])))
-	var base_h: int = int(m.get("base_health", card.get("health", m["max_health"])))
+	var base_a: int = int(card.get("attack", m["attack"]))
+	var base_h: int = int(card.get("health", m["max_health"]))
 	m["attack"] = base_a
 	var damage_taken: int = int(m["max_health"]) - int(m["health"])
 	m["max_health"] = base_h

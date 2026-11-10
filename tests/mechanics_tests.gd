@@ -84,7 +84,7 @@ func _stunt_double() -> void:
 	var s: Dictionary = _put(gs, 1, "t_shield")
 	gs.take_events()
 	gs.attack(0, 0, _enemy(0))
-	r._check("Stunt Double: first hit does nothing", int(s["health"]) == 3 and not s["shield"])
+	r._check("Stunt Double: first hit does nothing", int(s["health"]) == 3 and not s.get("shield", false))
 	r._check("Stunt Double: shield_popped event", _has_event(gs.take_events(), "shield_popped"))
 	r._check("Stunt Double: the attacker still takes damage", int(a["health"]) == 4)
 	gs.players[0]["board"][0]["can_attack"] = true
@@ -107,7 +107,7 @@ func _backstage() -> void:
 	gs.end_turn()
 	var sneak: Dictionary = gs.players[1]["board"][0]
 	gs.attack(1, 0, _face(0))
-	r._check("Backstage: ends when it attacks", not sneak["stealth"] and int(gs.players[0]["hp"]) == 27)
+	r._check("Backstage: ends when it attacks", not sneak.get("stealth", false) and int(gs.players[0]["hp"]) == 27)
 
 
 func _encore() -> void:
@@ -181,7 +181,7 @@ func _heckle() -> void:
 	gs._apply_buff(1, m, 2)
 	gs.players[0]["hand"] = ["t_heckle"]
 	gs.play_card(0, 0, _enemy(0))
-	r._check("Heckle: removes Bouncer and Stunt Double", not m["taunt"] and not m["shield"] and m["silenced"])
+	r._check("Heckle: removes Bouncer and Stunt Double", not m["taunt"] and not m.get("shield", false) and m["silenced"])
 	r._check("Heckle: removes buffs (back to printed 2/3)", int(m["attack"]) == 2 and int(m["max_health"]) == 3 and int(m["health"]) == 3)
 	gs.end_turn()
 	gs.end_turn()
