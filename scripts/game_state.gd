@@ -55,6 +55,18 @@ var _events_enabled: bool = true
 # nested resolution (a Deathrattle firing during an action) stays correct.
 var _src_uid: int = -1
 var _src_card: String = ""
+# --- Mechanics pass, wave 1 ---
+# Whenever triggers wait in this queue and fire at safe points (_settle),
+# never in the middle of an effect that is walking a board.
+# Entries: {"owner": int, "uid": int, "card_id": String, "trig": Dictionary}
+var _trigger_queue: Array = []
+# True while a trigger's effect resolves. Triggers don't set off other
+# triggers (no loops); deaths they cause still do, after they finish.
+var _in_trigger: bool = false
+# Keywords a Crew member can carry, beyond taunt (Bouncer) and charge
+# (Hustle). Shown to players as Stunt Double, Backstage, Encore,
+# Showstopper and Tip Jar.
+const STATE_KEYWORDS: Array = ["shield", "stealth", "windfury", "poison", "lifesteal"]
 
 
 func _emit(type: String, data: Dictionary) -> void:
@@ -167,6 +179,9 @@ func _new_player(deck: Array, class_id: String) -> Dictionary:
 		"class": class_id,
 		"hero_power_used": false,
 		"cards_played_this_turn": 0,
+		# On Credit: mana owed (locked at the start of the next turn).
+		"overload_next": 0,
+		"overload_locked": 0,
 	}
 
 
@@ -189,6 +204,13 @@ func _start_turn() -> void:
 	var max_before: int = p["max_mana"]
 	p["max_mana"] = min(MAX_MANA, p["max_mana"] + 1)
 	p["mana"] = p["max_mana"]
+	# On Credit: mana borrowed last turn is locked this turn.
+	var owed: int = int(p.get("overload_next", 0))
+	p["overload_locked"] = owed
+	p["overload_next"] = 0
+	if owed > 0:
+		p["mana"] = maxi(0, int(p["mana"]) - owed)
+		_emit("overload_locked", {"player": active, "amount": owed})
 	if p["mana"] != mana_before or p["max_mana"] != max_before:
 		_emit("mana_changed", {"player": active, "mana": p["mana"], "max_mana": p["max_mana"]})
 	p["hero_power_used"] = false
@@ -196,12 +218,35 @@ func _start_turn() -> void:
 	for m in p["board"]:
 		m["sick"] = false
 		m["can_attack"] = true
+		m["attacks_left"] = 2 if m.get("windfury", false) else 1
+	# Start-of-turn effects fire before the draw.
+	_lethal_deferred += 1
+	_queue_triggers(active, "start_of_turn")
+	_settle()
+	_lethal_deferred -= 1
+	_check_lethal()
+	if winner != -1:
+		return
 	_draw(active, false)
 
 
 func end_turn() -> void:
 	if winner != -1:
 		return
+	# End-of-turn effects, then Stage Fright wears off for this player's
+	# Crew (a Crew member frozen on the enemy's turn misses one turn).
+	_lethal_deferred += 1
+	_queue_triggers(active, "end_of_turn")
+	_settle()
+	_lethal_deferred -= 1
+	_check_lethal()
+	if winner != -1:
+		return
+	for m in players[active]["board"]:
+		if int(m.get("frozen", 0)) > 0:
+			m["frozen"] = int(m["frozen"]) - 1
+			if int(m["frozen"]) == 0:
+				_emit("thawed", {"player": active, "uid": uid_for(m)})
 	active = 1 - active
 	_start_turn()
 
@@ -318,7 +363,16 @@ func play_card(p_idx: int, hand_idx: int, target: Dictionary = {}) -> bool:
 		_src_uid = prev_uid2
 		_src_card = prev_card2
 	p["cards_played_this_turn"] += 1
-	_process_deaths()
+	if int(card.get("overload", 0)) > 0:
+		p["overload_next"] = int(p.get("overload_next", 0)) + int(card["overload"])
+		_emit("overload", {"player": p_idx, "amount": int(card["overload"]), "owed": p["overload_next"]})
+	var played_uid: int = -1
+	if card["type"] == "minion" and not p["board"].is_empty():
+		played_uid = uid_for(p["board"][p["board"].size() - 1])
+	_queue_triggers(p_idx, "friendly_card_played", played_uid)
+	if card["type"] == "spell":
+		_queue_triggers(p_idx, "friendly_trick_played")
+	_settle()
 	_lethal_deferred -= 1
 	if p["mana"] != mana_before or p["max_mana"] != max_mana_before:
 		_emit("mana_changed", {"player": p_idx, "mana": p["mana"], "max_mana": p["max_mana"]})
@@ -330,24 +384,39 @@ func _summon(p_idx: int, card: Dictionary, sick: bool) -> void:
 	var p: Dictionary = players[p_idx]
 	if p["board"].size() >= MAX_BOARD:
 		return
+	var kws: Array = card.get("keywords", [])
+	var charge: bool = kws.has("charge")
 	var m: Dictionary = {
 		"card_id": card["id"],
 		"name": card["name"],
 		"attack": card["attack"],
 		"health": card["health"],
 		"max_health": card["health"],
-		"taunt": card["keywords"].has("taunt"),
-		"can_attack": card["keywords"].has("charge"),
-		"sick": sick and not card["keywords"].has("charge"),
+		"taunt": kws.has("taunt"),
+		"can_attack": charge,
+		"attacks_left": (2 if kws.has("windfury") else 1) if charge else 0,
+		"sick": sick and not charge,
+		# Mechanics pass: printed stats (Heckle resets to these), Vibe
+		# bonuses currently applied, and the state keywords.
+		"base_attack": int(card["attack"]),
+		"base_health": int(card["health"]),
+		"vibe_atk": 0,
+		"vibe_hp": 0,
+		"frozen": 0,
+		"silenced": false,
 		# Presentation: the art this minion shows. Tokens carry their own
 		# token art (from the card's "token" field); regular minions carry
 		# their card art. The view prefers this over the card lookup.
 		"art": card.get("art", ""),
 	}
+	for k in STATE_KEYWORDS:
+		m[k] = kws.has(k)
 	m["uid"] = _next_uid
 	_next_uid += 1
 	p["board"].append(m)
 	_emit("minion_summoned", {"player": p_idx, "uid": m["uid"], "card_id": card["id"], "board_idx": p["board"].size() - 1})
+	_queue_triggers(p_idx, "friendly_summon", int(m["uid"]))
+	_refresh_vibes()
 
 
 # --- Hero powers ---
@@ -409,7 +478,7 @@ func use_hero_power(p_idx: int, target: Dictionary = {}) -> bool:
 	_src_uid = prev_uid3
 	_src_card = prev_card3
 	log.append("Signature Move: %s!" % str(hp["name"]))
-	_process_deaths()
+	_settle()
 	_lethal_deferred -= 1
 	if p["mana"] != mana_before or p["max_mana"] != max_mana_before:
 		_emit("mana_changed", {"player": p_idx, "mana": p["mana"], "max_mana": p["max_mana"]})
@@ -432,17 +501,9 @@ func _resolve_effect(p_idx: int, effect: String, value: int, target: Dictionary,
 			# The Coin: +1 mana this turn only, capped at 10.
 			players[p_idx]["mana"] = min(MAX_MANA, players[p_idx]["mana"] + value)
 		"heal_hero":
-			var p: Dictionary = players[p_idx]
-			var heal_before: int = p["hp"]
-			p["hp"] = min(STARTING_HP, p["hp"] + value)
-			if p["hp"] > heal_before:
-				_emit("heal", {"target_kind": "hero", "player": p_idx, "uid": -1, "amount": p["hp"] - heal_before, "source_uid": _src_uid, "source_card_id": _src_card})
+			_heal_hero(p_idx, value)
 		"heal_draw":
-			var p2: Dictionary = players[p_idx]
-			var heal_before2: int = p2["hp"]
-			p2["hp"] = min(STARTING_HP, p2["hp"] + value)
-			if p2["hp"] > heal_before2:
-				_emit("heal", {"target_kind": "hero", "player": p_idx, "uid": -1, "amount": p2["hp"] - heal_before2, "source_uid": _src_uid, "source_card_id": _src_card})
+			_heal_hero(p_idx, value)
 			draw_cards(p_idx, 1)
 		"draw":
 			draw_cards(p_idx, value)
@@ -456,17 +517,17 @@ func _resolve_effect(p_idx: int, effect: String, value: int, target: Dictionary,
 			_summon(p_idx, token, true)
 		"damage_all_enemy_minions":
 			var enemy: Dictionary = players[1 - p_idx]
-			for m in enemy["board"]:
-				m["health"] -= value
-				_emit("damage", {"target_kind": "minion", "player": 1 - p_idx, "uid": uid_for(m), "amount": value, "source_uid": _src_uid, "source_card_id": _src_card})
+			var src_m: Dictionary = _source_minion()
+			for m in enemy["board"].duplicate():
+				_hit_minion(1 - p_idx, m, value, _src_uid, _src_card, src_m)
 		"damage_all_minions":
 			# Snapshot both boards: apply to every minion, then clean up.
 			# ALL damage events fire before ANY minion_died (deaths are
 			# processed by the caller, after this effect resolves).
+			var src_m2: Dictionary = _source_minion()
 			for pl_i in players.size():
-				for m in players[pl_i]["board"]:
-					m["health"] -= value
-					_emit("damage", {"target_kind": "minion", "player": pl_i, "uid": uid_for(m), "amount": value, "source_uid": _src_uid, "source_card_id": _src_card})
+				for m in players[pl_i]["board"].duplicate():
+					_hit_minion(pl_i, m, value, _src_uid, _src_card, src_m2)
 		"destroy":
 			_destroy_target(target)
 		"destroy_damaged":
@@ -477,8 +538,10 @@ func _resolve_effect(p_idx: int, effect: String, value: int, target: Dictionary,
 					m["health"] = 0
 		"random_minion_damage":
 			_random_minion_damage(p_idx)
+			_queue_triggers(p_idx, "random_fired")
 		"random_enemy_damage":
 			_random_enemy_damage(p_idx, value)
+			_queue_triggers(p_idx, "random_fired")
 		"steal_weak":
 			_steal_weak(p_idx, value)
 		"swap_hands":
@@ -489,6 +552,7 @@ func _resolve_effect(p_idx: int, effect: String, value: int, target: Dictionary,
 			_emit("hands_swapped", {})
 			log.append("Hands swapped!")
 		"coin_flip":
+			_queue_triggers(p_idx, "random_fired")
 			var heads: bool = rng.randf() < 0.5
 			_emit("coin_flip", {"player": p_idx, "heads": heads})
 			if heads:
@@ -511,15 +575,13 @@ func _resolve_effect(p_idx: int, effect: String, value: int, target: Dictionary,
 			if payoff_cap >= 0:
 				n = mini(n, payoff_cap)
 			var payoff_dmg: int = value * 2 * n
-			players[1 - p_idx]["hp"] -= payoff_dmg
 			if payoff_dmg > 0:
-				_emit("damage", {"target_kind": "hero", "player": 1 - p_idx, "uid": -1, "amount": payoff_dmg, "source_uid": _src_uid, "source_card_id": _src_card})
+				_hit_hero(1 - p_idx, payoff_dmg, _src_uid, _src_card, _source_minion())
 		"damage_per_hand_card":
 			var count: int = hand_before if hand_before >= 0 else players[p_idx]["hand"].size()
 			var hand_dmg: int = value * count
-			players[1 - p_idx]["hp"] -= hand_dmg
 			if hand_dmg > 0:
-				_emit("damage", {"target_kind": "hero", "player": 1 - p_idx, "uid": -1, "amount": hand_dmg, "source_uid": _src_uid, "source_card_id": _src_card})
+				_hit_hero(1 - p_idx, hand_dmg, _src_uid, _src_card, _source_minion())
 		"damage_split":
 			# N 1-damage packets, each to a random enemy character.
 			# No mid-split cleanup — a minion at 0 HP can absorb packets.
@@ -528,10 +590,40 @@ func _resolve_effect(p_idx: int, effect: String, value: int, target: Dictionary,
 				if t.is_empty():
 					break
 				_deal_damage_to_target(p_idx, t, 1)
+			_queue_triggers(p_idx, "random_fired")
 		"recruit":
 			_recruit(p_idx, value)
 		"swap_stats":
 			_swap_stats(p_idx)
+		# --- Mechanics pass, wave 1 ---
+		"buff_attack":
+			var mt: Dictionary = _target_minion(target)
+			if not mt.is_empty():
+				mt["attack"] = int(mt["attack"]) + value
+				_emit("buff", {"player": int(target["player"]), "uid": uid_for(mt), "attack_delta": value, "health_delta": 0, "source_uid": _src_uid, "source_card_id": _src_card})
+				_queue_triggers(int(target["player"]), "friendly_buffed", uid_for(mt))
+		"buff_health":
+			var mh: Dictionary = _target_minion(target)
+			if not mh.is_empty():
+				mh["max_health"] = int(mh["max_health"]) + value
+				mh["health"] = int(mh["health"]) + value
+				_emit("buff", {"player": int(target["player"]), "uid": uid_for(mh), "attack_delta": 0, "health_delta": value, "source_uid": _src_uid, "source_card_id": _src_card})
+				_queue_triggers(int(target["player"]), "friendly_buffed", uid_for(mh))
+		"freeze":
+			# Stage Fright: the target misses its next attack.
+			var mf: Dictionary = _target_minion(target)
+			if not mf.is_empty():
+				var owner_f: int = int(target["player"])
+				mf["frozen"] = 2 if owner_f == active else 1
+				_emit("frozen", {"player": owner_f, "uid": uid_for(mf), "source_uid": _src_uid, "source_card_id": _src_card})
+		"silence":
+			# Heckle: strip the target's text and buffs.
+			var ms: Dictionary = _target_minion(target)
+			if not ms.is_empty():
+				_silence(int(target["player"]), ms)
+		"summon_tokens":
+			for _k in maxi(1, value):
+				_summon(p_idx, token if not token.is_empty() else CardDB.TOKEN_SQUIRELING, true)
 
 
 func _apply_buff(p_idx: int, m: Dictionary, n: int) -> void:
@@ -540,6 +632,7 @@ func _apply_buff(p_idx: int, m: Dictionary, n: int) -> void:
 	m["max_health"] += n
 	m["health"] += n
 	_emit("buff", {"player": p_idx, "uid": uid_for(m), "attack_delta": n, "health_delta": n, "source_uid": _src_uid, "source_card_id": _src_card})
+	_queue_triggers(p_idx, "friendly_buffed", uid_for(m))
 
 
 func _buff_target(p_idx: int, target: Dictionary, value: int) -> void:
@@ -554,13 +647,11 @@ func _deal_damage_to_target(p_idx: int, target: Dictionary, amount: int) -> void
 	if target.is_empty():
 		return
 	if target["kind"] == "hero":
-		players[target["player"]]["hp"] -= amount
-		_emit("damage", {"target_kind": "hero", "player": target["player"], "uid": -1, "amount": amount, "source_uid": _src_uid, "source_card_id": _src_card})
+		_hit_hero(int(target["player"]), amount, _src_uid, _src_card, _source_minion())
 	else:
 		var board: Array = players[target["player"]]["board"]
 		if target["board_idx"] < board.size():
-			board[target["board_idx"]]["health"] -= amount
-			_emit("damage", {"target_kind": "minion", "player": target["player"], "uid": uid_for(board[target["board_idx"]]), "amount": amount, "source_uid": _src_uid, "source_card_id": _src_card})
+			_hit_minion(int(target["player"]), board[target["board_idx"]], amount, _src_uid, _src_card, _source_minion())
 
 
 func _destroy_target(target: Dictionary) -> void:
@@ -604,13 +695,11 @@ func _random_minion_damage(p_idx: int) -> void:
 	var enemy: Dictionary = players[enemy_idx]
 	var dmg: int = rng.randi_range(2, 5)
 	if enemy["board"].is_empty():
-		players[enemy_idx]["hp"] -= dmg
-		_emit("damage", {"target_kind": "hero", "player": enemy_idx, "uid": -1, "amount": dmg, "source_uid": _src_uid, "source_card_id": _src_card})
+		_hit_hero(enemy_idx, dmg, _src_uid, _src_card, _source_minion())
 		log.append("Roulette: %d damage to the enemy Boss!" % dmg)
 	else:
 		var idx: int = rng.randi_range(0, enemy["board"].size() - 1)
-		enemy["board"][idx]["health"] -= dmg
-		_emit("damage", {"target_kind": "minion", "player": enemy_idx, "uid": uid_for(enemy["board"][idx]), "amount": dmg, "source_uid": _src_uid, "source_card_id": _src_card})
+		_hit_minion(enemy_idx, enemy["board"][idx], dmg, _src_uid, _src_card, _source_minion())
 		log.append("Roulette: %d damage to a random enemy Crew member!" % dmg)
 
 
@@ -632,8 +721,10 @@ func _steal_weak(p_idx: int, max_attack: int) -> void:
 	enemy["board"].remove_at(idx)
 	m["can_attack"] = false
 	m["sick"] = true
+	m["attacks_left"] = 0
 	mine["board"].append(m)
 	_emit("minion_stolen", {"from_player": 1 - p_idx, "to_player": p_idx, "uid": uid_for(m)})
+	_refresh_vibes()
 	log.append("Paid Off stole %s!" % m["name"])
 
 
@@ -667,10 +758,13 @@ func _swap_stats(p_idx: int) -> void:
 		return
 	var idx: int = rng.randi_range(0, enemy["board"].size() - 1)
 	var m: Dictionary = enemy["board"][idx]
+	# Take Vibe bonuses off first, so the swap is of its own stats.
+	_set_vibe(m, 0, 0)
 	var old_atk: int = m["attack"]
 	m["attack"] = m["health"]
 	m["health"] = old_atk
 	m["max_health"] = old_atk
+	_refresh_vibes()
 	_emit("stats_swapped", {"player": 1 - p_idx, "uid": uid_for(m), "attack": m["attack"], "health": m["health"]})
 	log.append("Swapped %s to %d/%d!" % [m["name"], m["attack"], m["health"]])
 
@@ -689,9 +783,11 @@ func _collect_dead() -> Array:
 			if board[i]["health"] <= 0:
 				dead_idx.append(i)
 		for i in dead_idx:
-			out.append({"owner": p_idx, "uid": uid_for(board[i]), "card_id": board[i]["card_id"], "name": board[i]["name"]})
+			out.append({"owner": p_idx, "uid": uid_for(board[i]), "card_id": board[i]["card_id"], "name": board[i]["name"], "silenced": bool(board[i].get("silenced", false))})
 		for i in range(dead_idx.size() - 1, -1, -1):
 			board.remove_at(dead_idx[i])
+	if not out.is_empty():
+		_refresh_vibes()
 	return out
 
 
@@ -706,6 +802,7 @@ func _process_deaths() -> void:
 		pending = []
 		for dead in batch:
 			_emit("minion_died", {"player": int(dead["owner"]), "uid": int(dead.get("uid", -1)), "card_id": str(dead["card_id"])})
+			_queue_triggers(int(dead["owner"]), "friendly_crew_died")
 			_resolve_deathrattle(int(dead["owner"]), dead)
 		pending.append_array(_collect_dead())
 
@@ -717,7 +814,7 @@ func _cleanup_deaths() -> void:
 
 func _resolve_deathrattle(owner_idx: int, dead: Dictionary) -> void:
 	var card: Dictionary = CardDB.get_card(str(dead["card_id"]))
-	if card.is_empty():
+	if card.is_empty() or bool(dead.get("silenced", false)):
 		return
 	var eff: String = str(card.get("deathrattle", ""))
 	if eff == "":
@@ -786,14 +883,17 @@ func valid_attack_targets(p_idx: int) -> Array:
 	# Returns target dicts the active player may attack.
 	var enemy_idx: int = 1 - p_idx
 	var enemy: Dictionary = players[enemy_idx]
+	# Backstage Crew can't be attacked, and a hidden Bouncer guards nothing.
 	var taunts: Array = []
 	for i in enemy["board"].size():
-		if enemy["board"][i]["taunt"]:
+		if enemy["board"][i]["taunt"] and not enemy["board"][i].get("stealth", false):
 			taunts.append({"kind": "minion", "player": enemy_idx, "board_idx": i})
 	if not taunts.is_empty():
 		return taunts
 	var out: Array = []
 	for i in enemy["board"].size():
+		if enemy["board"][i].get("stealth", false):
+			continue
 		out.append({"kind": "minion", "player": enemy_idx, "board_idx": i})
 	out.append({"kind": "hero", "player": enemy_idx, "board_idx": -1})
 	return out
@@ -806,7 +906,7 @@ func can_attack(p_idx: int, board_idx: int) -> bool:
 	if board_idx < 0 or board_idx >= board.size():
 		return false
 	var m: Dictionary = board[board_idx]
-	return m["can_attack"] and m["attack"] > 0
+	return m["can_attack"] and m["attack"] > 0 and int(m.get("frozen", 0)) == 0
 
 
 func attack(p_idx: int, board_idx: int, target: Dictionary) -> bool:
@@ -821,7 +921,9 @@ func attack(p_idx: int, board_idx: int, target: Dictionary) -> bool:
 	if not legal:
 		return false
 	var attacker: Dictionary = players[p_idx]["board"][board_idx]
-	attacker["can_attack"] = false
+	# Encore attacks twice a turn; everyone else once.
+	attacker["attacks_left"] = int(attacker.get("attacks_left", 1)) - 1
+	attacker["can_attack"] = int(attacker["attacks_left"]) > 0
 	_lethal_deferred += 1
 	# Defensive bounds check first (unreachable via valid targets): a
 	# failed attack emits nothing.
@@ -833,20 +935,24 @@ func attack(p_idx: int, board_idx: int, target: Dictionary) -> bool:
 	if target["kind"] == "minion":
 		target_uid = uid_for(players[target["player"]]["board"][int(target["board_idx"])])
 	_emit("attack", {"player": p_idx, "attacker_uid": attacker_uid, "target_kind": str(target["kind"]), "target_player": int(target["player"]), "target_uid": target_uid})
+	# Backstage ends when it attacks.
+	if attacker.get("stealth", false):
+		attacker["stealth"] = false
+		_emit("stealth_lost", {"player": p_idx, "uid": attacker_uid})
+	_queue_self(p_idx, attacker, "attacks")
 	if target["kind"] == "hero":
-		players[target["player"]]["hp"] -= attacker["attack"]
-		_emit("damage", {"target_kind": "hero", "player": target["player"], "uid": -1, "amount": attacker["attack"], "source_uid": attacker_uid, "source_card_id": ""})
+		_hit_hero(int(target["player"]), int(attacker["attack"]), attacker_uid, "", attacker)
 	else:
 		var enemy_board: Array = players[target["player"]]["board"]
 		var defender: Dictionary = enemy_board[target["board_idx"]]
 		var defender_uid: int = uid_for(defender)
 		# Simultaneous trade: BOTH damage events fire before ANY
 		# minion_died (deaths are processed below, after this block).
-		defender["health"] -= attacker["attack"]
-		_emit("damage", {"target_kind": "minion", "player": target["player"], "uid": defender_uid, "amount": attacker["attack"], "source_uid": attacker_uid, "source_card_id": ""})
-		attacker["health"] -= defender["attack"]
-		_emit("damage", {"target_kind": "minion", "player": p_idx, "uid": attacker_uid, "amount": defender["attack"], "source_uid": defender_uid, "source_card_id": ""})
-	_process_deaths()
+		var atk_a: int = int(attacker["attack"])
+		var atk_d: int = int(defender["attack"])
+		_hit_minion(int(target["player"]), defender, atk_a, attacker_uid, "", attacker)
+		_hit_minion(p_idx, attacker, atk_d, defender_uid, "", defender)
+	_settle()
 	_lethal_deferred -= 1
 	_check_lethal()
 	return true
@@ -874,10 +980,10 @@ func _is_valid_target(p_idx: int, target_type: String, target: Dictionary, is_ba
 			if target["kind"] == "hero":
 				return target["player"] == 1 - p_idx
 			if target["kind"] == "minion":
-				return target["player"] == 1 - p_idx and target["board_idx"] < players[target["player"]]["board"].size()
+				return target["player"] == 1 - p_idx and target["board_idx"] < players[target["player"]]["board"].size() and not _hidden(target)
 			return false
 		"enemy_minion":
-			return target["kind"] == "minion" and target["player"] == 1 - p_idx and target["board_idx"] < players[target["player"]]["board"].size()
+			return target["kind"] == "minion" and target["player"] == 1 - p_idx and target["board_idx"] < players[target["player"]]["board"].size() and not _hidden(target)
 		"enemy_hero":
 			return target["kind"] == "hero" and target["player"] == 1 - p_idx
 		"friendly_minion":
@@ -913,16 +1019,276 @@ func card_target_options(p_idx: int, card: Dictionary) -> Array:
 		"any_enemy":
 			var enemy_idx: int = 1 - p_idx
 			for i in players[enemy_idx]["board"].size():
-				out.append({"kind": "minion", "player": enemy_idx, "board_idx": i})
+				if not players[enemy_idx]["board"][i].get("stealth", false):
+					out.append({"kind": "minion", "player": enemy_idx, "board_idx": i})
 			out.append({"kind": "hero", "player": enemy_idx, "board_idx": -1})
 		"enemy_minion":
 			var e_idx: int = 1 - p_idx
 			for i in players[e_idx]["board"].size():
-				out.append({"kind": "minion", "player": e_idx, "board_idx": i})
+				if not players[e_idx]["board"][i].get("stealth", false):
+					out.append({"kind": "minion", "player": e_idx, "board_idx": i})
 		"friendly_minion":
 			for i in players[p_idx]["board"].size():
 				out.append({"kind": "minion", "player": p_idx, "board_idx": i})
 	return out
+
+
+# --- Mechanics pass, wave 1: shared helpers ---
+
+# A Backstage (stealthed) enemy Crew member can't be chosen.
+func _hidden(target: Dictionary) -> bool:
+	if str(target.get("kind", "")) != "minion":
+		return false
+	var b: Array = players[int(target["player"])]["board"]
+	var i: int = int(target["board_idx"])
+	return i >= 0 and i < b.size() and bool(b[i].get("stealth", false))
+
+
+func _target_minion(target: Dictionary) -> Dictionary:
+	if target.is_empty() or str(target.get("kind", "")) != "minion":
+		return {}
+	var b: Array = players[int(target["player"])]["board"]
+	var i: int = int(target["board_idx"])
+	if i < 0 or i >= b.size():
+		return {}
+	return b[i]
+
+
+# The Crew member whose effect is resolving now ({} for Tricks and
+# Signature Moves). Showstopper and Tip Jar follow its damage.
+func _source_minion() -> Dictionary:
+	if _src_uid < 0:
+		return {}
+	for pl in players.size():
+		var m: Dictionary = minion_by_uid(pl, _src_uid)
+		if not m.is_empty():
+			return m
+	return {}
+
+
+func _owner_of(m: Dictionary) -> int:
+	if m.is_empty():
+		return -1
+	for pl in players.size():
+		if players[pl]["board"].has(m):
+			return pl
+	return -1
+
+
+# All damage to a Crew member goes through here. Returns damage dealt.
+# Stunt Double takes the first hit for free; Showstopper destroys what it
+# damages; Tip Jar heals its owner by what it deals.
+func _hit_minion(owner: int, m: Dictionary, amount: int, src_uid: int, src_card: String, src_m: Dictionary = {}) -> int:
+	if amount <= 0:
+		return 0
+	if m.get("shield", false):
+		m["shield"] = false
+		_emit("shield_popped", {"player": owner, "uid": uid_for(m), "source_uid": src_uid, "source_card_id": src_card})
+		return 0
+	m["health"] = int(m["health"]) - amount
+	_emit("damage", {"target_kind": "minion", "player": owner, "uid": uid_for(m), "amount": amount, "source_uid": src_uid, "source_card_id": src_card})
+	if int(m["health"]) > 0:
+		_queue_self(owner, m, "damaged")
+	if not src_m.is_empty():
+		if src_m.get("poison", false) and int(m["health"]) > 0:
+			_emit("minion_destroyed", {"player": owner, "uid": uid_for(m)})
+			m["health"] = 0
+		if src_m.get("lifesteal", false):
+			_lifesteal(src_m, amount)
+	return amount
+
+
+func _hit_hero(p_idx: int, amount: int, src_uid: int, src_card: String, src_m: Dictionary = {}) -> void:
+	if amount <= 0:
+		return
+	players[p_idx]["hp"] = int(players[p_idx]["hp"]) - amount
+	_emit("damage", {"target_kind": "hero", "player": p_idx, "uid": -1, "amount": amount, "source_uid": src_uid, "source_card_id": src_card})
+	if not src_m.is_empty() and src_m.get("lifesteal", false):
+		_lifesteal(src_m, amount)
+
+
+func _lifesteal(src_m: Dictionary, amount: int) -> void:
+	var owner: int = _owner_of(src_m)
+	if owner < 0:
+		return
+	var prev_uid: int = _src_uid
+	var prev_card: String = _src_card
+	_src_uid = uid_for(src_m)
+	_src_card = str(src_m.get("card_id", ""))
+	_heal_hero(owner, amount)
+	_src_uid = prev_uid
+	_src_card = prev_card
+
+
+func _heal_hero(p_idx: int, amount: int) -> void:
+	var p: Dictionary = players[p_idx]
+	var before: int = int(p["hp"])
+	p["hp"] = mini(STARTING_HP, before + amount)
+	if int(p["hp"]) > before:
+		_emit("heal", {"target_kind": "hero", "player": p_idx, "uid": -1, "amount": int(p["hp"]) - before, "source_uid": _src_uid, "source_card_id": _src_card})
+		_queue_triggers(p_idx, "boss_healed")
+
+
+# Queue every "whenever" on p_idx's board that listens for `when`.
+# exclude_uid: the Crew member that caused it (a Crew member doesn't
+# trigger off its own summon or play).
+func _queue_triggers(p_idx: int, when: String, exclude_uid: int = -1) -> void:
+	if _in_trigger or p_idx < 0 or p_idx >= players.size():
+		return
+	for m in players[p_idx]["board"]:
+		if int(m.get("uid", -2)) == exclude_uid:
+			continue
+		_queue_self(p_idx, m, when)
+
+
+# Queue this one Crew member's triggers for `when`.
+func _queue_self(p_idx: int, m: Dictionary, when: String) -> void:
+	if _in_trigger or int(m.get("health", 0)) <= 0 or m.get("silenced", false):
+		return
+	var card: Dictionary = CardDB.get_card(str(m.get("card_id", "")))
+	for t in card.get("triggers", []):
+		if str(t.get("when", "")) == when:
+			_trigger_queue.append({"owner": p_idx, "uid": uid_for(m), "card_id": str(m["card_id"]), "trig": t})
+
+
+# Fire queued triggers in order. A holder that died or was Heckled in the
+# meantime doesn't fire. Capped so a bad card can't loop forever.
+func _flush_triggers() -> void:
+	var fired: int = 0
+	while not _trigger_queue.is_empty() and fired < 60 and winner == -1:
+		var q: Dictionary = _trigger_queue.pop_front()
+		var owner: int = int(q["owner"])
+		var holder: Dictionary = minion_by_uid(owner, int(q["uid"]))
+		if holder.is_empty() or int(holder["health"]) <= 0 or holder.get("silenced", false):
+			continue
+		fired += 1
+		var t: Dictionary = q["trig"]
+		var eff: String = str(t.get("effect", ""))
+		var tgt_type: String = str(t.get("target", "none"))
+		var target: Variant
+		if tgt_type == "self":
+			target = {"kind": "minion", "player": owner, "board_idx": minion_index_by_uid(owner, int(q["uid"]))}
+		elif tgt_type == "friendly_hero":
+			target = {"kind": "hero", "player": owner, "board_idx": -1}
+		else:
+			target = _deathrattle_target(owner, eff, tgt_type)
+		if target == null:
+			continue
+		_emit("trigger", {"player": owner, "uid": int(q["uid"]), "card_id": str(q["card_id"]), "when": str(t.get("when", ""))})
+		var prev_uid: int = _src_uid
+		var prev_card: String = _src_card
+		_src_uid = int(q["uid"])
+		_src_card = str(q["card_id"])
+		_in_trigger = true
+		var tok: Dictionary = CardDB.token_for(CardDB.get_card(str(q["card_id"])))
+		_resolve_effect(owner, eff, int(t.get("value", 0)), target, -1, tok)
+		_in_trigger = false
+		_src_uid = prev_uid
+		_src_card = prev_card
+	_trigger_queue.clear()
+
+
+# Run everything an action set off until the board is still: Vibes,
+# then triggers, then deaths (whose Final Bows and "whenever a friendly
+# Crew dies" can set off more), until nothing is left.
+func _settle() -> void:
+	for _i in 40:
+		_refresh_vibes()
+		_flush_triggers()
+		var any_dead: bool = false
+		for pl in players:
+			for m in pl["board"]:
+				if int(m["health"]) <= 0:
+					any_dead = true
+		if not any_dead and _trigger_queue.is_empty():
+			break
+		if any_dead:
+			_process_deaths()
+	_refresh_vibes()
+
+
+# --- Vibes (auras) ---
+# A card's "vibe": {"attack": a, "health": h, "who": "other_friendly" |
+# "all_friendly" | "friendly_deckhands" | "friendly_tokens" | "enemy"}. Bonuses are recomputed
+# from scratch and applied as differences, so damage taken stays taken
+# and losing a Vibe never kills.
+
+func _vibe_applies(src: Dictionary, src_owner: int, m: Dictionary, m_owner: int, who: String) -> bool:
+	match who:
+		"other_friendly":
+			return m_owner == src_owner and m != src
+		"all_friendly":
+			return m_owner == src_owner
+		"friendly_deckhands":
+			return m_owner == src_owner and m != src and str(m.get("card_id", "")) == "deckhand"
+		"friendly_tokens":
+			return m_owner == src_owner and m != src and CardDB.is_token_id(str(m.get("card_id", "")))
+		"enemy":
+			return m_owner != src_owner
+	return false
+
+
+func _refresh_vibes() -> void:
+	var want: Dictionary = {}  # uid -> [atk, hp]
+	var sources: Array = []
+	for pl in players.size():
+		for m in players[pl]["board"]:
+			if int(m["health"]) <= 0 or m.get("silenced", false):
+				continue
+			var vibe: Dictionary = CardDB.get_card(str(m.get("card_id", ""))).get("vibe", {})
+			if not vibe.is_empty():
+				sources.append([pl, m, vibe])
+	for pl in players.size():
+		for m in players[pl]["board"]:
+			var a: int = 0
+			var h: int = 0
+			for srcv in sources:
+				if _vibe_applies(srcv[1], int(srcv[0]), m, pl, str(srcv[2].get("who", "other_friendly"))):
+					a += int(srcv[2].get("attack", 0))
+					h += int(srcv[2].get("health", 0))
+			want[uid_for(m)] = [a, h]
+	for pl in players.size():
+		for m in players[pl]["board"]:
+			var w: Array = want.get(uid_for(m), [0, 0])
+			_set_vibe(m, int(w[0]), int(w[1]))
+
+
+func _set_vibe(m: Dictionary, a: int, h: int) -> void:
+	var da: int = a - int(m.get("vibe_atk", 0))
+	var dh: int = h - int(m.get("vibe_hp", 0))
+	if da == 0 and dh == 0:
+		return
+	if int(m["health"]) <= 0 and dh > 0:
+		return  # already dead: a new Vibe doesn't bring it back
+	m["attack"] = maxi(0, int(m["attack"]) + da)
+	m["max_health"] = int(m["max_health"]) + dh
+	if dh > 0:
+		m["health"] = int(m["health"]) + dh
+	else:
+		m["health"] = mini(int(m["health"]), int(m["max_health"]))
+	m["vibe_atk"] = a
+	m["vibe_hp"] = h
+
+
+# --- Heckle (silence) ---
+func _silence(owner: int, m: Dictionary) -> void:
+	_set_vibe(m, 0, 0)
+	m["silenced"] = true
+	m["taunt"] = false
+	for k in STATE_KEYWORDS:
+		m[k] = false
+	m["frozen"] = 0
+	if int(m.get("attacks_left", 0)) > 1:
+		m["attacks_left"] = 1
+	var card: Dictionary = CardDB.get_card(str(m.get("card_id", "")))
+	var base_a: int = int(m.get("base_attack", card.get("attack", m["attack"])))
+	var base_h: int = int(m.get("base_health", card.get("health", m["max_health"])))
+	m["attack"] = base_a
+	var damage_taken: int = int(m["max_health"]) - int(m["health"])
+	m["max_health"] = base_h
+	m["health"] = mini(int(m["health"]), base_h) if damage_taken >= 0 else base_h
+	_emit("silenced", {"player": owner, "uid": uid_for(m), "source_uid": _src_uid, "source_card_id": _src_card})
+	_refresh_vibes()
 
 
 # --- Cleanup / lethal ---

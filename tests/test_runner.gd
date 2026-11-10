@@ -107,6 +107,7 @@ func _modal_no_stop_kids(root: Control) -> bool:
 func _run_all() -> void:
 	await _test_online_3d()
 	_test_ai_no_stall()
+	preload("res://tests/mechanics_tests.gd").new().run(self)
 	# --- cards.json loading (Phase 3) ---
 	_check("cards.json: 340 cards load", CardDB.CARDS.size() == 340)
 	var fields_ok: bool = true

@@ -102,6 +102,22 @@ static var hero_power_overrides: Dictionary = {}
 static var deckhand_override: Dictionary = {}
 
 
+# Summoned-only Crew (never in a deck): Deckhand, Kevin, generic tokens.
+# Tests only: cards that exist for one test (never in CARDS, never in a
+# deck pool). Empty in the real game.
+static var test_cards: Dictionary = {}
+
+
+static func add_test_card(c: Dictionary) -> Dictionary:
+	_normalize(c)
+	test_cards[str(c["id"])] = c
+	return c
+
+
+static func is_token_id(card_id: String) -> bool:
+	return card_id in ["deckhand", "squireling", "token"]
+
+
 static func deckhand_token() -> Dictionary:
 	return deckhand_override if not deckhand_override.is_empty() else TOKEN_DECKHAND
 
@@ -125,8 +141,11 @@ static func apply_test_patch(patch: Dictionary) -> Array:
 			problems.append("no card " + str(cid))
 			continue
 		for k in cards[cid]:
-			if not c.has(k):
+			if not c.has(k) and not (k in ["triggers", "vibe", "overload"]):
 				problems.append("%s has no field %s" % [cid, k])
+				continue
+			if not c.has(k):
+				c[k] = cards[cid][k]
 				continue
 			var v: Variant = cards[cid][k]
 			c[k] = int(v) if (v is float and c[k] is int) else v
@@ -152,6 +171,8 @@ static func class_display_name(class_id: String) -> String:
 
 static func get_card(card_id: String) -> Dictionary:
 	_ensure_loaded()
+	if not test_cards.is_empty() and test_cards.has(card_id):
+		return test_cards[card_id]
 	if card_id == "squireling":
 		return TOKEN_SQUIRELING
 	if card_id == "deckhand":
