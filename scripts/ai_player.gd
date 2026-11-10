@@ -117,16 +117,25 @@ func next_action(gs: GameState, me: int) -> Dictionary:
 		scored.append([gain, a])
 	if scored.is_empty():
 		return {"type": "end"}
-	scored.sort_custom(func(x, y) -> bool: return x[0] > y[0])
-	var best: float = scored[0][0]
+	# The best move; a tie goes to the one listed first (a fixed rule, so
+	# the Lab's copy of the bot makes the same choice).
+	var bi: int = 0
+	for i in range(1, scored.size()):
+		if scored[i][0] > scored[bi][0]:
+			bi = i
+	var best: float = scored[bi][0]
 	if best >= WIN_SCORE * 0.5:
-		return scored[0][1]  # lethal: never get cute
+		return scored[bi][1]  # lethal: never get cute
 	if best < MIN_GAIN:
 		return {"type": "end"}
-	# Sloppiness: sometimes take a near-best move instead.
-	var pick: Array = scored[0]
+	# Sloppiness: sometimes take the next-best move instead.
+	var pick: Array = scored[bi]
 	if sloppiness > 0.0 and scored.size() > 1 and rng.randf() < sloppiness:
-		var alt: Array = scored[1]
+		var ai2: int = -1
+		for i in scored.size():
+			if i != bi and (ai2 == -1 or scored[i][0] > scored[ai2][0]):
+				ai2 = i
+		var alt: Array = scored[ai2]
 		if alt[0] >= MIN_GAIN and alt[0] >= best * 0.6:
 			pick = alt
 	return pick[1]

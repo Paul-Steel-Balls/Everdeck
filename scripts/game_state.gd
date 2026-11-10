@@ -24,6 +24,10 @@ var winner: int = -1
 # 10 mana, a kill from 6 mana). The balance tools may change it to test;
 # -1 means no cap.
 static var payoff_cap: int = 3
+# Sim tools only: >= 0 pins the dice of the bot's look-ahead copies, so a
+# game replays exactly (the Lab's parity check pins both sides). -1, the
+# real game: every copy gets fresh dice.
+static var clone_seed: int = -1
 var log: Array = []
 var rng := RandomNumberGenerator.new()
 # Turn count: number of player-turns that have begun (setup starts turn 1).
@@ -136,7 +140,10 @@ func clone() -> GameState:
 	g.turn_count = turn_count
 	g._next_uid = _next_uid
 	g._events_enabled = false
-	g.rng.randomize()
+	if clone_seed >= 0:
+		g.rng.seed = clone_seed
+	else:
+		g.rng.randomize()
 	return g
 
 

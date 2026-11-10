@@ -16,6 +16,9 @@ static func ensure_patch() -> void:
 	if _patched:
 		return
 	_patched = true
+	# SIM_CLONE_SEED: pin the bot's look-ahead dice (Lab parity checks).
+	if OS.get_environment("SIM_CLONE_SEED") != "":
+		GameState.clone_seed = int(OS.get_environment("SIM_CLONE_SEED"))
 	var path: String = OS.get_environment("SIM_PATCH")
 	if path == "":
 		return
