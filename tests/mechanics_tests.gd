@@ -72,6 +72,7 @@ func run(runner) -> void:
 	_on_credit()
 	_triggers()
 	_vibes()
+	_online_snapshot()
 
 
 func _stunt_double() -> void:
@@ -367,3 +368,20 @@ func _vibes() -> void:
 	gs4.players[0]["hand"] = ["t_heckle"]
 	gs4.play_card(0, 0, _enemy(0))
 	r._check("Vibe: a Heckled Crew member still gets others' Vibes", int(y["attack"]) == 3)
+
+
+func _online_snapshot() -> void:
+	# The guest only sees what the host's snapshot carries.
+	var gs := _gs()
+	var m: Dictionary = _put(gs, 0, "t_shield")
+	m["frozen"] = 1
+	_put(gs, 0, "t_banner")
+	gs.players[0]["overload_next"] = 2
+	var snap: Dictionary = NetMatch.snapshot_from_state(gs, 1)
+	var nm := NetMatch.new()
+	nm.mirror = GameState.new()
+	nm._apply_snapshot_to_mirror(snap)
+	var mm: Dictionary = nm.mirror.players[0]["board"][0]
+	r._check("Online: Stunt Double, Stage Fright and Vibe bonus reach the guest", mm["shield"] and int(mm["frozen"]) == 1 and int(mm["vibe_atk"]) == 1 and int(mm["attack"]) == 2)
+	r._check("Online: On Credit reaches the guest", int(nm.mirror.players[0]["overload_next"]) == 2)
+	nm.free()

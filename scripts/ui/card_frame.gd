@@ -125,7 +125,8 @@ func _rarity_color() -> Color:
 
 func _rules_bbcode() -> String:
 	var t: String = str(card.get("text", ""))
-	for kw in ["Entrance:", "Final Bow:", "Taunt", "Bouncer", "Rush", "Charge", "Ward", "Shield"]:
+	for kw in ["Entrance:", "Final Bow:", "Taunt", "Bouncer", "Rush", "Charge", "Ward", "Shield",
+			"Stunt Double", "Backstage", "Encore", "Showstopper", "Tip Jar", "Heckle", "Stage Fright", "On Credit", "Vibe:"]:
 		t = t.replace(kw, "[b]%s[/b]" % kw)
 	return "[center]%s[/center]" % t
 

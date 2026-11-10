@@ -67,6 +67,15 @@ var warming: bool = false
 var _warm_ring: MeshInstance3D = null
 var _warm_tw: Tween = null
 const MODEL_RING_R: float = 0.5  # rings around a model's feet
+# Mechanics pass, wave 1: see-through shells for keyword states, built on
+# first need, plus the small icons the badge layer draws (pips).
+var _shells: Dictionary = {}  # "shield" / "frozen" / "stealth" -> MeshInstance3D
+var pips: Array = []  # "encore", "poison", "lifesteal", "trigger", "vibe", "silenced"
+const SHELL_LOOKS: Dictionary = {
+	"shield": {"col": Color(1.0, 0.84, 0.3), "base_alpha": 0.07, "rim_alpha": 0.8, "frost": 0.0, "sphere": true},
+	"frozen": {"col": Color(0.62, 0.88, 1.0), "base_alpha": 0.22, "rim_alpha": 0.6, "frost": 1.0, "sphere": false},
+	"stealth": {"col": Color(0.42, 0.05, 0.16), "base_alpha": 0.32, "rim_alpha": 0.55, "frost": 0.0, "sphere": false},
+}
 
 
 func setup(minion: Dictionary, player_idx: int, pad: Color = Color(0, 0, 0, 0)) -> void:
@@ -326,7 +335,25 @@ func update_stats(minion: Dictionary, is_mine: bool) -> void:
 		_guard_wall.visible = taunt
 	if unit != null:
 		unit.side = 1.0 if is_mine else -1.0
-	var can_attack: bool = bool(minion.get("can_attack", false)) and cur_atk > 0
+	_set_shell("shield", bool(minion.get("shield", false)))
+	_set_shell("frozen", int(minion.get("frozen", 0)) > 0)
+	_set_shell("stealth", bool(minion.get("stealth", false)))
+	var pp: Array = []
+	if bool(minion.get("windfury", false)):
+		pp.append("encore")
+	if bool(minion.get("poison", false)):
+		pp.append("poison")
+	if bool(minion.get("lifesteal", false)):
+		pp.append("lifesteal")
+	if bool(minion.get("silenced", false)):
+		pp.append("silenced")
+	else:
+		if not (card.get("triggers", []) as Array).is_empty():
+			pp.append("trigger")
+		if not (card.get("vibe", {}) as Dictionary).is_empty():
+			pp.append("vibe")
+	pips = pp
+	var can_attack: bool = bool(minion.get("can_attack", false)) and cur_atk > 0 and int(minion.get("frozen", 0)) == 0
 	if _pulse_ring != null:
 		_pulse_ring.visible = is_mine and can_attack
 	var sick: bool = bool(minion.get("sick", false)) and not can_attack
@@ -334,6 +361,45 @@ func update_stats(minion: Dictionary, is_mine: bool) -> void:
 		_set_warming(sick)
 	elif _zzz_label != null:
 		_zzz_label.visible = sick
+
+
+func _set_shell(kind: String, on: bool) -> void:
+	if not on:
+		if _shells.has(kind):
+			(_shells[kind] as MeshInstance3D).visible = false
+		return
+	if not _shells.has(kind):
+		var look: Dictionary = SHELL_LOOKS[kind]
+		var mesh: Mesh
+		if bool(look["sphere"]):
+			var sp := SphereMesh.new()
+			sp.radius = MODEL_RING_R * 1.45
+			sp.height = MODEL_RING_R * 2.9
+			sp.radial_segments = 32
+			sp.rings = 16
+			mesh = sp
+		else:
+			var cy := CylinderMesh.new()
+			cy.top_radius = MODEL_RING_R * 1.2
+			cy.bottom_radius = MODEL_RING_R * 1.3
+			cy.height = 1.25
+			cy.radial_segments = 32
+			mesh = cy
+		var mat := ShaderMaterial.new()
+		mat.shader = preload("res://shaders/lab/keyword_aura.gdshader")
+		mat.set_shader_parameter("col", look["col"])
+		mat.set_shader_parameter("base_alpha", look["base_alpha"])
+		mat.set_shader_parameter("rim_alpha", look["rim_alpha"])
+		mat.set_shader_parameter("frost", look["frost"])
+		var mi := MeshInstance3D.new()
+		mi.name = "Shell_" + kind
+		mi.mesh = mesh
+		mi.material_override = mat
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mi.position.y = MODEL_RING_R * 1.25 if bool(look["sphere"]) else 0.62
+		add_child(mi)
+		_shells[kind] = mi
+	(_shells[kind] as MeshInstance3D).visible = true
 
 
 func _set_warming(on: bool) -> void:
@@ -403,6 +469,9 @@ static func _arc_mesh(r0: float, r1: float, span: float, seg: int = 48) -> Array
 func set_fade(alpha: float) -> void:
 	if unit != null:
 		unit.set_param("dissolve", 1.0 - alpha)
+	if alpha < 0.6:
+		for sh in _shells.values():
+			(sh as MeshInstance3D).visible = false
 	_set_fade_recursive(self, alpha)
 	if _zzz_label != null:
 		_zzz_label.modulate.a = alpha

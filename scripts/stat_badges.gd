@@ -56,7 +56,56 @@ func _badge_pair() -> Dictionary:
 	guard.visible = false
 	guard.draw.connect(func() -> void: _draw_shield(guard))
 	add_child(guard)
-	return {"atk": atk, "hp": hp, "atk_l": atk_l, "hp_l": hp_l, "guard": guard}
+	# Mechanics pass, wave 1: a row of small keyword icons under the chips.
+	var pips := Control.new()
+	pips.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pips.visible = false
+	pips.set_meta("kinds", [])
+	pips.draw.connect(func() -> void: _draw_pips(pips))
+	add_child(pips)
+	return {"atk": atk, "hp": hp, "atk_l": atk_l, "hp_l": hp_l, "guard": guard, "pips": pips}
+
+
+# One round icon per keyword: Encore (two chevrons), Showstopper (green
+# drop), Tip Jar (red heart), a "whenever" effect (gold bolt), Vibe
+# (purple waves), Heckled (grey, struck through).
+const PIP_COLORS: Dictionary = {
+	"encore": Color(0.95, 0.55, 0.1), "poison": Color(0.25, 0.75, 0.2), "lifesteal": Color(0.85, 0.15, 0.25),
+	"trigger": Color(0.95, 0.75, 0.1), "vibe": Color(0.6, 0.35, 0.95), "silenced": Color(0.45, 0.45, 0.48),
+}
+
+
+func _draw_pips(c: Control) -> void:
+	var kinds: Array = c.get_meta("kinds", [])
+	var d: float = c.size.y
+	for i in kinds.size():
+		var k: String = kinds[i]
+		var ctr := Vector2(d * 0.5 + i * d * 1.08, d * 0.5)
+		var r: float = d * 0.5
+		c.draw_circle(ctr, r, UIKit.INK)
+		c.draw_circle(ctr, r * 0.84, PIP_COLORS.get(k, Color.WHITE))
+		var w := Color(1, 1, 1, 0.95)
+		var s: float = r * 0.5
+		match k:
+			"encore":
+				for dx in [-0.28, 0.22]:
+					var o := ctr + Vector2(dx * r, 0)
+					c.draw_polyline(PackedVector2Array([o + Vector2(-s * 0.45, -s * 0.7), o + Vector2(s * 0.35, 0), o + Vector2(-s * 0.45, s * 0.7)]), w, maxf(r * 0.18, 1.5))
+			"poison":
+				c.draw_circle(ctr + Vector2(0, s * 0.25), s * 0.6, w)
+				c.draw_colored_polygon(PackedVector2Array([ctr + Vector2(0, -s * 1.0), ctr + Vector2(s * 0.55, s * 0.05), ctr + Vector2(-s * 0.55, s * 0.05)]), w)
+			"lifesteal":
+				c.draw_circle(ctr + Vector2(-s * 0.36, -s * 0.2), s * 0.42, w)
+				c.draw_circle(ctr + Vector2(s * 0.36, -s * 0.2), s * 0.42, w)
+				c.draw_colored_polygon(PackedVector2Array([ctr + Vector2(-s * 0.76, -s * 0.05), ctr + Vector2(s * 0.76, -s * 0.05), ctr + Vector2(0, s * 0.85)]), w)
+			"trigger":
+				c.draw_colored_polygon(PackedVector2Array([ctr + Vector2(s * 0.2, -s * 1.0), ctr + Vector2(-s * 0.55, s * 0.15), ctr + Vector2(-s * 0.02, s * 0.15), ctr + Vector2(-s * 0.2, s * 1.0), ctr + Vector2(s * 0.55, -s * 0.15), ctr + Vector2(s * 0.02, -s * 0.15)]), w)
+			"vibe":
+				c.draw_circle(ctr + Vector2(-s * 0.7, 0), s * 0.28, w)
+				for rr in [0.75, 1.3]:
+					c.draw_arc(ctr + Vector2(-s * 0.7, 0), s * rr, -0.95, 0.95, 12, w, maxf(r * 0.17, 1.5))
+			"silenced":
+				c.draw_line(ctr + Vector2(-s, -s), ctr + Vector2(s, s), w, maxf(r * 0.2, 1.5))
 
 
 func _draw_shield(c: Control) -> void:
@@ -122,6 +171,7 @@ func _process(_delta: float) -> void:
 		(pair["atk"] as Control).queue_free()
 		(pair["hp"] as Control).queue_free()
 		(pair["guard"] as Control).queue_free()
+		(pair["pips"] as Control).queue_free()
 		_badges.erase(uid)
 		_flash.erase(uid)
 
@@ -133,6 +183,8 @@ func _update_badge(uid: int, node: Minion3D) -> void:
 	# Hidden while the token dies.
 	var guard: Control = pair["guard"]
 	guard.visible = false
+	var pipc: Control = pair["pips"]
+	pipc.visible = false
 	if node.dying:
 		atk.visible = false
 		hp.visible = false
@@ -193,6 +245,16 @@ func _update_badge(uid: int, node: Minion3D) -> void:
 	hp.visible = true
 	atk.z_index = 60
 	hp.z_index = 60
+	if not node.pips.is_empty():
+		var pd: float = maxf(badge_d * 0.56, 13.0)
+		var n_p: int = node.pips.size()
+		var row_w: float = pd * (1.08 * (n_p - 1) + 1.0)
+		pipc.set_meta("kinds", node.pips.duplicate())
+		pipc.size = Vector2(row_w, pd)
+		pipc.position = canvas_pos + Vector2(-row_w * 0.5, radius * 0.30 + badge_d * 0.42)
+		pipc.z_index = 61
+		pipc.visible = true
+		pipc.queue_redraw()
 	if node.is_bouncer:
 		var gs_px: float = badge_d * 0.62
 		guard.size = Vector2(gs_px, gs_px * 1.15)

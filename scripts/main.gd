@@ -2862,6 +2862,16 @@ const KEYWORD_HELP: Dictionary = {
 	"Hustle": "Can attack the turn it's played.",
 	"Entrance": "Happens when you play it from your hand.",
 	"Final Bow": "Happens when it dies.",
+	# Mechanics pass, wave 1.
+	"Stunt Double": "The first damage it takes does nothing.",
+	"Backstage": "Can't be attacked or targeted until it attacks.",
+	"Encore": "Can attack twice each turn.",
+	"Showstopper": "Destroys any Crew member it damages.",
+	"Tip Jar": "Damage it deals heals your Boss.",
+	"Heckle": "Removes a Crew member's text and buffs.",
+	"Stage Fright": "The target misses its next attack.",
+	"On Credit": "Cheap now: some of your mana is locked next turn.",
+	"Vibe": "Helps other Crew while it's on the board.",
 }
 
 
@@ -2876,6 +2886,20 @@ func _inspect_keywords(card: Dictionary) -> Array:
 		out.append("Entrance")
 	if str(card.get("deathrattle", "")) != "":
 		out.append("Final Bow")
+	for pair in [["shield", "Stunt Double"], ["stealth", "Backstage"], ["windfury", "Encore"], ["poison", "Showstopper"], ["lifesteal", "Tip Jar"]]:
+		if pair[0] in kws:
+			out.append(pair[1])
+	var effs: Array = [str(card.get("effect", "")), str(card.get("effect2", "")), str(card.get("deathrattle", ""))]
+	for t in card.get("triggers", []):
+		effs.append(str(t.get("effect", "")))
+	if "silence" in effs:
+		out.append("Heckle")
+	if "freeze" in effs:
+		out.append("Stage Fright")
+	if int(card.get("overload", 0)) > 0:
+		out.append("On Credit")
+	if not (card.get("vibe", {}) as Dictionary).is_empty():
+		out.append("Vibe")
 	return out
 
 

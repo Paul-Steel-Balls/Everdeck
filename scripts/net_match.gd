@@ -378,6 +378,8 @@ func _apply_snapshot_to_mirror(state: Dictionary) -> void:
 			"class": str(pdata.get("class", "")),
 			"hero_power_used": bool(pdata.get("hero_power_used", false)),
 			"cards_played_this_turn": int(pdata.get("cards_played_this_turn", 0)),
+			"overload_next": int(pdata.get("overload_next", 0)),
+			"overload_locked": int(pdata.get("overload_locked", 0)),
 		})
 	mirror.players = players_out
 	mirror.active = int(state.get("active", 0))
@@ -399,6 +401,19 @@ static func _canonical_minion(m: Dictionary) -> Dictionary:
 		"can_attack": bool(m.get("can_attack", false)),
 		"sick": bool(m.get("sick", false)),
 		"art": str(m.get("art", "")),
+		# Mechanics pass, wave 1.
+		"attacks_left": int(m.get("attacks_left", 0)),
+		"shield": bool(m.get("shield", false)),
+		"stealth": bool(m.get("stealth", false)),
+		"windfury": bool(m.get("windfury", false)),
+		"poison": bool(m.get("poison", false)),
+		"lifesteal": bool(m.get("lifesteal", false)),
+		"frozen": int(m.get("frozen", 0)),
+		"silenced": bool(m.get("silenced", false)),
+		"base_attack": int(m.get("base_attack", m.get("attack", 0))),
+		"base_health": int(m.get("base_health", m.get("max_health", 0))),
+		"vibe_atk": int(m.get("vibe_atk", 0)),
+		"vibe_hp": int(m.get("vibe_hp", 0)),
 	}
 
 
@@ -422,6 +437,8 @@ static func snapshot_from_state(gs: GameState, recipient: int) -> Dictionary:
 			"class": str(pl["class"]),
 			"hero_power_used": bool(pl["hero_power_used"]),
 			"cards_played_this_turn": int(pl["cards_played_this_turn"]),
+			"overload_next": int(pl.get("overload_next", 0)),
+			"overload_locked": int(pl.get("overload_locked", 0)),
 			"hand": hand_out,
 			"hand_count": (pl["hand"] as Array).size(),
 			"deck_count": (pl["deck"] as Array).size(),
@@ -473,6 +490,8 @@ static func public_state_hash(state: Dictionary) -> String:
 			"class": str(pdata.get("class", "")),
 			"hero_power_used": bool(pdata.get("hero_power_used", false)),
 			"cards_played_this_turn": int(pdata.get("cards_played_this_turn", 0)),
+			"overload_next": int(pdata.get("overload_next", 0)),
+			"overload_locked": int(pdata.get("overload_locked", 0)),
 			"hand_count": int(pdata.get("hand_count", 0)),
 			"deck_count": int(pdata.get("deck_count", 0)),
 			"board": board_out,
