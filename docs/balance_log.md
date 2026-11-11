@@ -180,3 +180,25 @@ Knockout tests (fixed best decks, 600 games):
 - Reginald without his 6 targeted-removal cards: Agatha beats him 76%.
 - Presto without burn: 2%. Without card draw: 5%. Presto has no way past Bouncers except burn.
 Conclusion: the two worst matchups are fixed from the other side (Presto needs a way past Bouncers; Reginald's removal suite is too deep), not by gutting Agatha. Draft 4 saved as lab/patches/agatha_draft4.json.
+
+## Deeper baseline (Nov 11): the old decks were under-searched
+
+Presto draft 1 hit ~63%, but its deck won 58% even with Presto's original
+cards: the search had found a better Presto list. So the baseline itself
+was weak. Fix: converge.sh, every Boss searched 3 seeds x 400 iterations
+per round against the newest field, 3 rounds (cards: v0.9.4 + Agatha
+draft 4). Also fixed: Boss evals now carry the other Bosses' tuned decks
+forward (POOL=), so Agatha isn't tested with decks built for old cards.
+
+| Boss | quick baseline | round 1 | round 2 | round 3 |
+|---|---|---|---|---|
+| Larry | 48.2 | 52.2 | 54.6 | 55.5 |
+| Presto | 47.3 | 51.7 | 53.8 | 54.1 |
+| Reginald | 50.2 | 54.7 | 52.9 | 53.1 |
+| Agatha | 53.0 | 49.1 | 49.6 | 48.3 |
+| Barnacle | 47.7 | 45.5 | 45.3 | 44.6 |
+| Grunk | 53.6 | 46.8 | 43.8 | 44.3 |
+
+Round 3: 6 matchups outside 60/40; worst Agatha vs Reginald 33/67,
+Barnacle vs Presto 33/67, Presto vs Agatha 35/65. Rounds 2-3 move about
+1 point, so it's close to settled. New baseline = cv1/r3.
