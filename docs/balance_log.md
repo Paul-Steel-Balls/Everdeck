@@ -164,3 +164,19 @@ parity 576/576). Steady test after the fix (v0.9.4 cards, 1,000 games per
 list): Grunk 53.4, Agatha 51.2, Reginald 50.4, Barnacle 50.3, Larry 47.6,
 Presto 47.1; going first 45.9%. Worst: Agatha vs Reginald 27/73, Presto
 vs Agatha 31/69.
+
+## Agatha drafts 4-7 (Nov 11, Lab, 3-seed average)
+
+| Draft | Change on top of draft 3 | Agatha | Outside 60/40 | Presto vs Agatha | Agatha vs Reginald |
+|---|---|---|---|---|---|
+| 3 | (heal payoffs, defensive nerfs) | 53.8% | many | 24/76 | 29/71 |
+| 4 | Nova costs 5; Ladle Storm hits one Crew for 2; Unleashed Final Bow heals 5; Written Out of the Will costs 3; Dish, Knitting +1 Health; Cookies +1 Attack | 53.0% | 2 | 26/74 | 28/72 |
+| 5 | 4 + Ironclad Doily loses Bouncer, Soup Kitchen Bouncer 3/4, Soup Pot 5/7 | 51.5% | 3 | 19/81 | 25/75 |
+| 6 | 4 + Nova and Wrath (Mild) deal 1; two Stunt Double Bouncers | 62.8% | 4 | 23/77 | 61/39 (Reginald 39%) |
+| 7 | 4 + one Stunt Double Bouncer | 56.3% | 3 | 29/71 | 34/66 |
+
+Knockout tests (fixed best decks, 600 games):
+- Agatha without board wipes: beats Presto 46% (was 73%) but Reginald only 9% (was 29%).
+- Reginald without his 6 targeted-removal cards: Agatha beats him 76%.
+- Presto without burn: 2%. Without card draw: 5%. Presto has no way past Bouncers except burn.
+Conclusion: the two worst matchups are fixed from the other side (Presto needs a way past Bouncers; Reginald's removal suite is too deep), not by gutting Agatha. Draft 4 saved as lab/patches/agatha_draft4.json.

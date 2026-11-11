@@ -1,0 +1,199 @@
+{
+ "cards": {
+  "agatha_volunteer": {
+   "text": "Bouncer. Whenever your Boss is healed, gain +1 Attack.",
+   "triggers": [
+    {
+     "when": "boss_healed",
+     "effect": "buff_attack",
+     "value": 1,
+     "target": "self"
+    }
+   ]
+  },
+  "agatha_knitting": {
+   "attack": 2,
+   "health": 3,
+   "effect": "",
+   "effect_value": 0,
+   "target": "none",
+   "text": "Whenever your Boss is healed, give a random friendly Crew member +1/+1.",
+   "triggers": [
+    {
+     "when": "boss_healed",
+     "effect": "buff_friendly",
+     "value": 1,
+     "target": "friendly_minion"
+    }
+   ]
+  },
+  "agatha_chicken": {
+   "attack": 2,
+   "health": 2,
+   "keywords": [
+    "lifesteal"
+   ],
+   "effect": "",
+   "effect_value": 0,
+   "target": "none",
+   "text": "Tip Jar."
+  },
+  "agatha_doily": {
+   "attack": 1,
+   "health": 2,
+   "keywords": [
+    "shield"
+   ],
+   "effect_value": 2,
+   "text": "Stunt Double. Entrance: Restore 2 Health to your Boss."
+  },
+  "agatha_cookies": {
+   "health": 4,
+   "effect": "",
+   "effect_value": 0,
+   "target": "none",
+   "text": "Bouncer. At the end of your turn, restore 2 Health to your Boss.",
+   "triggers": [
+    {
+     "when": "end_of_turn",
+     "effect": "heal_hero",
+     "value": 2,
+     "target": "none"
+    }
+   ],
+   "attack": 1
+  },
+  "agatha_dish": {
+   "attack": 2,
+   "health": 3,
+   "keywords": [],
+   "text": "Whenever your Boss is healed, deal 1 damage to a random enemy.",
+   "triggers": [
+    {
+     "when": "boss_healed",
+     "effect": "damage",
+     "value": 1,
+     "target": "any_enemy"
+    }
+   ]
+  },
+  "agatha_lasagna": {
+   "keywords": [
+    "lifesteal"
+   ],
+   "deathrattle": "",
+   "deathrattle_value": 0,
+   "deathrattle_target": "none",
+   "text": "Tip Jar.",
+   "health": 4
+  },
+  "agatha_carol": {
+   "attack": 3,
+   "health": 4,
+   "deathrattle": "",
+   "deathrattle_value": 0,
+   "deathrattle_target": "none",
+   "text": "Whenever your Boss is healed, gain +1/+1.",
+   "triggers": [
+    {
+     "when": "boss_healed",
+     "effect": "buff_friendly",
+     "value": 1,
+     "target": "self"
+    }
+   ]
+  },
+  "agatha_sigh": {
+   "attack": 3,
+   "health": 4,
+   "effect": "silence",
+   "effect_value": 0,
+   "target": "enemy_minion",
+   "text": "Entrance: Heckle an enemy Crew member."
+  },
+  "agatha_china": {
+   "attack": 2,
+   "health": 4,
+   "keywords": [
+    "taunt",
+    "shield"
+   ],
+   "text": "Bouncer. Stunt Double."
+  },
+  "agatha_boris": {
+   "attack": 2,
+   "health": 4,
+   "text": "Bouncer. Whenever this takes damage and survives, restore 1 Health to your Boss.",
+   "triggers": [
+    {
+     "when": "damaged",
+     "effect": "heal_hero",
+     "value": 1,
+     "target": "none"
+    }
+   ]
+  },
+  "agatha_fortress": {
+   "attack": 4,
+   "health": 5,
+   "text": "Bouncer. Vibe: Your other Crew have +1 Health.",
+   "vibe": {
+    "attack": 0,
+    "health": 1,
+    "who": "other_friendly"
+   }
+  },
+  "agatha_face": {
+   "cost": 2,
+   "effect": "freeze",
+   "effect_value": 0,
+   "target": "enemy_minion",
+   "effect2": "draw",
+   "effect2_value": 1,
+   "effect2_target": "none",
+   "text": "Stage Fright an enemy Crew member. Draw a card."
+  },
+  "agatha_eternal": {
+   "attack": 4,
+   "health": 6,
+   "effect": "",
+   "effect_value": 0,
+   "target": "none",
+   "text": "At the end of your turn, restore 3 Health to your Boss.",
+   "triggers": [
+    {
+     "when": "end_of_turn",
+     "effect": "heal_hero",
+     "value": 3,
+     "target": "none"
+    }
+   ]
+  },
+  "agatha_ladle": {
+   "attack": 2,
+   "health": 2,
+   "keywords": [
+    "windfury"
+   ],
+   "text": "Encore."
+  },
+  "nova": {
+   "cost": 5
+  },
+  "agatha_ladle_storm": {
+   "effect": "damage",
+   "effect_value": 2,
+   "target": "enemy_minion",
+   "text": "Entrance: Deal 2 damage to an enemy Crew member."
+  },
+  "agatha_unleashed": {
+   "deathrattle": "heal_hero",
+   "deathrattle_value": 5,
+   "deathrattle_target": "none",
+   "text": "Entrance: Destroy all damaged enemy Crew. Final Bow: Restore 5 Health to your Boss."
+  },
+  "assassinate": {
+   "cost": 3
+  }
+ }
+}
