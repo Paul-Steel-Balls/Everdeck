@@ -202,3 +202,23 @@ forward (POOL=), so Agatha isn't tested with decks built for old cards.
 Round 3: 6 matchups outside 60/40; worst Agatha vs Reginald 33/67,
 Barnacle vs Presto 33/67, Presto vs Agatha 35/65. Rounds 2-3 move about
 1 point, so it's close to settled. New baseline = cv1/r3.
+
+## Planner baseline (Nov 11): same cards, the smarter bot plays both sides
+
+Same as the deep baseline, but every game is played by the planner bot
+(Hard mode, beam 4). Round 3 hit the 2-hour limit; rounds 1-2 shown.
+
+| Boss | greedy bot (cv1 r3) | planner r1 | planner r2 |
+|---|---|---|---|
+| Presto | 54.1 | 59.2 | 61.0 |
+| Larry | 55.5 | 54.4 | 56.1 |
+| Grunk | 44.3 | 48.1 | 49.7 |
+| Barnacle | 44.6 | 47.4 | 46.2 |
+| Reginald | 53.1 | 49.4 | 46.1 |
+| Agatha | 48.3 | 41.5 | 40.9 |
+
+Going first 43.6%. Worst: Reginald vs Presto 21/79, Barnacle vs Presto
+29/71, Agatha vs Reginald 34/66, Agatha vs Larry 35/65. Takeaway: card
+draw plus cheap Tricks (Presto) reward planning; Agatha's Bouncer-and-heal
+plan was flattering the weak bot. All balance passes from here on use the
+planner. New baseline = cv2/r2.
