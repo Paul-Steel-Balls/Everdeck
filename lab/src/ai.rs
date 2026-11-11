@@ -20,6 +20,13 @@ pub enum Act {
     End,
 }
 
+/// Lab-only turn planner: 0 = the game's one-move-at-a-time bot (parity),
+/// N = beam search over move sequences, N lines kept per step.
+pub static PLAN: std::sync::atomic::AtomicI64 = std::sync::atomic::AtomicI64::new(0);
+pub const PLAN_DEPTH: usize = 6;
+/// -1: everyone plans; 0 or 1: only that seat (0 = went first) plans.
+pub static PLAN_SEAT: std::sync::atomic::AtomicI64 = std::sync::atomic::AtomicI64::new(-1);
+
 pub struct Ai {
     pub rng: Rng,
     pub sloppiness: f64,
@@ -33,6 +40,11 @@ impl Ai {
     pub fn next_action(&mut self, gs: &Game, me: usize) -> Act {
         if gs.winner != -1 || gs.active != me {
             return Act::End;
+        }
+        let beam = PLAN.load(std::sync::atomic::Ordering::Relaxed);
+        let seat = PLAN_SEAT.load(std::sync::atomic::Ordering::Relaxed);
+        if beam > 0 && (seat < 0 || seat == me as i64) {
+            return plan(gs, me, beam as usize);
         }
         let base = evaluate(gs, me);
         let mut scored: Vec<(f64, Act)> = vec![];
@@ -92,6 +104,47 @@ impl Ai {
         }
         pick.1
     }
+}
+
+/// Try sequences of moves this turn (beam search), score where each line
+/// ends up, and take the first move of the best line. Re-plans every move,
+/// so dice and draws are seen as they land.
+fn plan(gs: &Game, me: usize, width: usize) -> Act {
+    let root = look(gs, me);
+    let base = evaluate(&root, me);
+    let mut best = (base, Act::End);
+    let mut beam: Vec<(f64, Game, Act, f64)> = vec![(base, root, Act::End, 0.0)];
+    for _ in 0..PLAN_DEPTH {
+        let mut cand: Vec<(f64, Game, Act, f64)> = vec![];
+        for (_, g, first, tsum) in &beam {
+            for a in legal_actions(g, me) {
+                let mut g2 = g.clone_for_ai();
+                if !apply(&mut g2, me, a) {
+                    continue;
+                }
+                let t = tsum + tempo(g, me, a);
+                let f = if *first == Act::End { a } else { *first };
+                let s = evaluate(&g2, me) + t;
+                if g2.winner == me as i32 {
+                    return f;
+                }
+                cand.push((s, g2, f, t));
+            }
+        }
+        if cand.is_empty() {
+            break;
+        }
+        cand.sort_by(|x, y| y.0.partial_cmp(&x.0).unwrap_or(std::cmp::Ordering::Equal));
+        cand.truncate(width);
+        if cand[0].0 > best.0 {
+            best = (cand[0].0, cand[0].2);
+        }
+        beam = cand;
+    }
+    if best.0 - base < MIN_GAIN {
+        return Act::End;
+    }
+    best.1
 }
 
 /// A look-ahead copy with the hidden cards hidden (AIPlayer._look): own

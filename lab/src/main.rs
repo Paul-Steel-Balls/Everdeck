@@ -86,6 +86,12 @@ fn main() {
             eprintln!("  {}", pr);
         }
     }
+    if args.has("plan") {
+        ai::PLAN.store(args.int("plan", 0), std::sync::atomic::Ordering::Relaxed);
+    }
+    if args.has("plan-seat") {
+        ai::PLAN_SEAT.store(args.int("plan-seat", -1), std::sync::atomic::Ordering::Relaxed);
+    }
     if args.has("clone-seed") {
         game::CLONE_SEED.store(args.int("clone-seed", -1), std::sync::atomic::Ordering::Relaxed);
     }
