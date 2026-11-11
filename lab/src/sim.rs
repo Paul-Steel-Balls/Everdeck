@@ -5,6 +5,9 @@ use crate::data::*;
 use crate::game::*;
 use crate::json::*;
 
+/// Rule what-if for every game (--variant), when the caller passes none.
+pub static VARIANT: std::sync::OnceLock<String> = std::sync::OnceLock::new();
+
 pub const TURN_CAP: i32 = 90;
 pub const ACTION_CAP: i32 = 60;
 
@@ -30,6 +33,7 @@ pub fn play(a: &str, b: &str, d0: &[CardId], d1: &[CardId], seed: i64, variant: 
         seed_clone_rng(seed.wrapping_mul(0x9E3779B1).wrapping_add(17));
     }
     let mut gs = Game::new(seed, d0, d1, a, b);
+    let variant = if variant.is_empty() { VARIANT.get().map(|s| s.as_str()).unwrap_or("") } else { variant };
     apply_variant(&mut gs, variant);
     let mut played: [Vec<(CardId, i32)>; 2] = [vec![], vec![]];
     let mut powers = [0, 0];
@@ -63,6 +67,12 @@ pub fn play(a: &str, b: &str, d0: &[CardId], d1: &[CardId], seed: i64, variant: 
 
 /// The going-first what-ifs (sim_lib.gd _variant).
 pub fn apply_variant(gs: &mut Game, v: &str) {
+    if v.contains('+') {
+        for part in v.split('+') {
+            apply_variant(gs, part);
+        }
+        return;
+    }
     match v {
         "p2card" => {
             if let Some(c) = gs.players[1].deck.pop() {

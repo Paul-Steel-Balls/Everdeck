@@ -92,6 +92,9 @@ fn main() {
     if args.has("plan-seat") {
         ai::PLAN_SEAT.store(args.int("plan-seat", -1), std::sync::atomic::Ordering::Relaxed);
     }
+    if args.has("variant") {
+        let _ = sim::VARIANT.set(args.get("variant", ""));
+    }
     if args.has("clone-seed") {
         game::CLONE_SEED.store(args.int("clone-seed", -1), std::sync::atomic::Ordering::Relaxed);
     }
