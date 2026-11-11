@@ -1,5 +1,5 @@
 extends Node
-var out := "/tmp/shots"
+var out := OS.get_environment("SHOT_OUT") if OS.get_environment("SHOT_OUT") != "" else "/tmp/shots"
 func _ready() -> void:
 	DirAccess.make_dir_recursive_absolute(out)
 	get_window().size = Vector2i(1280, 720)
@@ -18,6 +18,7 @@ func _ready() -> void:
 	await _shot("hs_3")
 	hs._select("reginald", false)
 	hs._cycle_opp(1)
+	hs._set_level(2, true)
 	await _f(45)
 	await _shot("hs_4")
 	hs._on_lock()

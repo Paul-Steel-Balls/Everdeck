@@ -15,6 +15,7 @@ extends SceneTree
 #               instead of fresh random ones (used by the deck search)
 #   SIM_HERO    with SIM_DECKS: only that class uses its list; everyone
 #               else gets random decks (to test one list against the field)
+#   SIM_PLAN    Hard-mode planner width (default 0: one move at a time)
 #   SIM_SLOPPY  AI sloppiness, 0..1 (default 0.0: best play every time)
 #
 # Every game is seeded, so any line can be replayed exactly.
@@ -50,6 +51,8 @@ func _init() -> void:
 
 	var f := FileAccess.open(out_path, FileAccess.WRITE)
 	var ai := AIPlayer.new()
+	if OS.get_environment("SIM_PLAN") != "":
+		ai.plan_width = int(OS.get_environment("SIM_PLAN"))
 	ai.sloppiness = sloppy
 	var k: int = -1
 	var t0: int = Time.get_ticks_msec()

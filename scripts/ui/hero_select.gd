@@ -15,6 +15,11 @@ const HEROES: Array = ["grunk", "agatha", "presto", "barnacle", "reginald", "lar
 const OPPONENTS: Array = ["random", "grunk", "agatha", "presto", "barnacle", "reginald", "larry"]
 
 var selected: String = ""
+# Bot difficulty (AIPlayer.Level). Kept for the session, so a rematch or
+# the next match starts where you left it.
+static var difficulty: int = 1
+const LEVELS: Array = [["EASY", Color(0.3, 0.78, 0.35)], ["NORMAL", Color(0.25, 0.55, 0.95)], ["HARD", Color(0.92, 0.22, 0.2)]]
+var _level_btns: Array = []
 var _opp_idx: int = 0
 var _t: float = 0.0
 
@@ -247,12 +252,41 @@ func _build_info() -> void:
 	buttons["opp_prev"] = prev
 	buttons["opp_next"] = nxt
 	_update_opp()
+	# Difficulty: three chunky pills, the picked one lit up.
+	var lv_row := HBoxContainer.new()
+	lv_row.position = Vector2(680, 542)
+	lv_row.add_theme_constant_override("separation", 10)
+	var bl := UIKit.label("BOT", 20, Color(1, 1, 1, 0.85), UIKit.FONT_DISPLAY_PATH, 5)
+	bl.custom_minimum_size = Vector2(112, 0)
+	bl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	lv_row.add_child(bl)
+	for i in LEVELS.size():
+		var b := UIKit.button(str(LEVELS[i][0]), LEVELS[i][1], 20, Vector2(118, 46))
+		b.name = "Level_" + str(LEVELS[i][0])
+		b.pressed.connect(func() -> void: _set_level(i, true))
+		lv_row.add_child(b)
+		_level_btns.append(b)
+		buttons["level_" + str(LEVELS[i][0]).to_lower()] = b
+	add_child(lv_row)
+	_set_level(difficulty, false)
 	_lock = UIKit.button("LOCK IN!", Color(0.95, 0.62, 0.08), 40, Vector2(330, 84), true)
 	_lock.name = "LockIn"
 	_lock.position = Vector2(900, 600)
 	_lock.pressed.connect(_on_lock)
 	add_child(_lock)
 	buttons["lock"] = _lock
+
+
+func _set_level(i: int, pop: bool) -> void:
+	difficulty = i
+	for j in _level_btns.size():
+		var b: Button = _level_btns[j]
+		b.modulate = Color(1, 1, 1, 1) if j == i else Color(0.55, 0.55, 0.6, 0.55)
+		if j == i and pop:
+			b.pivot_offset = b.size * 0.5
+			b.scale = Vector2(1.2, 1.2)
+			var tw := b.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			tw.tween_property(b, "scale", Vector2.ONE, 0.25)
 
 
 func _cycle_opp(d: int) -> void:

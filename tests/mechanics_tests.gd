@@ -74,6 +74,7 @@ func run(runner) -> void:
 	_vibes()
 	_online_snapshot()
 	_ai()
+	_hard_bot()
 
 
 func _stunt_double() -> void:
@@ -426,3 +427,44 @@ func _ai() -> void:
 	gs3.players[1]["hp"] = 30
 	_ai_turn(gs3, 0)
 	r._check("Bot: kills an enemy engine instead of going face", gs3.players[1]["board"].is_empty())
+
+
+func _hard_bot() -> void:
+	# Difficulty levels.
+	var e := AIPlayer.for_level(AIPlayer.Level.EASY)
+	var n := AIPlayer.for_level(AIPlayer.Level.NORMAL)
+	var h := AIPlayer.for_level(AIPlayer.Level.HARD)
+	r._check("Bot levels: Easy is sloppier than Normal", e.sloppiness > n.sloppiness and e.plan_width == 0 and n.plan_width == 0)
+	r._check("Bot levels: Hard plans and never misplays on purpose", h.plan_width > 0 and h.sloppiness == 0.0)
+	# Hard mode's tuned decks: 30 real cards for every Boss.
+	var ok: bool = true
+	for cls in ["grunk", "agatha", "presto", "barnacle", "reginald", "larry"]:
+		var d: Array = AIPlayer.tuned_deck(cls)
+		if d.size() != GameState.DECK_SIZE:
+			ok = false
+		for cid in d:
+			if CardDB.get_card(str(cid)).is_empty():
+				ok = false
+	r._check("Hard bot: a full tuned deck for every Boss", ok)
+	# A two-step win the one-move bot can't see: Heckle the Bouncer, then
+	# swing at the Boss. The one-move bot kills the Bouncer instead.
+	_c("t_hk_wall", {"attack": 0, "health": 1, "keywords": ["taunt"]})
+	_c("t_hk_hit", {"attack": 2, "health": 2})
+	_c("t_hk_heckle", {"type": "spell", "cost": 1, "attack": 0, "health": 0, "effect": "silence", "effect_value": 0, "target": "enemy_minion"})
+	for planner in [false, true]:
+		var gs := _gs()
+		_put(gs, 0, "t_hk_hit")
+		_put(gs, 1, "t_hk_wall")
+		gs.players[0]["hand"] = ["t_hk_heckle"]
+		gs.players[1]["hp"] = 2
+		var bot := AIPlayer.new()
+		bot.sloppiness = 0.0
+		bot.plan_width = 4 if planner else 0
+		for _i in 10:
+			var a: Dictionary = bot.next_action(gs, 0)
+			if str(a.get("type", "end")) == "end" or not AIPlayer.apply(gs, 0, a) or gs.winner != -1:
+				break
+		if planner:
+			r._check("Hard bot: Heckles the Bouncer, then wins", gs.winner == 0)
+		else:
+			r._check("Normal bot: misses that win (why Hard exists)", gs.winner == -1)

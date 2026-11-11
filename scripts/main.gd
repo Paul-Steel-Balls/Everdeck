@@ -3769,11 +3769,13 @@ func _show_gameover() -> void:
 
 # Set up a match against the computer. The human's seat (first or
 # second) is a coin flip; the computer builds its own deck.
-func start_vs_ai(human_class: String, human_deck: Array, ai_class: String) -> void:
+func start_vs_ai(human_class: String, human_deck: Array, ai_class: String, level: int = -1) -> void:
 	_vs_ai = true
-	_ai = AIPlayer.new()
+	if level < 0:
+		level = HeroSelect.difficulty
+	_ai = AIPlayer.for_level(level)
 	_human_idx = randi() % 2
-	var ai_deck: Array = AIPlayer.build_deck(ai_class)
+	var ai_deck: Array = AIPlayer.tuned_deck(ai_class) if level == AIPlayer.Level.HARD else AIPlayer.build_deck(ai_class)
 	_classes = ["", ""]
 	_decks = [[], []]
 	_classes[_human_idx] = human_class
@@ -3793,17 +3795,19 @@ func _maybe_run_ai() -> void:
 func _run_ai_turn() -> void:
 	_ai_turn = true
 	var me: int = 1 - _human_idx
-	await get_tree().create_timer(0.7).timeout
+	var pause: float = 0.7
 	var guard: int = 0
 	while _gs != null and _gs.winner == -1 and _gs.active == me and guard < 60:
 		guard += 1
-		var a: Dictionary = _ai.next_action(_gs, me)
+		var a: Dictionary = await _ai_think(me, pause)
+		if _gs == null or _screen != Screen.MATCH:
+			break
 		if str(a.get("type", "end")) == "end":
 			break
 		if not AIPlayer.apply(_gs, me, a):
 			break
 		await _after_action()
-		await get_tree().create_timer(0.45).timeout
+		pause = 0.45
 		if _screen != Screen.MATCH:
 			break
 	_ai_turn = false
@@ -3814,6 +3818,16 @@ func _run_ai_turn() -> void:
 		return
 	_gs.end_turn()
 	_after_end_turn()
+
+
+# The bot's next move, after a short pause so the player can follow along.
+# Even Hard mode's planner thinks in a few milliseconds (40 ms at worst),
+# well inside the pause.
+func _ai_think(me: int, pause: float) -> Dictionary:
+	await get_tree().create_timer(pause).timeout
+	if _gs == null:
+		return {"type": "end"}
+	return _ai.next_action(_gs, me)
 
 
 var _leave_prompt: Control = null

@@ -25,6 +25,43 @@ var rng := RandomNumberGenerator.new()
 # 0.0 = always the best move; higher = sometimes picks a near-best move
 # (feels less robotic, and gives an easier difficulty).
 var sloppiness: float = 0.15
+# Hard mode: 0 = pick one move at a time (Easy/Normal). N = plan the turn:
+# try sequences of moves, keep the N best lines at each step, and play the
+# first move of the best line (the Lab's --plan N, move for move).
+var plan_width: int = 0
+const PLAN_DEPTH: int = 6
+
+enum Level { EASY, NORMAL, HARD }
+
+
+# The three difficulty levels.
+static func for_level(level: int) -> AIPlayer:
+	var ai := AIPlayer.new()
+	match level:
+		Level.EASY:
+			ai.sloppiness = 0.45
+		Level.HARD:
+			ai.sloppiness = 0.0
+			ai.plan_width = 4
+		_:
+			ai.sloppiness = 0.15
+	return ai
+
+
+# Hard mode plays a tuned list (the Lab's best deck for that Boss) instead
+# of a random curve. Falls back to build_deck if there isn't one.
+static func tuned_deck(class_id: String) -> Array:
+	var f := FileAccess.open("res://data/bot_decks.json", FileAccess.READ)
+	if f != null:
+		var d: Variant = JSON.parse_string(f.get_as_text())
+		if d is Dictionary and d.has(class_id):
+			var deck: Array = []
+			for cid in d[class_id]:
+				if not CardDB.get_card(str(cid)).is_empty():
+					deck.append(str(cid))
+			if deck.size() == GameState.DECK_SIZE:
+				return deck
+	return build_deck(class_id)
 
 
 func _init() -> void:
@@ -84,6 +121,8 @@ static func build_deck(class_id: String, seed_value: int = -1) -> Array:
 func next_action(gs: GameState, me: int) -> Dictionary:
 	if gs.winner != -1 or gs.active != me:
 		return {"type": "end"}
+	if plan_width > 0:
+		return _plan(gs, me, plan_width)
 	var base: float = evaluate(gs, me)
 	var scored: Array = []
 	for a in legal_actions(gs, me):
@@ -139,6 +178,45 @@ func next_action(gs: GameState, me: int) -> Dictionary:
 		if alt[0] >= MIN_GAIN and alt[0] >= best * 0.6:
 			pick = alt
 	return pick[1]
+
+
+# Hard mode: beam search over this turn's move sequences. Each line is
+# [score, game copy, first move, tempo so far, order]. Re-plans every move,
+# so dice and draws are seen as they land.
+func _plan(gs: GameState, me: int, width: int) -> Dictionary:
+	var root: GameState = _look(gs, me)
+	var base: float = evaluate(root, me)
+	var best_score: float = base
+	var best_act: Dictionary = {"type": "end"}
+	var beam: Array = [[base, root, {"type": "end"}, 0.0, 0]]
+	for _d in PLAN_DEPTH:
+		var cand: Array = []
+		for line in beam:
+			var g: GameState = line[1]
+			var first: Dictionary = line[2]
+			for a in legal_actions(g, me):
+				var g2: GameState = g.clone()
+				if not apply(g2, me, a):
+					continue
+				var t: float = float(line[3]) + _tempo(g, me, a)
+				var f: Dictionary = a if str(first.get("type", "")) == "end" else first
+				var sc: float = evaluate(g2, me) + t
+				if g2.winner == me:
+					return f
+				cand.append([sc, g2, f, t, cand.size()])
+		if cand.is_empty():
+			break
+		# Best first; equal scores keep the order they were found (the Lab's
+		# stable sort), so both pick the same line.
+		cand.sort_custom(func(x: Array, y: Array) -> bool: return x[0] > y[0] or (x[0] == y[0] and x[4] < y[4]))
+		cand.resize(mini(width, cand.size()))
+		if cand[0][0] > best_score:
+			best_score = cand[0][0]
+			best_act = cand[0][2]
+		beam = cand
+	if best_score - base < MIN_GAIN:
+		return {"type": "end"}
+	return best_act
 
 
 # A look-ahead copy with the hidden cards hidden: the bot knows what's in
