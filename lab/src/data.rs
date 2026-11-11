@@ -362,6 +362,9 @@ pub struct Db {
     pub powers: HashMap<String, Power>,
     pub classes: Vec<String>,
     pub payoff_cap: i32,
+    /// Every heal pays off: a heal at full Health still counts as "healed"
+    /// for payoffs (patch "overheal": 0 = the old rule).
+    pub overheal: bool,
     pub squireling: CardId,
     pub deckhand: CardId,
     pub generic: CardId,
@@ -401,6 +404,7 @@ impl Db {
             powers,
             classes: j.get("classes").arr().iter().map(|x| x.s()).collect(),
             payoff_cap: if j.has("payoff_cap") { j.get("payoff_cap").i() as i32 } else { 3 },
+            overheal: true,
             squireling,
             deckhand,
             generic,
@@ -492,6 +496,9 @@ impl Db {
         }
         if p.has("payoff_cap") {
             self.payoff_cap = p.get("payoff_cap").i() as i32;
+        }
+        if p.has("overheal") {
+            self.overheal = p.get("overheal").i() != 0;
         }
         problems
     }

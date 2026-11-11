@@ -169,7 +169,7 @@ func _run_all() -> void:
 	gs.setup(_deck_of("angry_squirrel"), _deck_of("angry_squirrel"), "grunk", "agatha")
 	_check("setup: P0 starts, mana 1/1", gs.active == 0 and gs.players[0]["mana"] == 1 and gs.players[0]["max_mana"] == 1)
 	# Balance Patch v1 (corrected): after setup P1 has 4 cards, P2 has 5 cards + The Coin.
-	_check("setup: starting hands P1=4, P2=5+Coin", gs.players[0]["hand"].size() == 4 and gs.players[1]["hand"].size() == 6 and gs.players[1]["hand"].has("coin"))
+	_check("setup: starting hands P1=4, P2=4+2 Coins", gs.players[0]["hand"].size() == 4 and gs.players[1]["hand"].size() == 6 and gs.players[1]["hand"].count("coin") == 2)
 	_check("setup: Coin is not in the card pool", not CardDB.card_ids().has("coin"))
 	_check("setup: classes stored", gs.players[0]["class"] == "grunk" and gs.players[1]["class"] == "agatha")
 	_check("setup: turn_count starts at 1", gs.turn_count == 1)
@@ -250,7 +250,7 @@ func _run_all() -> void:
 	for c in p2_hand:
 		if c != "coin":
 			p2_regular += 1
-	_check("turn flow: end_turn passes + draws; P2 = 6 + Coin after first draw", gs14.active == 1 and p2_hand.size() == 7 and p2_hand.has("coin") and p2_regular == 6 and gs14.players[0]["hand"].size() == 4)
+	_check("turn flow: end_turn passes + draws; P2 = 5 + 2 Coins after first draw", gs14.active == 1 and p2_hand.size() == 7 and p2_hand.count("coin") == 2 and p2_regular == 5 and gs14.players[0]["hand"].size() == 4)
 
 	# --- Mana / board limits ---
 	var gs15 := _gs_with_hands(["dragon"], [], 1, 10)

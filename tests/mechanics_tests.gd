@@ -273,7 +273,12 @@ func _triggers() -> void:
 	gs4.players[0]["hp"] = 30
 	gs4.players[0]["hand"] = ["t_tea"]
 	gs4.play_card(0, 0)
-	r._check("Trigger: no heal at full Health, no trigger", int(g["attack"]) == 3)
+	r._check("Trigger: every heal pays off, even at full Health", int(g["attack"]) == 4)
+	GameState.overheal = false
+	gs4.players[0]["hand"] = ["t_tea"]
+	gs4.play_card(0, 0)
+	GameState.overheal = true
+	r._check("Trigger: old rule (overheal off): no heal at full Health, no trigger", int(g["attack"]) == 4)
 	# Whenever a friendly Crew dies: draw a card.
 	var gs5 := _gs()
 	_c("t_mourner", {"attack": 1, "health": 5, "triggers": [{"when": "friendly_crew_died", "effect": "draw", "value": 1, "target": "none"}]})

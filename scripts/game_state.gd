@@ -24,6 +24,9 @@ var winner: int = -1
 # 10 mana, a kill from 6 mana). The balance tools may change it to test;
 # -1 means no cap.
 static var payoff_cap: int = 3
+# Every heal pays off (approved Nov 11): a heal at full Health still
+# counts as "healed" for payoffs. false = the old rule (what-ifs only).
+static var overheal: bool = true
 # Sim tools only: >= 0 pins the dice of the bot's look-ahead copies, so a
 # game replays exactly (the Lab's parity check pins both sides). -1, the
 # real game: every copy gets fresh dice.
@@ -162,12 +165,12 @@ func setup(deck0: Array, deck1: Array, class0: String = "neutral", class1: Strin
 	_shuffle(players[1]["deck"])
 	for _i in 3:
 		_draw(0, true)
-	for _i in 5:
+	for _i in 4:
 		_draw(1, true)
-	# Balance Patch v1 (corrected): Player 2 gets The Coin (not in the
-	# deck, not in the pool) and is dealt 5 cards. P2's first draw on
-	# their turn 1 then leaves them at 6 cards + Coin vs P1's 4.
-	# (Simulation: 4 + Coin gives P1 58.2%; 5 + Coin gives 51.2%.)
+	# Going second (approved Nov 11): 4 cards + 2 Lucky Pennies (not in
+	# the deck, not in the pool). With the planner bot, 5 cards + 1 Penny
+	# gave the first player only ~44%; 4 + 2 Pennies gives ~48%.
+	players[1]["hand"].append("coin")
 	players[1]["hand"].append("coin")
 	_start_turn()
 	_events_enabled = true
@@ -1130,6 +1133,8 @@ func _heal_hero(p_idx: int, amount: int) -> void:
 	p["hp"] = mini(STARTING_HP, before + amount)
 	if int(p["hp"]) > before:
 		_emit("heal", {"target_kind": "hero", "player": p_idx, "uid": -1, "amount": int(p["hp"]) - before, "source_uid": _src_uid, "source_card_id": _src_card})
+		_queue_triggers(p_idx, "boss_healed")
+	elif amount > 0 and overheal:
 		_queue_triggers(p_idx, "boss_healed")
 
 

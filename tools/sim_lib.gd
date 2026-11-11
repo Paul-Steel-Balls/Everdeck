@@ -26,6 +26,8 @@ static func ensure_patch() -> void:
 	var problems: Array = CardDB.apply_test_patch(patch)
 	if patch.has("payoff_cap"):
 		GameState.payoff_cap = int(patch["payoff_cap"])
+	if patch.has("overheal"):
+		GameState.overheal = int(patch["overheal"]) != 0
 	for pr in problems:
 		push_error("SIM_PATCH: " + str(pr))
 	printerr("[sim] patch %s applied (%d problems)" % [path.get_file(), problems.size()])
@@ -74,6 +76,10 @@ static func play(ai: AIPlayer, a: String, b: String, d0: Array, d1: Array, seed:
 # What-if rules for the going-first problem, applied right after the deal.
 # Simulation only: the real game never calls this.
 static func _variant(gs: GameState, v: String) -> void:
+	if "+" in v:
+		for part in v.split("+"):
+			_variant(gs, part)
+		return
 	match v:
 		"p2card":     # the second player is dealt one more card
 			if not gs.players[1]["deck"].is_empty():

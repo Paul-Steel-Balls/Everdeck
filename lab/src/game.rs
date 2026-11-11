@@ -209,10 +209,12 @@ impl Game {
         for _ in 0..3 {
             self.draw(0, true);
         }
-        for _ in 0..5 {
+        for _ in 0..4 {
             self.draw(1, true);
         }
+        // Going second: 4 cards + 2 Lucky Pennies (game_state.gd setup).
         let coin = db().coin;
+        self.players[1].hand.push(coin);
         self.players[1].hand.push(coin);
         self.start_turn();
     }
@@ -1080,7 +1082,7 @@ impl Game {
     fn heal_hero(&mut self, p: usize, amount: i32) {
         let before = self.players[p].hp;
         self.players[p].hp = STARTING_HP.min(before + amount);
-        if self.players[p].hp > before {
+        if self.players[p].hp > before || (amount > 0 && db().overheal) {
             self.queue_triggers(p, When::BossHealed, -1);
         }
     }
