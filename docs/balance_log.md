@@ -222,3 +222,32 @@ Going first 43.6%. Worst: Reginald vs Presto 21/79, Barnacle vs Presto
 draw plus cheap Tricks (Presto) reward planning; Agatha's Bouncer-and-heal
 plan was flattering the weak bot. All balance passes from here on use the
 planner. New baseline = cv2/r2.
+
+## Planner passes g1-g6 (Nov 11, Lab only; 2 converge rounds each)
+
+Method: per-card knockouts (each card swapped for a plain same-cost
+Crew, Boss win% change), then whole-package converge rounds where every
+Boss re-searches its list against the newest field.
+
+Knockout findings (planner):
+- Oops, Wrong Hand! was worth +13.6 to Larry as ONE copy (the planner
+  reads both hands). Cost 2 -> 5 in all drafts.
+- Presto's power comes from removal on a body (Blast Scholar, Orb of
+  Oops, Zapper, Part-Time Dragon) and cheap draw-2 (Bookworm, Wisdom).
+  His cheap "draw a card" Crew play WORSE than plain 2/2s.
+- Agatha's heal payoffs only fired when she was damaged. Fix approved by
+  Ian (Nov 11): a heal at full Health still counts ("every heal pays
+  off"). Her payoff Crew (Carol, Volunteer) then knock out at +4-6.
+- Going first was ~44% with 5 cards + 1 Penny. Approved (Nov 11): going
+  second gets 4 cards + 2 Lucky Pennies.
+
+| Draft | Main changes | Presto | Larry | Reginald | Grunk | Barnacle | Agatha | first |
+|---|---|---|---|---|---|---|---|---|
+| base (cv2 r2) | v0.9.4 + Agatha draft 4 | 61.0 | 56.1 | 46.1 | 49.7 | 46.2 | 40.9 | 43.6 |
+| g2 | Oops 5 mana; Mirror Mage, Circle, Sage -1 Attack; Agatha power heals 3; Carol 3/5; Volunteer +1/+1; Reginald knights package | 54.2 | 54.2 | 50.5 | 48.6 | 45.6 | 46.9 | 46.4 |
+| g4 | g2 + overheal + Knitting 2/4 | 64.1 | 45.2 | 50.0 | 50.6 | 40.6 | 49.4 | 47.1 |
+| g5 | g4 + Blast Scholar 3/2, Orb 4 mana, Deckhand 1/3 | 58.6 | 42.7 | 54.2 | 41.4 | 54.6 | 48.6 | 46.0 |
+| g6 | g5 + Bookworm 4 mana, Wisdom 3 mana, Final Exam 6 mana | 46.3 | 43.2 | 50.9 | 47.1 | 61.5 | 51.0 | 44.9 |
+
+g4 -> g5 Presto jumped because the search found a new list; single
+rounds swing several points, so each draft gets at least 2 rounds.
