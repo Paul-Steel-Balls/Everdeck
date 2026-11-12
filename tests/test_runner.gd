@@ -123,7 +123,7 @@ func _run_all() -> void:
 	for c in CardDB.CARDS:
 		if str(c.get("effect2", "")) != "":
 			e2.append(c["id"])
-	_check("cards.json: effect2 only on the 4 exception spells", e2.size() == 4 and e2.has("wisdom") and e2.has("presto_cantrip") and e2.has("reg_blessing") and e2.has("lar_double_down"))
+	_check("cards.json: effect2 only on the 5 exception spells", e2.size() == 5 and e2.has("agatha_face") and e2.has("wisdom") and e2.has("presto_cantrip") and e2.has("reg_blessing") and e2.has("lar_double_down"))
 	_check("cards.json: all art ids non-empty (generic art covers all)", CardDB.CARDS.all(func(c: Dictionary) -> bool: return not str(c.get("art", "")).strip_edges().is_empty()))
 
 	# --- Deck validation ---

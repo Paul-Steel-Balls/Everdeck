@@ -1,6 +1,83 @@
 EVERDECK PATCH NOTES
 
 ==================================================
+v0.9.5: The big balance pass
+==================================================
+
+Every Boss was tuned with the new Hard bot playing both sides, tens of
+thousands of games per change. All six now win 47-53% of the time.
+
+BOT DIFFICULTY: pick EASY, NORMAL or HARD in the BOT row on the Boss
+select screen. HARD plans its whole turn and plays a tuned deck.
+
+NEW RULES
+  - Going second: 4 cards + 2 Lucky Pennies (was 5 cards + 1).
+  - Every heal pays off: healing your Boss at full Health still counts
+    for "whenever your Boss is healed" cards.
+
+PRESTO (nerfs)
+  - Blast Scholar: 3/2 (was 3/3).
+  - Orb of Oops: costs 4 (was 3).
+  - Bookworm: costs 4 (was 3).
+  - Wisdom From a Fortune Cookie: costs 3 (was 2).
+  - Tower Librarian: 2/3 (was 3/3).
+  - Final Exam: costs 6 (was 5).
+  - Mirror Mage: 2/3 (was 3/3).
+  - Summoning Circle: 3/4 (was 4/4).
+  - Sleep-Deprived Sage: 3/4 (was 4/4).
+
+GRANDMA AGATHA: every heal pays off
+  - Casserole Dish: 2/3. Whenever your Boss is healed, deal 1 damage to
+    a random enemy. (was 3/1 Bouncer)
+  - Soup Kitchen Volunteer: also "Whenever your Boss is healed, +1/+1."
+  - Grandma's Knitting: 2/4. Whenever your Boss is healed, give a random
+    friendly Crew member +1/+1.
+  - Boris the Soup Dragon: 2/4 Bouncer. Whenever this takes damage and
+    survives, heal 1.
+  - Grandma's Cookies: 1/4 Bouncer. End of your turn: heal 2.
+  - Eternal Casserole: 4/6. End of your turn: heal 3.
+  - Chicken Soup (Magic) and Leftover Lasagna (now 3/4): Tip Jar.
+  - Doily of Protection: Stunt Double. Entrance: heal 2.
+  - Grandma Agatha, Unleashed: Final Bow now heals 5.
+  - The Good China: 2/4 Bouncer, Stunt Double.
+  - Grandma's Fortress: 4/5 Bouncer. Vibe: other Crew have +1 Health.
+  - Soup Ladle (Weaponized): 2/2 Encore.
+  - Agatha's Disappointed Sigh: 3/4. Entrance: Heckle an enemy Crew member.
+  - Ladle to the Face: Stage Fright an enemy Crew member. Draw a card.
+  - Ladle Storm: Entrance: deal 2 damage to one enemy Crew member.
+  - Nova the Drama Queen: costs 5 (was 4).
+  - Written Out of the Will: costs 3 (was 4).
+
+SIR REGINALD: knights that won't stay down
+  - Knight of Judgment: Stunt Double. Entrance: give another friendly
+    Crew member +1/+1. (was: deal 2)
+  - High Marshal: also "Whenever your other Crew get buffed, +1 Attack."
+  - Shield Knight: 2/3 Bouncer, Stunt Double.
+  - Banner of the Order: 1/3. Vibe: your other Crew have +1 Health.
+  - Knight of the Verdict: deals 2 (was 3).
+  - Twin-Blade Knight: 3/3 (was 4/3).
+
+"LUCKY" LARRY: gambling you can stack
+  - Dice Boy: Whenever a random effect fires, +1 Attack.
+  - High-Stakes Bettor: 3 mana 3/3. Whenever a random effect fires, +1/+1.
+  - Lucky Seven: Whenever a random effect fires, deal 1 damage to the
+    enemy Boss.
+  - Big Bet: costs 2, On Credit (1).
+  - Kneecap: costs 2, On Credit (2).
+  - Three-Card Monte: 3/3 (was 3/4).
+  - Oops, Wrong Hand!: costs 5 (was 2).
+
+GRUNK: lit fuses
+  - Boombox: 3/3. Start of your turn: deal 2 damage to a random enemy.
+  - Fuse Lighter: 1/2. Start of your turn: deal 1 damage to the enemy Boss.
+  - Goblin War Machine: 3/5. Start of your turn: deal 1 damage to ALL
+    enemy Crew.
+  - Megabomb: Final Bow now hits ALL enemy Crew for 2.
+
+CAPTAIN BARNACLE
+  - Flag Bearer: 2/3 (was 2/2).
+
+==================================================
 v0.9.4: New mechanics, and Barnacle's new crew
 ==================================================
 

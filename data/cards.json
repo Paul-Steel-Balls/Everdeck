@@ -481,7 +481,7 @@
     "id": "wisdom",
     "name": "Wisdom From a Fortune Cookie",
     "class": "presto",
-    "cost": 2,
+    "cost": 3,
     "type": "spell",
     "attack": 0,
     "health": 0,
@@ -504,7 +504,7 @@
     "id": "nova",
     "name": "Nova the Drama Queen",
     "class": "agatha",
-    "cost": 4,
+    "cost": 5,
     "type": "spell",
     "attack": 0,
     "health": 0,
@@ -525,7 +525,7 @@
     "id": "assassinate",
     "name": "Written Out of the Will",
     "class": "agatha",
-    "cost": 4,
+    "cost": 3,
     "type": "spell",
     "attack": 0,
     "health": 0,
@@ -587,7 +587,7 @@
     "id": "hand_swap",
     "name": "Oops, Wrong Hand!",
     "class": "larry",
-    "cost": 2,
+    "cost": 5,
     "type": "spell",
     "attack": 0,
     "health": 0,
@@ -1050,20 +1050,28 @@
     "class": "grunk",
     "cost": 1,
     "type": "minion",
-    "attack": 0,
-    "health": 1,
+    "attack": 1,
+    "health": 2,
     "keywords": [],
-    "effect": "damage",
-    "effect_value": 2,
-    "target": "enemy_minion",
+    "effect": "",
+    "effect_value": 0,
+    "target": "none",
     "rarity": "Common",
-    "text": "Entrance: Deal 2 damage to an enemy Crew member.",
+    "text": "At the start of your turn, deal 1 damage to the enemy Boss.",
     "flavor": "Lights the fuse. Runs. That is the whole job.",
     "art": "fuse",
     "deathrattle_target": "none",
     "deathrattle": "",
     "deathrattle_value": 0,
-    "design_note": "Minion-only target (Batch 2 review dedup)."
+    "design_note": "Minion-only target (Batch 2 review dedup).",
+    "triggers": [
+      {
+        "when": "start_of_turn",
+        "effect": "damage",
+        "value": 1,
+        "target": "enemy_hero"
+      }
+    ]
   },
   {
     "id": "grunk_firecracker_spell",
@@ -1683,18 +1691,26 @@
     "cost": 3,
     "type": "minion",
     "attack": 3,
-    "health": 4,
+    "health": 3,
     "keywords": [],
     "effect": "",
     "effect_value": 0,
     "target": "none",
     "rarity": "Rare",
-    "text": "",
+    "text": "At the start of your turn, deal 2 damage to a random enemy.",
     "flavor": "Plays music. Loudly. Explosively. It is a boombox.",
     "art": "boombox",
     "deathrattle_target": "none",
     "deathrattle": "",
-    "deathrattle_value": 0
+    "deathrattle_value": 0,
+    "triggers": [
+      {
+        "when": "start_of_turn",
+        "effect": "random_enemy_damage",
+        "value": 2,
+        "target": "none"
+      }
+    ]
   },
   {
     "id": "grunk_kablooey",
@@ -1829,18 +1845,26 @@
     "cost": 4,
     "type": "minion",
     "attack": 3,
-    "health": 4,
+    "health": 5,
     "keywords": [],
     "effect": "",
     "effect_value": 0,
     "target": "none",
     "rarity": "Epic",
-    "text": "Final Bow: Deal 2 damage to an enemy.",
+    "text": "At the start of your turn, deal 1 damage to ALL enemy Crew.",
     "flavor": "Warranty void. Parts missing. Still works. Mostly.",
     "art": "warmachine",
-    "deathrattle": "damage",
-    "deathrattle_value": 2,
-    "deathrattle_target": "any_enemy"
+    "deathrattle": "",
+    "deathrattle_value": 0,
+    "deathrattle_target": "none",
+    "triggers": [
+      {
+        "when": "start_of_turn",
+        "effect": "damage_all_enemy_minions",
+        "value": 1,
+        "target": "none"
+      }
+    ]
   },
   {
     "id": "grunk_betty",
@@ -1940,12 +1964,12 @@
     "effect_value": 0,
     "target": "none",
     "rarity": "Epic",
-    "text": "Final Bow: Deal 2 damage to an enemy.",
+    "text": "Final Bow: Deal 2 damage to ALL enemy Crew.",
     "flavor": "It is a mega bomb. It does mega bomb things.",
     "art": "megabomb",
-    "deathrattle": "damage",
+    "deathrattle": "damage_all_enemy_minions",
     "deathrattle_value": 2,
-    "deathrattle_target": "any_enemy"
+    "deathrattle_target": "none"
   },
   {
     "id": "grunk_bigone",
@@ -1994,16 +2018,16 @@
     "class": "agatha",
     "cost": 2,
     "type": "minion",
-    "attack": 1,
-    "health": 3,
+    "attack": 2,
+    "health": 2,
     "keywords": [
-      "taunt"
+      "windfury"
     ],
     "effect": "",
     "effect_value": 0,
     "target": "none",
     "rarity": "Common",
-    "text": "Bouncer.",
+    "text": "Encore.",
     "flavor": "It serves soup. It serves justice. Same motion.",
     "art": "ladle",
     "deathrattle_target": "none",
@@ -2019,12 +2043,14 @@
     "type": "minion",
     "attack": 2,
     "health": 2,
-    "keywords": [],
-    "effect": "heal_hero",
-    "effect_value": 3,
+    "keywords": [
+      "lifesteal"
+    ],
+    "effect": "",
+    "effect_value": 0,
     "target": "none",
     "rarity": "Common",
-    "text": "Entrance: Restore 3 Health to your Boss.",
+    "text": "Tip Jar.",
     "flavor": "Cures everything. Even this.",
     "art": "chicken_soup",
     "deathrattle_target": "none",
@@ -2040,12 +2066,14 @@
     "type": "minion",
     "attack": 1,
     "health": 2,
-    "keywords": [],
+    "keywords": [
+      "shield"
+    ],
     "effect": "heal_hero",
-    "effect_value": 5,
+    "effect_value": 2,
     "target": "none",
     "rarity": "Common",
-    "text": "Entrance: Restore 5 Health to your Boss.",
+    "text": "Stunt Double. Entrance: Restore 2 Health to your Boss.",
     "flavor": "It is lace. It is protective. Do not question it.",
     "art": "doily",
     "deathrattle_target": "none",
@@ -2059,22 +2087,30 @@
     "class": "agatha",
     "cost": 2,
     "type": "minion",
-    "attack": 0,
-    "health": 3,
+    "attack": 1,
+    "health": 4,
     "keywords": [
       "taunt"
     ],
-    "effect": "heal_hero",
-    "effect_value": 3,
+    "effect": "",
+    "effect_value": 0,
     "target": "none",
     "rarity": "Common",
-    "text": "Bouncer. Entrance: Restore 3 Health to your Boss.",
+    "text": "Bouncer. At the end of your turn, restore 2 Health to your Boss.",
     "flavor": "The recipe card is inside. So is another card.",
     "art": "cookies",
     "design_note": "Changed from draw-2 spell (draw belongs to Presto) to heal minion; heal rule bans pure heal spells above 1 mana.",
     "deathrattle_target": "none",
     "deathrattle": "",
-    "deathrattle_value": 0
+    "deathrattle_value": 0,
+    "triggers": [
+      {
+        "when": "end_of_turn",
+        "effect": "heal_hero",
+        "value": 2,
+        "target": "none"
+      }
+    ]
   },
   {
     "id": "agatha_face",
@@ -2085,17 +2121,20 @@
     "attack": 0,
     "health": 0,
     "keywords": [],
-    "effect": "damage",
-    "effect_value": 3,
+    "effect": "freeze",
+    "effect_value": 0,
     "target": "enemy_minion",
     "rarity": "Common",
-    "text": "Deal 3 damage to an enemy Crew member.",
+    "text": "Stage Fright an enemy Crew member. Draw a card.",
     "flavor": "Agatha does not miss. The ladle does not miss.",
     "art": "ladle_face",
     "design_note": "Minion-only damage, priced at the any-enemy table rate.",
     "deathrattle_target": "none",
     "deathrattle": "",
-    "deathrattle_value": 0
+    "deathrattle_value": 0,
+    "effect2": "draw",
+    "effect2_value": 1,
+    "effect2_target": "none"
   },
   {
     "id": "agatha_dish",
@@ -2103,22 +2142,28 @@
     "class": "agatha",
     "cost": 2,
     "type": "minion",
-    "attack": 3,
-    "health": 1,
-    "keywords": [
-      "taunt"
-    ],
+    "attack": 2,
+    "health": 3,
+    "keywords": [],
     "effect": "",
     "effect_value": 0,
     "target": "none",
     "rarity": "Common",
-    "text": "Bouncer.",
+    "text": "Whenever your Boss is healed, deal 1 damage to a random enemy.",
     "flavor": "It holds casserole. It holds grudges. It holds the line.",
     "art": "casserole_dish",
     "deathrattle_target": "none",
     "deathrattle": "",
     "deathrattle_value": 0,
-    "design_note": "Extreme skew (3/1): a dish that hits back. (Batch 2 review re-cost.)"
+    "design_note": "Extreme skew (3/1): a dish that hits back. (Batch 2 review re-cost.)",
+    "triggers": [
+      {
+        "when": "boss_healed",
+        "effect": "damage",
+        "value": 1,
+        "target": "any_enemy"
+      }
+    ]
   },
   {
     "id": "agatha_timmy",
@@ -2156,12 +2201,20 @@
     "effect_value": 0,
     "target": "none",
     "rarity": "Common",
-    "text": "Bouncer.",
+    "text": "Bouncer. Whenever your Boss is healed, gain +1/+1.",
     "flavor": "Serves soup. Judges you. Silently.",
     "art": "volunteer",
     "deathrattle_target": "none",
     "deathrattle": "",
-    "deathrattle_value": 0
+    "deathrattle_value": 0,
+    "triggers": [
+      {
+        "when": "boss_healed",
+        "effect": "buff_friendly",
+        "value": 1,
+        "target": "self"
+      }
+    ]
   },
   {
     "id": "agatha_reinforced",
@@ -2252,20 +2305,28 @@
     "class": "agatha",
     "cost": 3,
     "type": "minion",
-    "attack": 3,
-    "health": 3,
+    "attack": 2,
+    "health": 4,
     "keywords": [],
-    "effect": "heal_hero",
-    "effect_value": 3,
+    "effect": "",
+    "effect_value": 0,
     "target": "none",
     "rarity": "Rare",
-    "text": "Entrance: Restore 3 Health to your Boss.",
+    "text": "Whenever your Boss is healed, give a random friendly Crew member +1/+1.",
     "flavor": "She knits sweaters. She knits fate. Same yarn.",
     "art": "knitting",
     "deathrattle_target": "none",
     "deathrattle": "",
     "deathrattle_value": 0,
-    "design_note": "Taunt removed to dedup (all 3-cost Taunt splits taken by Reinforced/Boris/Volunteer); heal rider keeps Agatha identity."
+    "design_note": "Taunt removed to dedup (all 3-cost Taunt splits taken by Reinforced/Boris/Volunteer); heal rider keeps Agatha identity.",
+    "triggers": [
+      {
+        "when": "boss_healed",
+        "effect": "buff_friendly",
+        "value": 1,
+        "target": "friendly_minion"
+      }
+    ]
   },
   {
     "id": "agatha_dumpling",
@@ -2319,8 +2380,8 @@
     "class": "agatha",
     "cost": 3,
     "type": "minion",
-    "attack": 4,
-    "health": 2,
+    "attack": 2,
+    "health": 4,
     "keywords": [
       "taunt"
     ],
@@ -2328,12 +2389,20 @@
     "effect_value": 0,
     "target": "none",
     "rarity": "Epic",
-    "text": "Bouncer.",
+    "text": "Bouncer. Whenever this takes damage and survives, restore 1 Health to your Boss.",
     "flavor": "Breathes soup. Not fire. Soup. It is worse.",
     "art": "boris",
     "deathrattle_target": "none",
     "deathrattle": "",
-    "deathrattle_value": 0
+    "deathrattle_value": 0,
+    "triggers": [
+      {
+        "when": "damaged",
+        "effect": "heal_hero",
+        "value": 1,
+        "target": "none"
+      }
+    ]
   },
   {
     "id": "agatha_marge",
@@ -2447,17 +2516,19 @@
     "cost": 4,
     "type": "minion",
     "attack": 3,
-    "health": 5,
-    "keywords": [],
+    "health": 4,
+    "keywords": [
+      "lifesteal"
+    ],
     "effect": "",
     "effect_value": 0,
     "target": "none",
     "rarity": "Common",
-    "text": "Final Bow: Restore 3 Health to your Boss.",
+    "text": "Tip Jar.",
     "flavor": "Better the second day. Better the third day. Best when it explodes.",
     "art": "lasagna",
-    "deathrattle": "heal_hero",
-    "deathrattle_value": 3,
+    "deathrattle": "",
+    "deathrattle_value": 0,
     "deathrattle_target": "none"
   },
   {
@@ -2488,14 +2559,14 @@
     "class": "agatha",
     "cost": 4,
     "type": "minion",
-    "attack": 4,
+    "attack": 3,
     "health": 4,
     "keywords": [],
-    "effect": "damage",
-    "effect_value": 1,
+    "effect": "silence",
+    "effect_value": 0,
     "target": "enemy_minion",
     "rarity": "Rare",
-    "text": "Entrance: Deal 1 damage to an enemy Crew member.",
+    "text": "Entrance: Heckle an enemy Crew member.",
     "flavor": "The sigh heard around the world. Whole crews tremble.",
     "art": "sigh",
     "design_note": "Minion-only damage, priced at the any-enemy table rate.",
@@ -2534,16 +2605,17 @@
     "class": "agatha",
     "cost": 4,
     "type": "minion",
-    "attack": 5,
-    "health": 3,
+    "attack": 2,
+    "health": 4,
     "keywords": [
-      "taunt"
+      "taunt",
+      "shield"
     ],
     "effect": "",
     "effect_value": 0,
     "target": "none",
     "rarity": "Epic",
-    "text": "Bouncer.",
+    "text": "Bouncer. Stunt Double.",
     "flavor": "Only used for special occasions. This is a special occasion. You are doomed.",
     "art": "china",
     "deathrattle_target": "none",
@@ -2645,11 +2717,11 @@
     "attack": 4,
     "health": 3,
     "keywords": [],
-    "effect": "damage_all_enemy_minions",
-    "effect_value": 1,
-    "target": "none",
+    "effect": "damage",
+    "effect_value": 2,
+    "target": "enemy_minion",
     "rarity": "Rare",
-    "text": "Entrance: Deal 1 damage to ALL enemy Crew.",
+    "text": "Entrance: Deal 2 damage to an enemy Crew member.",
     "flavor": "It is raining ladles. Hallelujah.",
     "art": "ladle_storm",
     "design_note": "Changed from AoE-2 spell (exact duplicate of Nova) to Battlecry AoE-1 minion; Agatha keeps board-clear identity via Nova.",
@@ -2729,7 +2801,7 @@
     "class": "agatha",
     "cost": 6,
     "type": "minion",
-    "attack": 5,
+    "attack": 4,
     "health": 5,
     "keywords": [
       "taunt"
@@ -2738,12 +2810,17 @@
     "effect_value": 0,
     "target": "none",
     "rarity": "Rare",
-    "text": "Bouncer.",
+    "text": "Bouncer. Vibe: Your other Crew have +1 Health.",
     "flavor": "A fortress made of doilies. Impenetrable. Mostly.",
     "art": "fortress_doily",
     "deathrattle_target": "none",
     "deathrattle": "",
-    "deathrattle_value": 0
+    "deathrattle_value": 0,
+    "vibe": {
+      "attack": 0,
+      "health": 1,
+      "who": "other_friendly"
+    }
   },
   {
     "id": "agatha_eternal",
@@ -2752,18 +2829,26 @@
     "cost": 6,
     "type": "minion",
     "attack": 4,
-    "health": 5,
+    "health": 6,
     "keywords": [],
-    "effect": "heal_hero",
-    "effect_value": 5,
+    "effect": "",
+    "effect_value": 0,
     "target": "none",
     "rarity": "Rare",
-    "text": "Entrance: Restore 5 Health to your Boss.",
+    "text": "At the end of your turn, restore 3 Health to your Boss.",
     "flavor": "It never runs out. Neither does Grandma.",
     "art": "eternal",
     "deathrattle_target": "none",
     "deathrattle": "",
-    "deathrattle_value": 0
+    "deathrattle_value": 0,
+    "triggers": [
+      {
+        "when": "end_of_turn",
+        "effect": "heal_hero",
+        "value": 3,
+        "target": "none"
+      }
+    ]
   },
   {
     "id": "agatha_annihilation",
@@ -2948,13 +3033,13 @@
     "effect_value": 0,
     "target": "none",
     "rarity": "Legendary",
-    "text": "Entrance: Destroy all damaged enemy Crew. Final Bow: Deal 1 damage to ALL enemy Crew.",
+    "text": "Entrance: Destroy all damaged enemy Crew. Final Bow: Restore 5 Health to your Boss.",
     "flavor": "She has removed her apron. Run.",
     "art": "agatha_unleashed",
     "design_note": "Signature keeper, paired (Batch 2 review): Battlecry destroy_damaged + Deathrattle AoE-1; destroy_damaged repriced 4->2.",
     "deathrattle_target": "none",
-    "deathrattle": "damage_all_enemy_minions",
-    "deathrattle_value": 1
+    "deathrattle": "heal_hero",
+    "deathrattle_value": 5
   },
   {
     "id": "agatha_biggest",
@@ -3413,7 +3498,7 @@
     "id": "presto_tome",
     "name": "Bookworm",
     "class": "presto",
-    "cost": 3,
+    "cost": 4,
     "type": "minion",
     "attack": 2,
     "health": 2,
@@ -3433,7 +3518,7 @@
     "id": "presto_payoff",
     "name": "Final Exam",
     "class": "presto",
-    "cost": 5,
+    "cost": 6,
     "type": "spell",
     "attack": 0,
     "health": 0,
@@ -3474,7 +3559,7 @@
     "id": "presto_orb",
     "name": "Orb of Oops",
     "class": "presto",
-    "cost": 3,
+    "cost": 4,
     "type": "spell",
     "attack": 0,
     "health": 0,
@@ -3516,7 +3601,7 @@
     "class": "presto",
     "cost": 3,
     "type": "minion",
-    "attack": 3,
+    "attack": 2,
     "health": 3,
     "keywords": [],
     "effect": "summon_token",
@@ -3684,7 +3769,7 @@
     "class": "presto",
     "cost": 4,
     "type": "minion",
-    "attack": 3,
+    "attack": 2,
     "health": 3,
     "keywords": [],
     "effect": "draw",
@@ -3704,7 +3789,7 @@
     "class": "presto",
     "cost": 4,
     "type": "minion",
-    "attack": 4,
+    "attack": 3,
     "health": 4,
     "keywords": [],
     "effect": "draw_self_damage",
@@ -3724,7 +3809,7 @@
     "class": "presto",
     "cost": 4,
     "type": "minion",
-    "attack": 4,
+    "attack": 3,
     "health": 4,
     "keywords": [],
     "effect": "summon_token",
@@ -4188,7 +4273,7 @@
     "cost": 2,
     "type": "minion",
     "attack": 2,
-    "health": 2,
+    "health": 3,
     "keywords": [],
     "effect": "",
     "effect_value": 0,
@@ -5179,7 +5264,7 @@
     "cost": 4,
     "type": "minion",
     "attack": 3,
-    "health": 3,
+    "health": 2,
     "rarity": "Rare",
     "keywords": [],
     "effect": "damage",
@@ -5454,16 +5539,17 @@
     "class": "reginald",
     "cost": 3,
     "type": "minion",
-    "attack": 3,
+    "attack": 2,
     "health": 3,
     "keywords": [
-      "taunt"
+      "taunt",
+      "shield"
     ],
     "effect": "",
     "effect_value": 0,
     "target": "none",
     "rarity": "Common",
-    "text": "Bouncer.",
+    "text": "Bouncer. Stunt Double.",
     "flavor": "The shield has its own squire.",
     "art": "reg_shield_knight",
     "deathrattle": "",
@@ -5601,18 +5687,23 @@
     "cost": 3,
     "type": "minion",
     "attack": 1,
-    "health": 2,
+    "health": 3,
     "keywords": [],
-    "effect": "buff_friendly",
-    "effect_value": 1,
-    "target": "friendly_minion",
+    "effect": "",
+    "effect_value": 0,
+    "target": "none",
     "rarity": "Epic",
-    "text": "Entrance: Give another friendly Crew member +1/+1. Final Bow: Give a friendly Crew member +1/+1.",
+    "text": "Vibe: Your other Crew have +1 Health.",
     "flavor": "The banner inspires. Even after the bearer stops.",
     "art": "reg_banner_order",
-    "deathrattle": "buff_friendly",
-    "deathrattle_value": 1,
-    "deathrattle_target": "friendly_minion"
+    "deathrattle": "",
+    "deathrattle_value": 0,
+    "deathrattle_target": "none",
+    "vibe": {
+      "attack": 0,
+      "health": 1,
+      "who": "other_friendly"
+    }
   },
   {
     "id": "reg_oathbound",
@@ -5751,12 +5842,20 @@
     "effect_value": 2,
     "target": "friendly_minion",
     "rarity": "Rare",
-    "text": "Entrance: Give another friendly Crew member +2/+2.",
+    "text": "Entrance: Give another friendly Crew member +2/+2. Whenever your other Crew get buffed, +1 Attack.",
     "flavor": "His orders are final. His forms are finaler.",
     "art": "reg_high_marshal",
     "deathrattle": "",
     "deathrattle_value": 0,
-    "deathrattle_target": "none"
+    "deathrattle_target": "none",
+    "triggers": [
+      {
+        "when": "friendly_buffed",
+        "effect": "buff_attack",
+        "value": 1,
+        "target": "self"
+      }
+    ]
   },
   {
     "id": "reg_fallen_standard",
@@ -5804,7 +5903,7 @@
     "class": "reginald",
     "cost": 4,
     "type": "minion",
-    "attack": 4,
+    "attack": 3,
     "health": 3,
     "keywords": [],
     "effect": "damage",
@@ -5846,12 +5945,14 @@
     "type": "minion",
     "attack": 3,
     "health": 3,
-    "keywords": [],
-    "effect": "damage",
-    "effect_value": 2,
-    "target": "enemy_minion",
+    "keywords": [
+      "shield"
+    ],
+    "effect": "buff_friendly",
+    "effect_value": 1,
+    "target": "friendly_minion",
     "rarity": "Epic",
-    "text": "Entrance: Deal 2 damage to an enemy Crew member.",
+    "text": "Stunt Double. Entrance: Give another friendly Crew member +1/+1.",
     "flavor": "The verdict is in. It is not good.",
     "art": "reg_judgment",
     "deathrattle": "",
@@ -5972,10 +6073,10 @@
     "health": 3,
     "keywords": [],
     "effect": "damage",
-    "effect_value": 3,
+    "effect_value": 2,
     "target": "enemy_minion",
     "rarity": "Rare",
-    "text": "Entrance: Deal 3 damage to an enemy Crew member.",
+    "text": "Entrance: Deal 2 damage to an enemy Crew member.",
     "flavor": "Guilty. Next case.",
     "art": "reg_verdict",
     "deathrattle": "",
@@ -6239,12 +6340,20 @@
     "effect_value": 0,
     "target": "none",
     "rarity": "Common",
-    "text": "",
+    "text": "Whenever a random effect fires, gain +1 Attack.",
     "flavor": "Rolls dice. Loses dice. Finds dice.",
     "art": "lar_dice_boy",
     "deathrattle": "",
     "deathrattle_value": 0,
-    "deathrattle_target": "none"
+    "deathrattle_target": "none",
+    "triggers": [
+      {
+        "when": "random_fired",
+        "effect": "buff_attack",
+        "value": 1,
+        "target": "self"
+      }
+    ]
   },
   {
     "id": "lar_chip",
@@ -6678,7 +6787,7 @@
     "id": "lar_big_bet",
     "name": "Big Bet",
     "class": "larry",
-    "cost": 3,
+    "cost": 2,
     "type": "spell",
     "attack": 0,
     "health": 0,
@@ -6687,12 +6796,13 @@
     "effect_value": 5,
     "target": "any_enemy",
     "rarity": "Rare",
-    "text": "Deal 5 damage to an enemy.",
+    "text": "Deal 5 damage to an enemy. On Credit (1).",
     "flavor": "All in. No regrets. Some regrets.",
     "art": "lar_big_bet",
     "deathrattle": "",
     "deathrattle_value": 0,
-    "deathrattle_target": "none"
+    "deathrattle_target": "none",
+    "overload": 1
   },
   {
     "id": "lar_rigged_deck",
@@ -6718,21 +6828,29 @@
     "id": "lar_bettor",
     "name": "High-Stakes Bettor",
     "class": "larry",
-    "cost": 4,
+    "cost": 3,
     "type": "minion",
-    "attack": 5,
+    "attack": 3,
     "health": 3,
     "keywords": [],
-    "effect": "random_enemy_damage",
-    "effect_value": 1,
+    "effect": "",
+    "effect_value": 0,
     "target": "none",
     "rarity": "Common",
-    "text": "Entrance: Deal 1 damage to a random enemy.",
+    "text": "Whenever a random effect fires, gain +1/+1.",
     "flavor": "Bets the house. IS the house.",
     "art": "lar_bettor",
     "deathrattle": "",
     "deathrattle_value": 0,
-    "deathrattle_target": "none"
+    "deathrattle_target": "none",
+    "triggers": [
+      {
+        "when": "random_fired",
+        "effect": "buff_friendly",
+        "value": 1,
+        "target": "self"
+      }
+    ]
   },
   {
     "id": "lar_dolores",
@@ -6821,7 +6939,7 @@
     "cost": 4,
     "type": "minion",
     "attack": 3,
-    "health": 4,
+    "health": 3,
     "keywords": [],
     "effect": "damage",
     "effect_value": 1,
@@ -6878,7 +6996,7 @@
     "id": "lar_kneecap",
     "name": "Kneecap",
     "class": "larry",
-    "cost": 4,
+    "cost": 2,
     "type": "spell",
     "attack": 0,
     "health": 0,
@@ -6887,12 +7005,13 @@
     "effect_value": 0,
     "target": "enemy_minion",
     "rarity": "Rare",
-    "text": "Destroy an enemy Crew member.",
+    "text": "Destroy an enemy Crew member. On Credit (2).",
     "flavor": "The house collects its debts.",
     "art": "lar_kneecap",
     "deathrattle": "",
     "deathrattle_value": 0,
-    "deathrattle_target": "none"
+    "deathrattle_target": "none",
+    "overload": 2
   },
   {
     "id": "lar_clear_table",
@@ -7027,12 +7146,20 @@
     "effect_value": 0,
     "target": "none",
     "rarity": "Common",
-    "text": "Final Bow: Deal 1 damage to a random enemy.",
+    "text": "Whenever a random effect fires, deal 1 damage to the enemy Boss.",
     "flavor": "Seven. Lucky. Until it isn't.",
     "art": "lar_lucky7",
-    "deathrattle": "random_enemy_damage",
-    "deathrattle_value": 1,
-    "deathrattle_target": "none"
+    "deathrattle": "",
+    "deathrattle_value": 0,
+    "deathrattle_target": "none",
+    "triggers": [
+      {
+        "when": "random_fired",
+        "effect": "damage",
+        "value": 1,
+        "target": "enemy_hero"
+      }
+    ]
   },
   {
     "id": "lar_pit_boss",
