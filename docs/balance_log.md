@@ -289,3 +289,18 @@ move 2-4 points between rounds instead of 5-10.
 Two matchups stay lopsided in every draft: Presto vs Agatha (~26/74:
 her healing outlasts his burn) and Agatha vs Reginald (~32/68: buffed,
 Stunt Double knights shrug off her board wipes).
+
+## g17-g18 and the review candidate (Nov 12)
+
+| Draft | Change | field r1 | field r2 |
+|---|---|---|---|
+| g17 | g16; Judgment 3/3; Blackjack back to shipped | Reg 52.8, Barn 51.6, Lar 51.2, Aga 50.7, Gru 48.5, Pres 45.1 | Lar 52.7, Gru 50.7, Aga 50.4, Pres 49.4, Barn 49.2, Reg 47.6 |
+| g18 | g17; Thesis Defense back to shipped (7 mana) | Barn 52.7, Pres 51.4, Reg 50.9, Gru 49.8, Aga 47.9, Lar 47.2 | Pres 52.4, Lar 51.9, Aga 50.2, Gru 50.0, Barn 48.5, Reg 46.8 |
+
+g18 = review candidate (lab/patches/balance_draft_g18.json), averaged:
+Presto 51.9, Barnacle 50.6, Grunk 49.9, Larry 49.6, Agatha 49.1,
+Reginald 48.9; going first 45.5%. Outside 60/40: Agatha-Presto 65/35,
+Reginald-Agatha 66/34, Presto-Reginald 64/36, Grunk-Larry 63/37. No kill
+from 30 in one turn (7,200 games; max 29). Parity 288/288 with the patch.
+Grunk's four lit-fuse cards appear in none of his top lists.
+Review doc: https://claude.ai/artifact/XnF6cvq5RMdRYs9o2tGtM7
