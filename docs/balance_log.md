@@ -269,3 +269,23 @@ Going first under the g10 decks (fixed lists, 400 games per pairing):
 4 cards + 2 Pennies 45.0%; 4 + 1 Penny 59.7%; 4 + 1 Penny and going
 second starts at 36 Health 52.7%, at 39 Health 48.8%; 5 + 1 Penny ~44%.
 One card or one Penny is worth ~15 points to the planner; 1 Health ~1.
+
+## Passes g11-g16 (Nov 11-12) and a steadier yardstick
+
+Single "best list per Boss" picks swing up to 10 points from run to run
+(one sharp counter-list can make a matchup read 12/88). From g12 on, each
+draft is also scored by **field**: each Boss's top 3 lists against every
+other Boss's top 3 (9 rotations x 200 games per pairing). Field numbers
+move 2-4 points between rounds instead of 5-10.
+
+| Draft | Change | field r1 | field r2 |
+|---|---|---|---|
+| g12 | g11 (Carol back to shipped, Dice Boy 2/2) + Agatha's power back to heal 2 | Barn 56.5, Pres 51.1, Lar 49.1, Gru 49.0, Reg 49.0, Aga 45.2 | Barn 53.8, Pres 51.6, Lar 50.3, Reg 49.5, Aga 48.1, Gru 46.6 |
+| g13 | g12; Flag Bearer, Bosun back to 2/2; Boombox 3/3, War Machine 3/5 | Pres 56.8, Gru 51.0, Reg 50.9, Lar 50.5, Barn 47.5, Aga 43.4 | Pres 57.4, Lar 51.0, Reg 49.0, Aga 49.0, Gru 48.6, Barn 45.1 |
+| g14 | g13 + Flag Bearer 2/3 | Pres 55.2, Reg 52.7, Lar 50.1, Gru 47.6, Aga 47.5, Barn 46.8 | Pres 55.9, Lar 51.4, Aga 50.0, Reg 49.0, Barn 47.1, Gru 46.6 |
+| g15 | g14 + Tower Librarian 2/3, Thesis Defense 8 mana | Reg 54.7, Aga 50.8, Lar 50.2, Barn 49.6, Gru 48.7, Pres 45.9 | Lar 54.7, Aga 51.4, Reg 50.1, Barn 48.3, Pres 47.9, Gru 47.5 |
+| g16 | g15 + Three-Card Monte 3/3, Blackjack 2/2 | Reg 54.7, Aga 51.7, Gru 51.2, Barn 49.7, Lar 47.5, Pres 45.2 | Reg 54.2, Aga 52.1, Barn 49.6, Gru 49.2, Pres 48.2, Lar 46.6 |
+
+Two matchups stay lopsided in every draft: Presto vs Agatha (~26/74:
+her healing outlasts his burn) and Agatha vs Reginald (~32/68: buffed,
+Stunt Double knights shrug off her board wipes).
