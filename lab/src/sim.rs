@@ -23,6 +23,8 @@ pub struct Rec {
     pub p0: Vec<(CardId, i32)>,
     pub p1: Vec<(CardId, i32)>,
     pub pw: [i32; 2],
+    /// Biggest one-turn drop in the defender's Health, and the Health it started that turn at.
+    pub burst: [i32; 2],
 }
 
 pub fn play(a: &str, b: &str, d0: &[CardId], d1: &[CardId], seed: i64, variant: &str) -> Rec {
@@ -37,8 +39,10 @@ pub fn play(a: &str, b: &str, d0: &[CardId], d1: &[CardId], seed: i64, variant: 
     apply_variant(&mut gs, variant);
     let mut played: [Vec<(CardId, i32)>; 2] = [vec![], vec![]];
     let mut powers = [0, 0];
+    let mut burst = [0, 0];
     while gs.winner == -1 && gs.turn_count <= TURN_CAP {
         let p = gs.active;
+        let hp0 = gs.players[1 - p].hp;
         let mut n = 0;
         while gs.winner == -1 && n < ACTION_CAP {
             n += 1;
@@ -56,13 +60,17 @@ pub fn play(a: &str, b: &str, d0: &[CardId], d1: &[CardId], seed: i64, variant: 
                 powers[p] += 1;
             }
         }
+        let drop = hp0 - gs.players[1 - p].hp.max(0);
+        if drop > burst[0] {
+            burst = [drop, hp0];
+        }
         if gs.winner != -1 {
             break;
         }
         gs.end_turn();
     }
     let [p0, p1] = played;
-    Rec { a: a.into(), b: b.into(), seed, w: gs.winner, t: gs.turn_count, hp: [gs.players[0].hp, gs.players[1].hp], d0: d0.to_vec(), d1: d1.to_vec(), p0, p1, pw: powers }
+    Rec { a: a.into(), b: b.into(), seed, w: gs.winner, t: gs.turn_count, hp: [gs.players[0].hp, gs.players[1].hp], d0: d0.to_vec(), d1: d1.to_vec(), p0, p1, pw: powers, burst }
 }
 
 /// The going-first what-ifs (sim_lib.gd _variant).
@@ -123,6 +131,7 @@ impl Rec {
             ("p0", pl(&self.p0)),
             ("p1", pl(&self.p1)),
             ("pw", J::Arr(vec![num(self.pw[0] as i64), num(self.pw[1] as i64)])),
+            ("burst", J::Arr(vec![num(self.burst[0] as i64), num(self.burst[1] as i64)])),
         ])
     }
     /// Score for the class that went first (`a`): 1 win, 0.5 draw, 0 loss.

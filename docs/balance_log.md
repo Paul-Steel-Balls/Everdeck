@@ -251,3 +251,21 @@ Knockout findings (planner):
 
 g4 -> g5 Presto jumped because the search found a new list; single
 rounds swing several points, so each draft gets at least 2 rounds.
+
+## Planner passes g7-g10 (Nov 11, new default rules: overheal, 4 cards + 2 Pennies)
+
+| Draft | Main changes | Presto | Larry | Reginald | Grunk | Barnacle | Agatha | first | outside 60/40 |
+|---|---|---|---|---|---|---|---|---|---|
+| g7 | g6, Deckhand back to 1/2; Larry random-effect payoffs + On Credit; Grunk lit fuses | 50.6 | 45.3 | 58.1 | 49.7 | 44.7 | 51.6 | 46.1 | 4 |
+| g8 | g7; High Marshal 2/3, Judgment 3/3, Twin-Blade 3/3; Bettor 3-mana 3/3, Dice Boy 2/3, Lucky Seven 5/5; Flag Bearer, Bosun 2/3 | 47.8 | 54.1 | 50.4 | 53.4 | 44.1 | 50.2 | 46.4 | 3 |
+| g9 | g8 + Scout Parrot 3/4 | 51.1 | 49.1 | 46.1 | 50.5 | 55.0 | 48.2 | 45.8 | 4 |
+| g10 | g8 + Judgment 3/4 (from g9's pool) | 48.5 | 51.3 | 51.7 | 50.5 | 47.0 | 51.1 | 44.4 | 3 |
+| g10 confirm | 3 picks x 1000 games on the final pool | 48.1 | 53.8 | 49.1 | 48.0 | 47.1 | 54.1 | 45.4 | 4 |
+
+No kills from 30 Health in one turn in 7,200 planner games (g8 decks);
+the biggest one-turn drop was 23.
+
+Going first under the g10 decks (fixed lists, 400 games per pairing):
+4 cards + 2 Pennies 45.0%; 4 + 1 Penny 59.7%; 4 + 1 Penny and going
+second starts at 36 Health 52.7%, at 39 Health 48.8%; 5 + 1 Penny ~44%.
+One card or one Penny is worth ~15 points to the planner; 1 Health ~1.
